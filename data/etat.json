@@ -1,0 +1,53 @@
+{
+  "execution_utc": "2026-11-14T19:13:53+00:00",
+  "sources": {
+    "prix": {
+      "ok": true,
+      "lignes": 3604,
+      "derniere_date": "2026-11-13",
+      "note": "(Coinbase)"
+    },
+    "eurusd": {
+      "ok": true,
+      "lignes": 2526,
+      "derniere_date": "2026-11-13",
+      "note": "(BCE)"
+    },
+    "financement": {
+      "ok": true,
+      "lignes": 367,
+      "derniere_date": "2026-11-13",
+      "note": "(Kraken Futures)"
+    },
+    "derives": {
+      "ok": true,
+      "lignes": 1,
+      "derniere_date": "2026-11-14",
+      "note": "(Kraken Futures, Deribit)"
+    },
+    "dvol": {
+      "ok": true,
+      "lignes": 2061,
+      "derniere_date": "2026-11-13",
+      "note": "(Deribit)"
+    },
+    "peur_avidite": {
+      "ok": true,
+      "lignes": 3205,
+      "derniere_date": "2026-11-14",
+      "note": "(alternative.me)"
+    },
+    "macro": {
+      "ok": false,
+      "lignes": 0,
+      "derniere_date": null,
+      "note": "échec : aucune série FRED disponible"
+    },
+    "onchain": {
+      "ok": true,
+      "lignes": 3604,
+      "derniere_date": "2026-11-13",
+      "note": "(Coin Metrics, non disponibles : cap_realisee_usd)"
+    }
+  }
+}
