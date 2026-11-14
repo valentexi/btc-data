@@ -1,5 +1,5 @@
 {
-  "execution_utc": "2026-11-14T19:13:53+00:00",
+  "execution_utc": "2026-11-14T19:17:31+00:00",
   "sources": {
     "prix": {
       "ok": true,
@@ -38,10 +38,10 @@
       "note": "(alternative.me)"
     },
     "macro": {
-      "ok": false,
-      "lignes": 0,
-      "derniere_date": null,
-      "note": "échec : aucune série FRED disponible"
+      "ok": true,
+      "lignes": 2517,
+      "derniere_date": "2026-11-13",
+      "note": "(Trésor américain, CBOE, Yahoo Finance)"
     },
     "onchain": {
       "ok": true,

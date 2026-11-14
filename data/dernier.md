@@ -1,4 +1,4 @@
-# Dernier relevé BTC (14/11/2026 19:13 UTC)
+# Dernier relevé BTC (14/11/2026 19:17 UTC)
 
 Produit automatiquement par `collecte.py`. Clôtures quotidiennes à minuit UTC (1 h à Paris en hiver).
 
@@ -17,12 +17,20 @@ Produit automatiquement par `collecte.py`. Clôtures quotidiennes à minuit UTC 
 
 ## Dérivés et sentiment
 - Financement Kraken : 0,0070 % par 8 h le 2026-11-13, 0,0090 % en moyenne sur 7 jours (positif : les longs paient)
-- Intérêt ouvert sur le contrat Kraken : 2 303 BTC (relevé du 2026-11-14)
+- Intérêt ouvert sur le contrat Kraken : 2 302 BTC (relevé du 2026-11-14)
 - Volatilité implicite (DVOL) : 39,9 le 2026-11-13
 - Fear & Greed : 13 le 2026-11-14, 25 sept jours plus tôt
 - MVRV (prix divisé par le prix de revient moyen du réseau) : 1,27 le 2026-11-13
 
-## Macro (FRED, publiée avec un à deux jours de retard)
+## Macro (dernières clôtures connues)
+- Taux américain à 10 ans : 5,15 % (2026-11-13)
+- Taux américain à 2 ans : 4,88 % (2026-11-13)
+- Taux réel à 10 ans : 2,91 % (2026-11-13)
+- VIX : 19,3 (2026-11-13)
+- Nasdaq-100 : 27 944 points (2026-11-13)
+- S&P 500 : 7 562 points (2026-11-13)
+- Dollar (DXY) : 103,41 (2026-11-13)
+- Brent : 95,8 $ (2026-11-13)
 
 ## État des sources
 | Source | État | Dernière date | Remarque |
@@ -33,7 +41,7 @@ Produit automatiquement par `collecte.py`. Clôtures quotidiennes à minuit UTC 
 | derives | ok | 2026-11-14 | (Kraken Futures, Deribit) |
 | dvol | ok | 2026-11-13 | (Deribit) |
 | peur_avidite | ok | 2026-11-14 | (alternative.me) |
-| macro | **échec** |  | échec : aucune série FRED disponible |
+| macro | ok | 2026-11-13 | (Trésor américain, CBOE, Yahoo Finance) |
 | onchain | ok | 2026-11-13 | (Coin Metrics, non disponibles : cap_realisee_usd) |
 
 Non collecté automatiquement : flux des ETF Bitcoin et carte des liquidations (pas de source gratuite fiable).

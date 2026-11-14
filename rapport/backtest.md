@@ -1,4 +1,4 @@
-# Backtest BTC (14/11/2026 19:13 UTC)
+# Backtest BTC (14/11/2026 19:17 UTC)
 
 ## En bref
 - **Long de retournement en peur extrême sous la moyenne 200 jours** : 205 trades, 37 % gagnants, -0,12 R par trade en moyenne, soit -0,58 € pour 5 € risqués. Verdict : **non concluant**.
