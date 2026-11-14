@@ -16,7 +16,7 @@ Fichiers produits dans data/ :
   derives_instantane.csv  relevé du jour : intérêt ouvert, financement en cours
   dvol.csv                volatilité implicite du Bitcoin (indice DVOL de Deribit)
   peur_avidite.csv        indice Fear & Greed
-  macro.csv               taux américains, VIX, Nasdaq-100, S&P 500, dollar, Brent (FRED)
+  macro.csv               taux américains (Trésor), VIX (CBOE), Nasdaq-100, S&P 500, DXY, Brent (Yahoo)
   onchain.csv             données de la blockchain (Coin Metrics, offre gratuite)
   etat.json               état de chaque source lors du dernier lancement
   dernier.md              relevé lisible, prix en euros
@@ -50,12 +50,13 @@ def aujourd_hui() -> str:
     return maintenant().strftime("%Y-%m-%d")
 
 
-def get(url: str, params: dict | None = None, essais: int = 3, timeout: int = 45) -> requests.Response:
+def get(url: str, params: dict | None = None, essais: int = 2, timeout: int = 30,
+        entetes: dict | None = None) -> requests.Response:
     """Requête GET avec quelques essais. Lève une erreur claire en cas d'échec."""
     erreur: Exception | None = None
     for k in range(essais):
         try:
-            r = requests.get(url, params=params, headers=UA, timeout=timeout)
+            r = requests.get(url, params=params, headers=entetes or UA, timeout=(10, timeout))
             if r.status_code == 200:
                 return r
             erreur = RuntimeError(f"HTTP {r.status_code} sur {url.split('?')[0]}")
@@ -188,6 +189,7 @@ def src_financement():
         "https://futures.kraken.com/derivatives/api/v4/historicalfundingrates",
         {"symbol": "PF_XBTUSD"},
         timeout=120,
+        essais=3,
     )
     df = pd.DataFrame(r.json()["rates"])
     if df.empty:
@@ -270,31 +272,96 @@ def src_peur():
     return fusionner("peur_avidite.csv", pd.DataFrame(lignes)), "(alternative.me)"
 
 
-SERIES_FRED = {
-    "DGS10": "taux_10ans",
-    "DGS2": "taux_2ans",
-    "DFII10": "taux_reel_10ans",
-    "VIXCLS": "vix",
-    "NASDAQ100": "nasdaq100",
-    "SP500": "sp500",
-    "DTWEXBGS": "dollar_large",
-    "DCOILBRENTEU": "brent",
+NAVIGATEUR = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
+                  "Chrome/126.0 Safari/537.36",
+    "Accept": "application/json,text/csv,*/*",
 }
+
+
+def tresor(genre: str, annee: int) -> pd.DataFrame:
+    """Taux du Trésor américain pour une année. genre : 'nominal' ou 'reel'."""
+    type_ = "daily_treasury_yield_curve" if genre == "nominal" else "daily_treasury_real_yield_curve"
+    url = (
+        "https://home.treasury.gov/resource-center/data-chart-center/interest-rates/"
+        f"daily-treasury-rates.csv/{annee}/all?type={type_}&field_tdr_date_value={annee}&page&_format=csv"
+    )
+    df = pd.read_csv(io.StringIO(get(url, entetes=NAVIGATEUR).text))
+    df.columns = [c.strip().lower() for c in df.columns]
+    df["date"] = pd.to_datetime(df["date"], format="%m/%d/%Y").dt.strftime("%Y-%m-%d")
+    if genre == "nominal":
+        out = df[["date", "2 yr", "10 yr"]].rename(columns={"2 yr": "taux_2ans", "10 yr": "taux_10ans"})
+    else:
+        out = df[["date", "10 yr"]].rename(columns={"10 yr": "taux_reel_10ans"})
+    for c in out.columns[1:]:
+        out[c] = pd.to_numeric(out[c], errors="coerce")
+    return out.dropna()
+
+
+def vix_cboe() -> pd.DataFrame:
+    r = get("https://cdn-api.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv", entetes=NAVIGATEUR)
+    df = pd.read_csv(io.StringIO(r.text))
+    df.columns = [c.strip().lower() for c in df.columns]
+    df["date"] = pd.to_datetime(df["date"], format="%m/%d/%Y").dt.strftime("%Y-%m-%d")
+    df["vix"] = pd.to_numeric(df["close"], errors="coerce")
+    return df[["date", "vix"]].dropna()
+
+
+def yahoo(symbole: str, nom: str, debut: str) -> pd.DataFrame:
+    """Clôtures quotidiennes d'un indice ou d'un contrat (Yahoo Finance, sans clé)."""
+    t0 = int(dt.datetime.fromisoformat(debut + "T00:00:00+00:00").timestamp())
+    r = get(
+        "https://query1.finance.yahoo.com/v8/finance/chart/" + requests.utils.quote(symbole, safe=""),
+        {"period1": t0, "period2": int(maintenant().timestamp()), "interval": "1d"},
+        entetes=NAVIGATEUR,
+    )
+    res = r.json()["chart"]["result"][0]
+    df = pd.DataFrame({"t": res["timestamp"], nom: res["indicators"]["quote"][0]["close"]})
+    df["date"] = pd.to_datetime(df["t"], unit="s", utc=True).dt.strftime("%Y-%m-%d")
+    df[nom] = pd.to_numeric(df[nom], errors="coerce")
+    return df[["date", nom]].dropna().drop_duplicates(subset="date", keep="last")
+
+
+YAHOO = {"^NDX": "nasdaq100", "^GSPC": "sp500", "DX-Y.NYB": "dxy", "BZ=F": "brent"}
 
 
 def src_macro():
     debut = depuis("macro.csv", 30)
-    tout, echecs = None, []
-    for serie, nom in SERIES_FRED.items():
+    annees = range(int(debut[:4]), maintenant().year + 1)
+    morceaux: list[pd.DataFrame] = []
+    echecs: list[str] = []
+
+    def essayer(nom: str, fonction) -> bool:
         try:
-            df = fred(serie, debut).rename(columns={serie: nom})
-            tout = df if tout is None else tout.merge(df, on="date", how="outer")
+            morceaux.append(fonction())
+            return True
         except Exception:  # noqa: BLE001
+            return False
+
+    def annees_tresor(genre: str) -> pd.DataFrame:
+        return pd.concat([tresor(genre, a) for a in annees], ignore_index=True)
+
+    if not essayer("taux", lambda: annees_tresor("nominal")):
+        if not essayer("taux", lambda: yahoo("^TNX", "taux_10ans", debut)):   # secours : 10 ans seulement
+            echecs.append("taux_10ans")
+        echecs.append("taux_2ans")
+    if not essayer("taux réel", lambda: annees_tresor("reel")):
+        echecs.append("taux_reel_10ans")
+    if not essayer("vix", vix_cboe) and not essayer("vix", lambda: yahoo("^VIX", "vix", debut)):
+        echecs.append("vix")
+    for symbole, nom in YAHOO.items():
+        if not essayer(nom, lambda s=symbole, n=nom: yahoo(s, n, debut)):
             echecs.append(nom)
         time.sleep(0.4)
-    if tout is None:
-        raise RuntimeError("aucune série FRED disponible")
-    note = "(FRED)" if not echecs else f"(FRED, séries manquantes : {', '.join(echecs)})"
+
+    if not morceaux:
+        raise RuntimeError("aucune série macro disponible")
+    tout = morceaux[0]
+    for m in morceaux[1:]:
+        tout = tout.merge(m, on="date", how="outer")
+    tout = tout[(tout["date"] >= debut) & (tout["date"] < aujourd_hui())]
+    source = "(Trésor américain, CBOE, Yahoo Finance)"
+    note = source if not echecs else source[:-1] + f" ; séries manquantes : {', '.join(echecs)})"
     return fusionner("macro.csv", tout), note
 
 
@@ -317,7 +384,7 @@ def coinmetrics(metriques: str, debut: str) -> pd.DataFrame:
         raise RuntimeError(f"Coin Metrics : rien pour {metriques}")
     df = pd.DataFrame(lignes)
     df["date"] = df["time"].str[:10]
-    df = df.drop(columns=[c for c in ("asset", "time") if c in df.columns])
+    df = df.drop(columns=[c for c in df.columns if c in ("asset", "time") or "-status" in c])
     for c in df.columns:
         if c != "date":
             df[c] = pd.to_numeric(df[c], errors="coerce")
@@ -471,7 +538,7 @@ def ecrire_dernier(p: pd.DataFrame | None) -> None:
         L.append(f"- MVRV (prix divisé par le prix de revient moyen du réseau) : {nb(v, 2)} le {d}")
     L.append("")
 
-    L.append("## Macro (FRED, publiée avec un à deux jours de retard)")
+    L.append("## Macro (dernières clôtures connues)")
     mac = lire("macro.csv")
     libelles = [
         ("taux_10ans", "Taux américain à 10 ans", 2, " %"),
@@ -480,13 +547,15 @@ def ecrire_dernier(p: pd.DataFrame | None) -> None:
         ("vix", "VIX", 1, ""),
         ("nasdaq100", "Nasdaq-100", 0, " points"),
         ("sp500", "S&P 500", 0, " points"),
-        ("dollar_large", "Dollar (indice large de la Fed, pas le DXY)", 1, ""),
+        ("dxy", "Dollar (DXY)", 2, ""),
         ("brent", "Brent", 1, " $"),
     ]
     for col, nom, dec, unite in libelles:
         v, d = _dernier(mac, col)
         if v is not None:
             L.append(f"- {nom} : {nb(v, dec)}{unite} ({d})")
+    if mac is None:
+        L.append("- Indisponible lors de ce lancement.")
     L.append("")
 
     L.append("## État des sources")

@@ -200,13 +200,25 @@ def faux_get(url, params=None, **_):
         data = [{"value": str(PEUR[i]), "value_classification": "x", "timestamp": str(ts(d))}
                 for i, d in list(enumerate(DATES))[::-1] if d >= dt.date(2018, 2, 1)]
         return Reponse({"name": "Fear and Greed Index", "data": data, "metadata": {"error": None}})
-    if "fredgraph" in url:
-        s = params["id"]
-        if s == "DFII10":
+    if "treasury.gov" in url:
+        annee = int(url.split("daily-treasury-rates.csv/")[1][:4])
+        if "real_yield" in url:
             raise RuntimeError("HTTP 404 simulé")   # une série en échec ne doit pas bloquer les autres
-        lignes = [f"{d.isoformat()},{'' if i % 97 == 0 else 4.5 + 0.001 * (i % 30):}" for i, d in enumerate(DATES)
-                  if d.weekday() < 5 and d.isoformat() >= params["cosd"]]
-        return Reponse(text=f"observation_date,{s}\n" + "\n".join(lignes))
+        lignes = [f"{d.strftime('%m/%d/%Y')},4.10,4.88,4.98,5.15,5.47" for d in DATES[::-1]
+                  if d.year == annee and d.weekday() < 5]
+        return Reponse(text='Date,"1 Mo","2 Yr","5 Yr","10 Yr","30 Yr"\n' + "\n".join(lignes))
+    if "cboe.com" in url:
+        lignes = [f"{d.strftime('%m/%d/%Y')},18.0,19.0,17.5,18.7" for d in DATES if d.weekday() < 5]
+        lignes.append(f"{dt.date.today().strftime('%m/%d/%Y')},1,1,1,99.0")   # séance du jour : doit être écartée
+        return Reponse(text="DATE,OPEN,HIGH,LOW,CLOSE\n" + "\n".join(lignes))
+    if "finance.yahoo.com" in url:
+        jours = [d for d in DATES if d.weekday() < 5 and ts(d) >= params["period1"]]
+        return Reponse({"chart": {"result": [{
+            "timestamp": [ts(d) + 52200 for d in jours],
+            "indicators": {"quote": [{"close": [None if k % 61 == 0 else 25000.0 + k for k in range(len(jours))]}]},
+        }], "error": None}})
+    if "fredgraph" in url:
+        raise RuntimeError("FRED ne répond pas (simulé)")
     if "coinmetrics" in url:
         m = params["metrics"]
         if m in ("FlowInExNtv", "FlowOutExNtv", "SplyExNtv"):
@@ -215,7 +227,7 @@ def faux_get(url, params=None, **_):
         for i, d in enumerate(DATES):
             if d.isoformat() < params["start_time"]:
                 continue
-            ligne = {"asset": "btc", "time": f"{d.isoformat()}T00:00:00.000000000Z"}
+            ligne = {"asset": "btc", "time": f"{d.isoformat()}T00:00:00.000000000Z", f"{m.split(',')[0]}-status": "reviewed"}
             for k in m.split(","):
                 ligne[k] = str(C[i] if k == "PriceUSD" else 1.39)
             data.append(ligne)
@@ -251,8 +263,13 @@ def test_collecte():
     verifier("dvol : pagination complète", len(d) == 900, str(len(d)))
     m = outils.lire("macro.csv")
     verifier("macro : série en échec ignorée", "taux_reel_10ans" not in m.columns and "vix" in m.columns)
+    verifier("macro : toutes les autres séries", {"taux_10ans", "taux_2ans", "nasdaq100", "sp500", "dxy", "brent"} <= set(m.columns),
+             str(list(m.columns)))
+    verifier("macro : valeurs", proche(m["taux_10ans"].iloc[-1], 5.15) and proche(m["vix"].iloc[-1], 18.7)
+             and m["date"].max() < dt.date.today().isoformat(), f"{m['vix'].iloc[-1]} {m['date'].max()}")
     verifier("macro : note d'état", "taux_reel_10ans" in etat["macro"]["note"])
     o = outils.lire("onchain.csv")
+    verifier("onchain : pas de colonne d'état", not any("-status" in c for c in o.columns), str(list(o.columns)))
     verifier("onchain : métriques optionnelles", "mvrv" in o.columns and "hashrate" in o.columns
              and "btc_sur_plateformes" not in o.columns)
     der = outils.lire("derives_instantane.csv")

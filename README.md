@@ -28,7 +28,7 @@ Au premier lancement, tout l'historique disponible est téléchargé. Ensuite, s
 | `derives_instantane.csv` | Kraken Futures, Deribit | un relevé par jour à partir du premier lancement |
 | `dvol.csv` | Deribit (volatilité implicite) | depuis 2021 |
 | `peur_avidite.csv` | alternative.me (Fear & Greed) | depuis 2018 |
-| `macro.csv` | FRED : taux américains, VIX, Nasdaq-100, S&P 500, dollar, Brent | depuis 2017 |
+| `macro.csv` | Trésor américain (taux), CBOE (VIX), Yahoo Finance (Nasdaq-100, S&P 500, DXY, Brent) | depuis 2017 |
 | `onchain.csv` | Coin Metrics, offre gratuite : MVRV et autres | depuis 2017 |
 
 Non collecté : flux des ETF Bitcoin et carte des liquidations (pas de source gratuite fiable).
