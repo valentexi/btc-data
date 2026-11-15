@@ -1,4 +1,4 @@
-# Dernier relevé BTC (15/11/2026 12:12 UTC)
+# Dernier relevé BTC (15/11/2026 12:19 UTC)
 
 Produit automatiquement par `collecte.py`. Clôtures quotidiennes à minuit UTC (1 h à Paris en hiver).
 
@@ -17,7 +17,7 @@ Produit automatiquement par `collecte.py`. Clôtures quotidiennes à minuit UTC 
 
 ## Dérivés et sentiment
 - Financement Kraken : 0,0028 % par 8 h le 2026-11-14, 0,0081 % en moyenne sur 7 jours (positif : les longs paient)
-- Intérêt ouvert sur le contrat Kraken : 2 259 BTC (relevé du 2026-11-15)
+- Intérêt ouvert sur le contrat Kraken : 2 304 BTC (relevé du 2026-11-15)
 - Volatilité implicite (DVOL) : 47,3 le 2026-11-14
 - Options Deribit, rapport puts/calls : 0,76 en positions ouvertes, 2,13 en volume sur 24 h (relevé du 2026-11-15)
 - Échéance d'options la plus chargée : 2026-12-25, 146 458 BTC en positions ouvertes, « max pain » à 67 861 € (75 000 $)
