@@ -1,4 +1,4 @@
-# Dernier relevé BTC (15/11/2026 12:19 UTC)
+# Dernier relevé BTC (15/11/2026 13:02 UTC)
 
 Produit automatiquement par `collecte.py`. Clôtures quotidiennes à minuit UTC (1 h à Paris en hiver).
 
@@ -16,13 +16,30 @@ Produit automatiquement par `collecte.py`. Clôtures quotidiennes à minuit UTC 
 | 200 semaines | 61 394 € (67 852 $) | -5,5 % |
 
 ## Dérivés et sentiment
-- Financement Kraken : 0,0028 % par 8 h le 2026-11-14, 0,0081 % en moyenne sur 7 jours (positif : les longs paient)
-- Intérêt ouvert sur le contrat Kraken : 2 304 BTC (relevé du 2026-11-15)
+- **Financement Kraken en direct** (relevé le 2026-11-15 à 13:02 UTC) : 0,0027 % par 8 h, **positif : les longs paient les shorts** ; prévision pour l'heure suivante : -0,0012 % (négatif : les shorts paient les longs) ; Deribit : 0,0000 %. C'est ce chiffre qui compte pour les conditions éliminatoires.
+- Financement Kraken, moyenne de la journée du 2026-11-14 : 0,0028 % par 8 h (positif : les longs paient les shorts) ; moyenne sur 7 jours : 0,0081 % (positif : les longs paient les shorts)
+- Intérêt ouvert sur le contrat Kraken : 2 270 BTC (relevé du 2026-11-15)
 - Volatilité implicite (DVOL) : 47,3 le 2026-11-14
 - Options Deribit, rapport puts/calls : 0,76 en positions ouvertes, 2,13 en volume sur 24 h (relevé du 2026-11-15)
-- Échéance d'options la plus chargée : 2026-12-25, 146 458 BTC en positions ouvertes, « max pain » à 67 861 € (75 000 $)
+- Échéance d'options la plus chargée : 2026-12-25, 146 409 BTC en positions ouvertes, « max pain » à 67 861 € (75 000 $)
 - Fear & Greed : 10 le 2026-11-15, 28 sept jours plus tôt
 - MVRV (prix divisé par le prix de revient moyen du réseau) : 1,19 le 2026-11-14
+
+## Lecture mécanique (règles fixes de la méthode, sans jugement)
+- **Biais mécanique à la clôture du 2026-11-14 : -5 sur 10** (structure du prix -2 · positionnement +1 · blockchain -1 · macro -2 · actifs risqués -1). Cinq familles sur sept, seuils fixes ; sans avantage démontré au backtest.
+- Sept derniers jours : 11-08 -3, 11-09 +0, 11-10 -2, 11-11 -2, 11-12 -6, 11-13 -5, 11-14 -5
+- Règles mécaniques suivies en papier : **S4 active** (short quand le biais mécanique est ≤ −5). Quand une règle est active, son plan est inscrit d'office dans `papier/plans_regles.csv` (signaux suivis depuis la clôture du 2026-11-15, une position à la fois par règle).
+
+Supports majeurs (définition de la méthode), clôture du 2026-11-14 à 58 016 € (64 119 $) :
+
+| Support | Niveau | Écart de la clôture | État en clôture journalière |
+|---|---|---|---|
+| Moyenne 200 semaines | 61 394 € (67 852 $) | -5,5 % | cassé le 2026-11-14 (1 j), pas repris |
+| Moyenne 200 jours | 66 027 € (72 973 $) | -12,1 % | cassé le 2026-11-12 (3 j), pas repris |
+| Plus bas des 90 jours précédents | 56 670 € (62 631 $) | +2,4 % | tient |
+
+- **Long de retournement : exclu** (support majeur cassé depuis moins de 10 jours sans reprise en clôture (moyenne 200 semaines)).
+- **Condition éliminatoire du short (support, financement, peur) : inactive** (posé sur un support majeur : non ; financement en direct négatif : non ; peur extrême (≤ 20) : oui).
 
 ## Macro (dernières clôtures connues)
 - Taux américain à 10 ans : 5,15 % (2026-11-13)
@@ -79,7 +96,7 @@ Lecture : 100 € d'un actif de bêta 1,5 pèsent comme 150 € de Bitcoin. Un E
 | peur_avidite | historique | ok | 2026-11-15 | 0 j | à jour | (alternative.me) |
 | macro | différée | ok | 2026-11-13 | 2 j | à jour | (Trésor américain, CBOE, Yahoo Finance) |
 | onchain | différée | ok | 2026-11-14 | 1 j | à jour | (Coin Metrics, non disponibles : cap_realisee_usd) |
-| h4 | historique | ok | 2026-11-15 08:00 | 0.01 j | à jour | (Coinbase, heures agrégées) |
+| h4 | historique | ok | 2026-11-15 08:00 | 0.04 j | à jour | (Coinbase, heures agrégées) |
 | financement_deribit | historique | ok | 2026-11-14 | 1 j | à jour | (Deribit) |
 | options | instantanée | ok | 2026-11-15 | 0 j | à jour | (Deribit) |
 | contrat_kraken | instantanée | ok | 2026-11-15 | 0 j | à jour | (Kraken Futures, barème Europe, particuliers) |

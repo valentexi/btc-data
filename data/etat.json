@@ -1,5 +1,5 @@
 {
-  "execution_utc": "2026-11-15T12:19:58+00:00",
+  "execution_utc": "2026-11-15T13:02:26+00:00",
   "sources": {
     "prix": {
       "ok": true,
@@ -79,7 +79,7 @@
       "derniere_date": "2026-11-15 08:00",
       "note": "(Coinbase, heures agrégées)",
       "nature": "historique",
-      "age_jours": 0.01,
+      "age_jours": 0.04,
       "fraicheur": "à jour"
     },
     "financement_deribit": {
