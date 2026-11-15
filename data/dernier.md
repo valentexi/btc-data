@@ -1,25 +1,27 @@
-# Dernier relevé BTC (14/11/2026 19:17 UTC)
+# Dernier relevé BTC (15/11/2026 00:47 UTC)
 
 Produit automatiquement par `collecte.py`. Clôtures quotidiennes à minuit UTC (1 h à Paris en hiver).
 
-## Prix (clôture du 2026-11-13)
-- **Bitcoin : 61 741 € (68 237 $)**, EUR/USD 1,1052 (BCE)
-- Variation : -4,4 % sur 1 jour, -9,9 % sur 7 jours, -16,3 % sur 30 jours
-- 30 derniers jours : plus haut 76 779 € (84 856 $), plus bas 61 125 € (67 555 $)
-- Volatilité réalisée sur 30 jours : 38 % par an
+## Prix (clôture du 2026-11-14)
+- **Bitcoin : 58 016 € (64 119 $)**, EUR/USD 1,1052 (BCE)
+- Variation : -6,0 % sur 1 jour, -15,4 % sur 7 jours, -21,9 % sur 30 jours
+- 30 derniers jours : plus haut 76 779 € (84 856 $), plus bas 57 248 € (63 270 $)
+- Volatilité réalisée sur 30 jours : 43 % par an
 
 ## Moyennes mobiles
 | Moyenne | Niveau | Écart du prix |
 |---|---|---|
-| 50 jours | 72 871 € (80 537 $) | -15,3 % |
-| 200 jours | 66 082 € (73 034 $) | -6,6 % |
-| 200 semaines | 61 427 € (67 890 $) | +0,5 % |
+| 50 jours | 72 510 € (80 138 $) | -20,0 % |
+| 200 jours | 66 027 € (72 973 $) | -12,1 % |
+| 200 semaines | 61 394 € (67 852 $) | -5,5 % |
 
 ## Dérivés et sentiment
-- Financement Kraken : 0,0070 % par 8 h le 2026-11-13, 0,0090 % en moyenne sur 7 jours (positif : les longs paient)
-- Intérêt ouvert sur le contrat Kraken : 2 302 BTC (relevé du 2026-11-14)
-- Volatilité implicite (DVOL) : 39,9 le 2026-11-13
-- Fear & Greed : 13 le 2026-11-14, 25 sept jours plus tôt
+- Financement Kraken : 0,0028 % par 8 h le 2026-11-14, 0,0081 % en moyenne sur 7 jours (positif : les longs paient)
+- Intérêt ouvert sur le contrat Kraken : 2 287 BTC (relevé du 2026-11-15)
+- Volatilité implicite (DVOL) : 47,3 le 2026-11-14
+- Options Deribit, rapport puts/calls : 0,74 en positions ouvertes, 1,97 en volume sur 24 h (relevé du 2026-11-15)
+- Échéance d'options la plus chargée : 2026-12-25, 143 914 BTC en positions ouvertes, « max pain » à 67 861 € (75 000 $)
+- Fear & Greed : 10 le 2026-11-15, 28 sept jours plus tôt
 - MVRV (prix divisé par le prix de revient moyen du réseau) : 1,27 le 2026-11-13
 
 ## Macro (dernières clôtures connues)
@@ -32,16 +34,57 @@ Produit automatiquement par `collecte.py`. Clôtures quotidiennes à minuit UTC 
 - Dollar (DXY) : 103,41 (2026-11-13)
 - Brent : 95,8 $ (2026-11-13)
 
-## État des sources
-| Source | État | Dernière date | Remarque |
-|---|---|---|---|
-| prix | ok | 2026-11-13 | (Coinbase) |
-| eurusd | ok | 2026-11-13 | (BCE) |
-| financement | ok | 2026-11-13 | (Kraken Futures) |
-| derives | ok | 2026-11-14 | (Kraken Futures, Deribit) |
-| dvol | ok | 2026-11-13 | (Deribit) |
-| peur_avidite | ok | 2026-11-14 | (alternative.me) |
-| macro | ok | 2026-11-13 | (Trésor américain, CBOE, Yahoo Finance) |
-| onchain | ok | 2026-11-13 | (Coin Metrics, non disponibles : cap_realisee_usd) |
+## Six dernières bougies de 4 heures terminées (heure de début, UTC ; Paris = UTC + 1 h en hiver)
+| Début (UTC) | Ouverture | Plus haut | Plus bas | Clôture |
+|---|---|---|---|---|
+| 2026-11-14 00:00 | 68 237 $ | 68 380 $ | 66 550 $ | 60 341 € (66 689 $) |
+| 2026-11-14 04:00 | 66 688 $ | 67 401 $ | 66 369 $ | 60 709 € (67 096 $) |
+| 2026-11-14 08:00 | 67 096 $ | 67 463 $ | 66 901 $ | 60 817 € (67 215 $) |
+| 2026-11-14 12:00 | 67 215 $ | 67 265 $ | 65 011 $ | 59 436 € (65 689 $) |
+| 2026-11-14 16:00 | 65 689 $ | 66 151 $ | 64 978 $ | 59 423 € (65 675 $) |
+| 2026-11-14 20:00 | 65 675 $ | 65 832 $ | 63 270 $ | 58 016 € (64 119 $) |
 
-Non collecté automatiquement : flux des ETF Bitcoin et carte des liquidations (pas de source gratuite fiable).
+## Contrat perpétuel Kraken PF_XBTUSD (barème lu le 2026-11-15)
+- Marge initiale 10,0 %, marge de maintenance 5,0 %, levier maximum x10.
+- Frais : 0,050 % par ordre au marché, 0,020 % par ordre limite (premier palier).
+- Liquidation estimée en marge isolée : long = entrée × (1 − 1/levier) ÷ 0,950 ; short = entrée × (1 + 1/levier) ÷ 1,050. Toujours comparer au prix de liquidation affiché par Kraken avant de valider un ordre.
+- Kraken applique la marge **croisée par défaut** : choisir « isolée » avant d'ouvrir une position.
+
+## Liens avec le Bitcoin (bêta : variation de l'actif quand le BTC bouge de 1 %)
+| Actif | Bêta 90 jours | Corrélation 90 jours | Part expliquée par le BTC | Bêta 1 an | Bêta 1 an, jours de baisse du BTC |
+|---|---|---|---|---|---|
+| Strategy (MSTR) | 1,75 | 0,82 | 67 % | 1,53 | 1,20 |
+| IREN | 0,92 | 0,38 | 15 % | 0,98 | 1,03 |
+| CleanSpark (CLSK) | 0,85 | 0,37 | 14 % | 1,21 | 1,30 |
+| Solana (SOL) | 1,20 | 0,86 | 73 % | 1,22 | 1,15 |
+| Microsoft | 0,22 | 0,34 | 11 % | 0,23 | 0,43 |
+| Meta | 0,29 | 0,27 | 7 % | 0,17 | 0,14 |
+| Amazon | 0,24 | 0,32 | 10 % | 0,18 | 0,34 |
+| Monday.com | 0,29 | 0,18 | 3 % | 0,24 | 0,28 |
+| Nasdaq-100 | 0,26 | 0,48 | 23 % | 0,22 | 0,23 |
+| S&P 500 | 0,16 | 0,48 | 23 % | 0,15 | 0,18 |
+
+Lecture : 100 € d'un actif de bêta 1,5 pèsent comme 150 € de Bitcoin. Un ETF Nasdaq à levier x2 pèse environ deux fois le bêta du Nasdaq-100. La « part expliquée » dit quelle fraction des mouvements de l'actif vient du BTC : le reste n'est pas couvert par un short BTC.
+
+## État et fraîcheur des sources
+**Relevé complet : toutes les sources sont à jour.**
+
+| Source | Nature | Lancement | Dernière donnée | Âge | Fraîcheur | Remarque |
+|---|---|---|---|---|---|---|
+| prix | historique | ok | 2026-11-14 | 1 j | à jour | (Coinbase) |
+| eurusd | différée | ok | 2026-11-13 | 2 j | à jour | (BCE) |
+| financement | historique | ok | 2026-11-14 | 1 j | à jour | (Kraken Futures) |
+| derives | instantanée | ok | 2026-11-15 | 0 j | à jour | (Kraken Futures, Deribit) |
+| dvol | historique | ok | 2026-11-14 | 1 j | à jour | (Deribit) |
+| peur_avidite | historique | ok | 2026-11-15 | 0 j | à jour | (alternative.me) |
+| macro | différée | ok | 2026-11-13 | 2 j | à jour | (Trésor américain, CBOE, Yahoo Finance) |
+| onchain | différée | ok | 2026-11-14 | 1 j | à jour | (Coin Metrics, non disponibles : cap_realisee_usd) |
+| h4 | historique | ok | 2026-11-14 20:00 | 0.03 j | à jour | (Coinbase, heures agrégées) |
+| financement_deribit | historique | ok | 2026-11-14 | 1 j | à jour | (Deribit) |
+| options | instantanée | ok | 2026-11-15 | 0 j | à jour | (Deribit) |
+| contrat_kraken | instantanée | ok | 2026-11-15 | 0 j | à jour | (Kraken Futures, barème Europe, particuliers) |
+| actifs | différée | ok | 2026-11-13 | 2 j | à jour | (Yahoo Finance) |
+
+Non collecté : flux des ETF Bitcoin et liquidations (aucune source gratuite fiable). À relever par recherche web ; à défaut, la famille concernée est notée sur ce qui reste, sans jamais dépasser 0 dans le sens du trade envisagé.
+
+Voir aussi : `rapport/backtest.md` (ce que les règles ont donné sur le passé) et `rapport/papier.md` (suivi des plans en mode papier).

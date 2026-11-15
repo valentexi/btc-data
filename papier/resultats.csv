@@ -1,0 +1,7 @@
+id,sens,etat,t_entree,prix_entree,t_sortie,motif,R,R_fin,eur,detail,ref_long,ref_short,cree_utc,source,note
+P001,long,clos,2026-11-13 12:00,68500,2026-11-14 12:00,stop,-1,-1.0039,-2.5,écart à l'entrée prévue +0.00 %,-1,1.5238,2026-11-13T11:15,journal (signaux 5 et 6),Long de retournement repris du journal ; plan écrit avant le dénouement
+P002,long,expiré sans entrée,,,,,,,,,-1,1.5238,2026-11-13T18:00,journal (signaux 7 et 8),Annulé le 14 nov. par l'analyse suivante
+P003,short,expiré sans entrée,,,,,,,,,,,2026-11-14T14:25,journal (signal 9 variante),Remplacé par le signal 10 avant toute clôture journalière
+P004,short,expiré sans entrée,,,,,,,,,,,2026-11-14T16:53,journal (signal 10 plan A),Remplacé par le signal 11 (stop jugé trop proche)
+P005,short,en attente du déclencheur,,,,,,,,,,,2026-11-14T16:53,journal (signaux 10 et 11 plan B),Cassure en clôture journalière
+P006,short,en attente du déclencheur,,,,,,,,,,,2026-11-14T19:20,journal (signal 11 plan A'),Rebond raté sous la moyenne 200 semaines

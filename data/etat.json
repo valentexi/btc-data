@@ -1,53 +1,122 @@
 {
-  "execution_utc": "2026-11-14T19:17:31+00:00",
+  "execution_utc": "2026-11-15T00:47:12+00:00",
   "sources": {
     "prix": {
       "ok": true,
-      "lignes": 3604,
-      "derniere_date": "2026-11-13",
-      "note": "(Coinbase)"
+      "lignes": 3605,
+      "derniere_date": "2026-11-14",
+      "note": "(Coinbase)",
+      "nature": "historique",
+      "age_jours": 1,
+      "fraicheur": "à jour"
     },
     "eurusd": {
       "ok": true,
       "lignes": 2526,
       "derniere_date": "2026-11-13",
-      "note": "(BCE)"
+      "note": "(BCE)",
+      "nature": "différée",
+      "age_jours": 2,
+      "fraicheur": "à jour"
     },
     "financement": {
       "ok": true,
-      "lignes": 367,
-      "derniere_date": "2026-11-13",
-      "note": "(Kraken Futures)"
+      "lignes": 368,
+      "derniere_date": "2026-11-14",
+      "note": "(Kraken Futures)",
+      "nature": "historique",
+      "age_jours": 1,
+      "fraicheur": "à jour"
     },
     "derives": {
       "ok": true,
-      "lignes": 1,
-      "derniere_date": "2026-11-14",
-      "note": "(Kraken Futures, Deribit)"
+      "lignes": 2,
+      "derniere_date": "2026-11-15",
+      "note": "(Kraken Futures, Deribit)",
+      "nature": "instantanée",
+      "age_jours": 0,
+      "fraicheur": "à jour"
     },
     "dvol": {
       "ok": true,
-      "lignes": 2061,
-      "derniere_date": "2026-11-13",
-      "note": "(Deribit)"
+      "lignes": 2062,
+      "derniere_date": "2026-11-14",
+      "note": "(Deribit)",
+      "nature": "historique",
+      "age_jours": 1,
+      "fraicheur": "à jour"
     },
     "peur_avidite": {
       "ok": true,
-      "lignes": 3205,
-      "derniere_date": "2026-11-14",
-      "note": "(alternative.me)"
+      "lignes": 3206,
+      "derniere_date": "2026-11-15",
+      "note": "(alternative.me)",
+      "nature": "historique",
+      "age_jours": 0,
+      "fraicheur": "à jour"
     },
     "macro": {
       "ok": true,
       "lignes": 2517,
       "derniere_date": "2026-11-13",
-      "note": "(Trésor américain, CBOE, Yahoo Finance)"
+      "note": "(Trésor américain, CBOE, Yahoo Finance)",
+      "nature": "différée",
+      "age_jours": 2,
+      "fraicheur": "à jour"
     },
     "onchain": {
       "ok": true,
-      "lignes": 3604,
+      "lignes": 3605,
+      "derniere_date": "2026-11-14",
+      "note": "(Coin Metrics, non disponibles : cap_realisee_usd)",
+      "nature": "différée",
+      "age_jours": 1,
+      "fraicheur": "à jour"
+    },
+    "h4": {
+      "ok": true,
+      "lignes": 21625,
+      "derniere_date": "2026-11-14 20:00",
+      "note": "(Coinbase, heures agrégées)",
+      "nature": "historique",
+      "age_jours": 0.03,
+      "fraicheur": "à jour"
+    },
+    "financement_deribit": {
+      "ok": true,
+      "lignes": 2755,
+      "derniere_date": "2026-11-14",
+      "note": "(Deribit)",
+      "nature": "historique",
+      "age_jours": 1,
+      "fraicheur": "à jour"
+    },
+    "options": {
+      "ok": true,
+      "lignes": 2,
+      "derniere_date": "2026-11-15",
+      "note": "(Deribit)",
+      "nature": "instantanée",
+      "age_jours": 0,
+      "fraicheur": "à jour"
+    },
+    "contrat_kraken": {
+      "ok": true,
+      "lignes": 1,
+      "derniere_date": "2026-11-15",
+      "note": "(Kraken Futures, barème Europe, particuliers)",
+      "nature": "instantanée",
+      "age_jours": 0,
+      "fraicheur": "à jour"
+    },
+    "actifs": {
+      "ok": true,
+      "lignes": 896,
       "derniere_date": "2026-11-13",
-      "note": "(Coin Metrics, non disponibles : cap_realisee_usd)"
+      "note": "(Yahoo Finance)",
+      "nature": "différée",
+      "age_jours": 2,
+      "fraicheur": "à jour"
     }
   }
 }
