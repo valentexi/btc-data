@@ -20,6 +20,7 @@ Fichiers produits dans data/ :
   onchain.csv             données de la blockchain (Coin Metrics, offre gratuite)
   h4/btc_h4_AAAA-MM.csv   bougies de 4 heures (Coinbase, heures agrégées), un fichier par mois
   h1_recent.csv           bougies d'une heure des 75 derniers jours (suivi papier)
+  h1_kraken.csv           bougies d'une heure du contrat perpétuel Kraken PF_XBTUSD, 75 jours (suivi papier)
   financement_deribit.csv financement historique réel du contrat perpétuel Deribit, depuis 2019
   kraken_contrat.csv      paramètres réels du contrat Kraken (marges, levier maximum, frais)
   actifs.csv, betas.csv   cours d'un panier d'actifs liés au Bitcoin et leurs bêtas
@@ -693,6 +694,47 @@ def src_actifs():
     return fusionner("actifs.csv", tout), note
 
 
+def src_h1_kraken():
+    """Bougies d'une heure du contrat perpétuel Kraken PF_XBTUSD (prix échangés).
+
+    Le suivi papier rejoue dessus les plans créés depuis le 15 nov. 2026 à 19 h UTC : c'est le prix auquel un
+    ordre serait réellement exécuté, pas le prix au comptant de Coinbase (15 à 20 $ d'écart constatés)."""
+    fin = maintenant()
+    ancien = lire("h1_kraken.csv")
+    if ancien is None:
+        d0 = fin - dt.timedelta(days=60)
+    else:
+        d0 = dt.datetime.fromisoformat(str(ancien["date"].max()).replace(" ", "T") + ":00+00:00") - dt.timedelta(days=2)
+    bougies, t0 = [], int(d0.timestamp())
+    for _ in range(12):                               # l'API rend un nombre limité de bougies par appel
+        r = get("https://futures.kraken.com/api/charts/v1/trade/PF_XBTUSD/1h",
+                {"from": t0, "to": int(fin.timestamp())}, essais=3)
+        try:
+            j = r.json()
+            lot = j["candles"]
+        except Exception as e:  # noqa: BLE001 - format inattendu : le dire avec un extrait de la réponse
+            raise RuntimeError(f"réponse inattendue ({type(e).__name__}) : {r.text[:160]!r}") from e
+        bougies += lot
+        if not j.get("more_candles") or not lot:
+            break
+        t0 = int(lot[-1]["time"]) // 1000 + 3600
+        time.sleep(0.12)
+    if not bougies:
+        raise RuntimeError("aucune bougie renvoyée")
+    h = pd.DataFrame([{"t": int(x["time"]) // 1000, "ouverture": float(x["open"]), "haut": float(x["high"]),
+                       "bas": float(x["low"]), "cloture": float(x["close"])} for x in bougies])
+    h = h.drop_duplicates(subset="t").sort_values("t")
+    h = h[h["t"] + 3600 <= fin.timestamp()]           # bougies terminées seulement
+    if h.empty:
+        raise RuntimeError("aucune bougie terminée")
+    h["date"] = pd.to_datetime(h["t"], unit="s", utc=True).dt.strftime("%Y-%m-%d %H:%M")
+    tout = fusionner("h1_kraken.csv", h[["date", "ouverture", "haut", "bas", "cloture"]])
+    limite = (fin - dt.timedelta(days=75)).strftime("%Y-%m-%d %H:%M")
+    tout = tout[tout["date"] >= limite].reset_index(drop=True)
+    tout.to_csv(chemin("h1_kraken.csv"), index=False, float_format="%.10g")
+    return tout, "(Kraken Futures, contrat PF_XBTUSD)"
+
+
 FICHIERS = {
     "prix": "btc_jour.csv",
     "eurusd": "eurusd.csv",
@@ -703,6 +745,7 @@ FICHIERS = {
     "macro": "macro.csv",
     "onchain": "onchain.csv",
     "h4": "h4",
+    "h1_kraken": "h1_kraken.csv",
     "financement_deribit": "financement_deribit.csv",
     "options": "derives_instantane.csv",
     "contrat_kraken": "kraken_contrat.csv",
@@ -718,6 +761,7 @@ SOURCES = {
     "macro": src_macro,
     "onchain": src_onchain,
     "h4": src_h4,
+    "h1_kraken": src_h1_kraken,
     "financement_deribit": src_financement_deribit,
     "options": src_options,
     "contrat_kraken": src_contrat_kraken,
@@ -730,7 +774,7 @@ NATURE = {
     "prix": ("historique", 1), "eurusd": ("différée", 4), "financement": ("historique", 1),
     "derives": ("instantanée", 0), "dvol": ("historique", 1), "peur_avidite": ("historique", 1),
     "macro": ("différée", 4), "onchain": ("différée", 2), "h4": ("historique", 0),
-    "financement_deribit": ("historique", 1), "options": ("instantanée", 0),
+    "h1_kraken": ("historique", 0), "financement_deribit": ("historique", 1), "options": ("instantanée", 0),
     "contrat_kraken": ("instantanée", 0), "actifs": ("différée", 4),
 }
 
@@ -745,8 +789,9 @@ def fraicheur() -> int:
         d = e.get("derniere_date")
         if not d:
             e["age_jours"], e["fraicheur"] = None, "absente"
-        elif nom == "h4":   # jugé en heures : la dernière bougie terminée doit dater de moins de 5 heures
-            fin_bougie = dt.datetime.fromisoformat(str(d).replace(" ", "T") + ":00+00:00") + dt.timedelta(hours=4)
+        elif nom in ("h4", "h1_kraken"):   # jugé en heures : la dernière bougie terminée doit dater de moins de 5 heures
+            fin_bougie = (dt.datetime.fromisoformat(str(d).replace(" ", "T") + ":00+00:00")
+                          + dt.timedelta(hours=4 if nom == "h4" else 1))
             heures = (maintenant() - fin_bougie).total_seconds() / 3600
             e["age_jours"] = round(heures / 24, 2)
             e["fraicheur"] = "à jour" if heures <= 5 else ("en retard" if heures <= 24 else "périmée")

@@ -18,6 +18,8 @@ on:
       - "*.py"
       - "papier/plans.csv"
       - "papier/annulations.csv"
+      - "papier/scenarios.csv"
+      - "papier/configurations.csv"
       - "requirements.txt"
       - ".github/workflows/collecte.yml"
 

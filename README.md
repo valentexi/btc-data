@@ -60,6 +60,10 @@ Deux registres de plans, rejoués heure par heure par `papier.py` (résultat net
 | `papier/annulations.csv` | Annulations (`id,annule_utc,motif`), jamais rétroactives |
 | `papier/registre.csv` | Heure de première apparition et empreinte de chaque ligne (tenu par le robot) |
 | `papier/alertes.csv` | Alertes déjà envoyées |
+| `papier/scenarios.csv` | Prévisions à 7 jours de chaque analyse (trois probabilités, deux seuils de prix), confrontées au prix à l'échéance : justesse des probabilités dans `rapport/papier.md` |
+| `papier/configurations.csv` | Facultatif : code de configuration du backtest d'un plan (`id,configuration`), pour le tableau par configuration |
+
+Les plans créés depuis le 15 nov. 2026 à 19 h UTC sont rejoués sur les bougies d'une heure du **contrat perpétuel Kraken** (`data/h1_kraken.csv`) ; les plans antérieurs restent sur le prix au comptant de Coinbase.
 
 Règles d'intégrité :
 - une ligne enregistrée ne change plus ; une modification est signalée (rapport et alerte) et le plan sort du critère ;

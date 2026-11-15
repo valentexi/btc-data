@@ -210,6 +210,44 @@ def test_papier():
     verifier("papier : référence non dénouée = NaN", papier.reference(tard, B, 1) != papier.reference(tard, B, 1))
 
 
+def test_scenarios_et_bougies():
+    # Choix des bougies : fixé par la date de création du plan
+    def faux(nom):
+        return {"t": np.array(["2026-11-01T00:00"], dtype="datetime64[s]"), "nom": nom}
+    b1, b4, bk = faux("h1"), faux("h4"), faux("kraken")
+    choix = lambda cree, k=bk: papier.choisir_bougies({"cree_utc": cree}, b1, b4, k)  # noqa: E731
+    verifier("bougies : contrat Kraken à partir de la date de bascule seulement",
+             choix("2026-11-15T18:59")[0]["nom"] == "h1" and choix("2026-11-15T18:59")[1] == "Coinbase"
+             and choix("2026-11-15T19:00")[0]["nom"] == "kraken" and choix("2026-11-15T19:00")[1] == "contrat Kraken"
+             and choix("2026-11-16T00:00", None)[0]["nom"] == "h1" and choix("2026-10-01T00:00")[0]["nom"] == "h4")
+    verifier("configuration : lue dans la note, sinon dans la table",
+             papier.configuration("P7", "Rebond raté ; configuration D-S au backtest : pas d avantage", {}) == "D-S"
+             and papier.configuration("P8", "Cassure ; soumis à un financement", {}) == ""
+             and papier.configuration("P8", "Cassure", {"P8": "C-S"}) == "C-S"
+             and papier.configuration("P9", "config B-S-mm200", {}) == "B-S-mm200")
+    # Scénario : jugé sur la clôture de la dernière bougie de 4 heures terminée à l'échéance
+    B = bougies([(100, 101, 99, 100)] * 5 + [(100, 101, 94, 95), (95, 120, 95, 118), (118, 119, 117, 118)])
+    sc = {"id": "S", "cree_utc": "2024-01-01T02:00", "horizon_j": "1", "seuil_bas": "100", "seuil_haut": "110",
+          "p_baissier": "50", "p_neutre": "30", "p_haussier": "20"}
+    tot = pd.Timestamp("2024-01-01T03:00", tz="UTC")
+    r = papier.evaluer_scenario(sc, B, tot)
+    verifier("scénario : issue, probabilité donnée et score de Brier", r["etat"] == "résolu" and r["issue"] == "baissier"
+             and proche(r["prix"], 95) and proche(r["p_issue"], 0.5) and proche(r["brier"], 0.38) and r["compte"] == "oui",
+             str(r))
+    r = papier.evaluer_scenario(sc, B, pd.Timestamp("2024-01-01T09:00", tz="UTC"))
+    verifier("scénario : enregistré trop tard, non compté", r["etat"] == "résolu" and r["compte"].startswith("non"))
+    r = papier.evaluer_scenario({**sc, "horizon_j": "2"}, B, tot)
+    verifier("scénario : en cours tant que l'échéance n'est pas couverte", r["etat"] == "en cours" and np.isnan(r["brier"]))
+    r = papier.evaluer_scenario({**sc, "p_haussier": "10"}, B, tot)
+    verifier("scénario : total différent de 100 % refusé", r["etat"].startswith("ligne illisible"))
+    r = papier.evaluer_scenario({**sc, "cree_utc": "2024-01-01T08:00", "p_baissier": "0.2", "p_neutre": "0.3",
+                                 "p_haussier": "0.5"}, B, pd.Timestamp("2024-01-01T08:30", tz="UTC"))
+    verifier("scénario : haussier, probabilités en fractions acceptées", r["etat"] == "résolu" and r["issue"] == "haussier"
+             and proche(r["p_issue"], 0.5), str(r))
+    S = [{"cree": pd.Timestamp(f"2024-01-{j:02d}", tz="UTC"), "echeance": f"2024-01-{j + 7:02d} 00:00"} for j in (1, 3, 8, 20)]
+    verifier("scénarios : prévisions indépendantes comptées sans recouvrement", papier.independantes(S) == 3)
+
+
 def test_papier_v3():
     import alertes
     import regles
@@ -330,6 +368,7 @@ def historique(jours=1750, graine=7):
 H1, JOURS = historique()
 DATES = [dt.date.fromisoformat(d) for d in JOURS["jour"]]
 AUJ = dt.datetime.now(dt.timezone.utc).date()
+KRAKEN_ECART = 1.0005      # le contrat Kraken cote un peu différemment du comptant : l'écart rend les deux sources distinguables
 
 
 def ts(d: dt.date) -> int:
@@ -393,6 +432,13 @@ def faux_get(url, params=None, **_):
     if url.endswith("/feeschedules"):
         return Reponse({"feeSchedules": [{"uid": "u1", "tiers": [{"makerFee": 0.02, "takerFee": 0.05, "usdVolume": 0},
                                                                   {"makerFee": 0.015, "takerFee": 0.04, "usdVolume": 1e5}]}]})
+    if "charts/v1" in url:   # contrat Kraken : temps en millisecondes, prix en texte, 1000 bougies au plus par appel
+        x = H1[(H1["ts"] >= params["from"]) & (H1["ts"] <= params["to"])]
+        lot = x.iloc[:1000]
+        return Reponse({"candles": [{"time": int(a) * 1000, "open": f"{o * KRAKEN_ECART:.4f}", "high": f"{h * KRAKEN_ECART:.4f}",
+                                     "low": f"{l * KRAKEN_ECART:.4f}", "close": f"{c * KRAKEN_ECART:.4f}", "volume": "12.5"}
+                                    for a, o, h, l, c in zip(lot["ts"], lot["o"], lot["h"], lot["l"], lot["c"])],
+                        "more_candles": len(x) > 1000})
     if "tickers/PF_XBTUSD" in url:
         return Reponse({"result": "success", "ticker": {
             "symbol": "PF_XBTUSD", "markPrice": 71410.18, "openInterest": 2568.4497, "vol24h": 6303.05,
@@ -460,8 +506,18 @@ def test_collecte():
     collecte.time.sleep = lambda *_: None
     code = collecte.main()
     e = etat()
-    verifier("collecte : code 0 et 13 sources ok", code == 0 and len(e) == 13 and all(x["ok"] for x in e.values()),
+    verifier("collecte : code 0 et 14 sources ok", code == 0 and len(e) == 14 and all(x["ok"] for x in e.values()),
              str({k: v["note"] for k, v in e.items() if not v["ok"]}))
+    hk = outils.lire("h1_kraken.csv")
+    der = H1.iloc[-1]
+    verifier("contrat Kraken : 60 jours d'heures, pagination, dernière heure terminée",
+             hk is not None and 59 * 24 <= len(hk) <= 60 * 24 + 1 and hk["date"].is_unique
+             and hk["date"].iloc[-1] == der["t"].strftime("%Y-%m-%d %H:%M")
+             and proche(hk["cloture"].iloc[-1], der["c"] * KRAKEN_ECART, 1e-3)
+             and proche(hk["bas"].iloc[-1], der["l"] * KRAKEN_ECART, 1e-3), str(None if hk is None else len(hk)))
+    n_hk = len(hk)
+    collecte.main()
+    verifier("contrat Kraken : relance sans doublon", len(outils.lire("h1_kraken.csv")) == n_hk)
 
     p = outils.lire("btc_jour.csv")
     verifier("prix : jours complets, bougie du jour écartée", len(p) == len(DATES) and p["date"].max() == DATES[-1].isoformat())
@@ -704,6 +760,32 @@ def test_backtest():
     regles.DEBUT_REGLES = debut0
     for r, r0 in zip(regles.REGLES_PAPIER, seuil0):
         r["seuil"] = r0["seuil"]
+    # Scénarios et bougies du contrat Kraken, de bout en bout
+    vieux, recent = h4.iloc[-60], h4.iloc[-3]
+    with open(papier.SCENARIOS, "w", encoding="utf-8") as f_:
+        f_.write(",".join(papier.COLONNES_SCENARIOS) + "\n")
+        f_.write(f"SC1,{vieux['date'].replace(' ', 'T')},test,7,{vieux['cloture'] * 0.5},{vieux['cloture'] * 2},10,80,10,ancien\n")
+        f_.write(f"SC2,{recent['date'].replace(' ', 'T')},test,7,{recent['cloture'] * 0.9},{recent['cloture'] * 1.1},40,40,20,récent\n")
+    with open(papier.CONFIGURATIONS, "w", encoding="utf-8") as f_:
+        f_.write("id,configuration\nP2,C-S\n")
+    debut_k = papier.DEBUT_KRAKEN
+    papier.DEBUT_KRAKEN = (pd.Timestamp(h4.iloc[-10]["date"])).strftime("%Y-%m-%dT%H:%M")   # P2 après, P1 avant
+    try:
+        papier.main()
+    finally:
+        papier.DEBUT_KRAKEN = debut_k
+    txt3 = open(os.path.join(outils.RAPPORT, "papier.md"), encoding="utf-8").read()
+    res3 = pd.read_csv(papier.RESULTATS, dtype=str).fillna("").set_index("id")
+    reg3 = pd.read_csv(papier.REGISTRE, dtype=str)
+    l1 = [x for x in txt3.split("\n") if x.startswith("| SC1 ")]
+    l2 = [x for x in txt3.split("\n") if x.startswith("| SC2 ")]
+    verifier("scénarios : section, résolu et en cours, registre", "## Scénarios à 7 jours" in txt3 and len(l1) == 1
+             and "résolu" in l1[0] and "neutre" in l1[0] and "enregistré trop tard" in l1[0] and len(l2) == 1
+             and "en cours" in l2[0] and {"scenario:SC1", "scenario:SC2"} <= set(reg3["cle"]), str(l1 + l2))
+    verifier("papier : bougies du contrat Kraken pour les plans récents, Coinbase pour les anciens",
+             res3.loc["P2", "bougies"] == "contrat Kraken" and res3.loc["P1", "bougies"] == "Coinbase"
+             and res3.loc["P2", "configuration"] == "C-S" and "contrat perpétuel Kraken" in txt3
+             and "## Par configuration et par jour d'entrée" in txt3, str(res3[["bougies", "configuration"]].to_dict()))
     return texte, txt
 
 
@@ -712,6 +794,7 @@ if __name__ == "__main__":
     test_stats()
     test_papier()
     test_papier_v3()
+    test_scenarios_et_bougies()
     test_collecte()
     rapport, pap = test_backtest()
     print()
