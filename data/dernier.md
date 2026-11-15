@@ -1,4 +1,4 @@
-# Dernier relevé BTC (15/11/2026 18:14 UTC)
+# Dernier relevé BTC (15/11/2026 18:44 UTC)
 
 Produit automatiquement par `collecte.py`. Clôtures quotidiennes à minuit UTC (1 h à Paris en hiver).
 
@@ -16,12 +16,12 @@ Produit automatiquement par `collecte.py`. Clôtures quotidiennes à minuit UTC 
 | 200 semaines | 61 394 € (67 852 $) | -5,5 % |
 
 ## Dérivés et sentiment
-- **Financement Kraken en direct** (relevé le 2026-11-15 à 18:14 UTC) : -0,0015 % par 8 h, **négatif : les shorts paient les longs** ; prévision pour l'heure suivante : 0,0018 % (positif : les longs paient les shorts) ; Deribit : 0,0000 %. C'est ce chiffre qui compte pour les conditions éliminatoires.
+- **Financement Kraken en direct** (relevé le 2026-11-15 à 18:44 UTC) : -0,0015 % par 8 h, **négatif : les shorts paient les longs** ; prévision pour l'heure suivante : 0,0048 % (positif : les longs paient les shorts) ; Deribit : 0,0000 %. C'est ce chiffre qui compte pour les conditions éliminatoires.
 - Financement Kraken, moyenne de la journée du 2026-11-14 : 0,0028 % par 8 h (positif : les longs paient les shorts) ; moyenne sur 7 jours : 0,0081 % (positif : les longs paient les shorts)
-- Intérêt ouvert sur le contrat Kraken : 2 295 BTC (relevé du 2026-11-15)
+- Intérêt ouvert sur le contrat Kraken : 2 290 BTC (relevé du 2026-11-15)
 - Volatilité implicite (DVOL) : 47,3 le 2026-11-14
-- Options Deribit, rapport puts/calls : 0,76 en positions ouvertes, 1,80 en volume sur 24 h (relevé du 2026-11-15)
-- Échéance d'options la plus chargée : 2026-12-25, 146 305 BTC en positions ouvertes, « max pain » à 67 861 € (75 000 $)
+- Options Deribit, rapport puts/calls : 0,76 en positions ouvertes, 1,79 en volume sur 24 h (relevé du 2026-11-15)
+- Échéance d'options la plus chargée : 2026-12-25, 146 280 BTC en positions ouvertes, « max pain » à 67 861 € (75 000 $)
 - Fear & Greed : 10 le 2026-11-15, 28 sept jours plus tôt
 - MVRV (prix divisé par le prix de revient moyen du réseau) : 1,19 le 2026-11-14
 
@@ -96,7 +96,8 @@ Lecture : 100 € d'un actif de bêta 1,5 pèsent comme 150 € de Bitcoin. Un E
 | peur_avidite | historique | ok | 2026-11-15 | 0 j | à jour | (alternative.me) |
 | macro | différée | ok | 2026-11-13 | 2 j | à jour | (Trésor américain, CBOE, Yahoo Finance) |
 | onchain | différée | ok | 2026-11-14 | 1 j | à jour | (Coin Metrics, non disponibles : cap_realisee_usd) |
-| h4 | historique | ok | 2026-11-15 12:00 | 0.09 j | à jour | (Coinbase, heures agrégées) |
+| h4 | historique | ok | 2026-11-15 12:00 | 0.11 j | à jour | (Coinbase, heures agrégées) |
+| h1_kraken | historique | ok | 2026-11-15 17:00 | 0.03 j | à jour | (Kraken Futures, contrat PF_XBTUSD) |
 | financement_deribit | historique | ok | 2026-11-14 | 1 j | à jour | (Deribit) |
 | options | instantanée | ok | 2026-11-15 | 0 j | à jour | (Deribit) |
 | contrat_kraken | instantanée | ok | 2026-11-15 | 0 j | à jour | (Kraken Futures, barème Europe, particuliers) |
