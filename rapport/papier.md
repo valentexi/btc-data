@@ -1,9 +1,9 @@
-# Mode papier (15/11/2026 00:47 UTC)
+# Mode papier (15/11/2026 00:50 UTC)
 
 Suivi automatique des plans des analyses, sans argent réel. Prix d'entrée théorique : ouverture de la bougie de 4 heures qui suit le déclencheur. Résultats nets de frais et de glissement. Dernière bougie connue : 2026-11-14 20:00 UTC.
 
 ## Bilan
-- Plans enregistrés : 6. Entrés : 1. Clos : 1. Ouverts : 0. En attente : 2. Expirés sans entrée : 3.
+- Plans enregistrés : 8. Entrés : 1. Clos : 1. Ouverts : 0. En attente : 4. Expirés sans entrée : 3.
 - Plans clos : 0 % gagnants, -1,00 R par trade, -1,00 R au total, soit -2,50 €.
 - Référence « long systématique à chaque plan » : -1,00 R sur 2 dénoués. Référence « short systématique » : +1,52 R sur 2.
 - Référence « ne rien faire » : 0 R.
@@ -17,6 +17,8 @@ Suivi automatique des plans des analyses, sans argent réel. Prix d'entrée thé
 ## Plans
 | Plan | Créé (UTC) | Sens | État | Entrée | Sortie | Motif | Résultat | En euros | Réf. long | Réf. short |
 |---|---|---|---|---|---|---|---|---|---|---|
+| P008 | 2026-11-15T00:08 | short | en attente du déclencheur |  |  |  | n.d. |  | n.d. | n.d. |
+| P007 | 2026-11-15T00:08 | short | en attente du déclencheur |  |  |  | n.d. |  | n.d. | n.d. |
 | P006 | 2026-11-14T19:20 | short | en attente du déclencheur |  |  |  | n.d. |  | n.d. | n.d. |
 | P005 | 2026-11-14T16:53 | short | en attente du déclencheur |  |  |  | n.d. |  | n.d. | n.d. |
 | P004 | 2026-11-14T16:53 | short | expiré sans entrée |  |  |  | n.d. |  | n.d. | n.d. |
