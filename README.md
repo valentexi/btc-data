@@ -19,6 +19,7 @@ GitHub Actions lance les scripts tout seul :
 | `rapport/backtest.md` | Ce que les règles et les configurations ont donné sur le passé, avec intervalles de confiance |
 | `rapport/papier.md` | Suivi des plans en mode papier, comparé à des stratégies de référence |
 | `data/etat.json` | État et fraîcheur de chaque source au dernier lancement |
+| Onglet **Issues** | Alertes : plans déclenchés, sorties, anomalies du registre |
 
 ## Données collectées
 | Fichier | Source | Nature |
@@ -27,6 +28,7 @@ GitHub Actions lance les scripts tout seul :
 | `h4/btc_h4_AAAA-MM.csv` | Coinbase, heures agrégées (secours : Kraken) | Bougies de 4 heures depuis 2017 |
 | `eurusd.csv` | Banque centrale européenne | Taux de référence, différé |
 | `financement_kraken.csv` | Kraken Futures | Financement réel du contrat perpétuel, un an glissant puis cumulé |
+| `financement_kraken_h.csv` | Kraken Futures | Financement heure par heure, 120 jours (conditions des plans) |
 | `financement_deribit.csv` | Deribit | Financement réel du contrat perpétuel depuis 2019 |
 | `derives_instantane.csv` | Kraken Futures, Deribit | Relevé instantané : intérêt ouvert, financement, options (puts/calls, échéance principale) |
 | `kraken_contrat.csv` | Kraken Futures | Marges, levier maximum et frais réels du contrat PF_XBTUSD |
@@ -48,15 +50,39 @@ Non collecté : flux des ETF Bitcoin et liquidations (aucune source gratuite fia
 - Un backtest ne valide rien : au mieux, il désigne un candidat à confirmer en mode papier.
 
 ## Mode papier
-`papier/plans.csv` contient les plans, écrits avant que le marché ne tranche (format décrit en tête de `papier.py`).
-`papier.py` rejoue les bougies de 4 heures et calcule le résultat net de chaque plan.
-Critère de passage en réel affiché dans `rapport/papier.md` : 30 plans clos, résultat positif avec un intervalle
-à 95 % entièrement positif, et mieux que les références.
+Deux registres de plans, rejoués heure par heure par `papier.py` (résultat net de frais et de glissement) :
+
+| Fichier | Contenu |
+|---|---|
+| `papier/plans.csv` | Plans des analyses de Claude (format en tête de `papier.py`) |
+| `papier/plans_regles.csv` | Plans des règles mécaniques S4 (short si biais ≤ −5) et L7 (long si biais ≥ +5), inscrits d'office par le robot : l'étalon que le jugement de Claude doit battre |
+| `papier/annulations.csv` | Annulations (`id,annule_utc,motif`), jamais rétroactives |
+| `papier/registre.csv` | Heure de première apparition et empreinte de chaque ligne (tenu par le robot) |
+| `papier/alertes.csv` | Alertes déjà envoyées |
+
+Règles d'intégrité :
+- une ligne enregistrée ne change plus ; une modification est signalée (rapport et alerte) et le plan sort du critère ;
+- un plan de Claude ne compte au critère que s'il a été enregistré avant son entrée ;
+- pour remplacer un plan : une annulation, puis un nouveau plan.
+
+Critère de passage en réel (`rapport/papier.md`) : bilans à 30, 60 et 100 plans comptés clos, puis tous les 50 ;
+un bilan est favorable si l'intervalle à 95 % (tirage par épisodes) est entièrement au-dessus de 0 R, avec au moins
+10 épisodes de marché. Pas de conclusion entre deux bilans.
+
+## Alertes
+`alertes.py` ouvre une issue GitHub quand un plan de Claude se déclenche (ordres à vérifier, taille pour 2,50 € de
+risque), la commente et la ferme à la sortie, et signale toute modification du registre. Notification sur le
+téléphone avec l'appli GitHub (notifications activées pour ce dépôt). N'envoie rien hors de GitHub Actions.
+
+## Lecture mécanique dans le relevé
+`regles.py` calcule, pour `data/dernier.md` : le biais mécanique du jour (cinq familles du backtest), l'état des
+supports majeurs (moyennes 200 semaines et 200 jours, plus bas des 90 jours précédents), la règle du long de
+retournement et la condition éliminatoire du short (support, financement en direct, peur extrême).
 
 ## Lancer à la main
 Onglet **Actions**, « Collecte BTC », bouton **Run workflow**. Sur un ordinateur :
 ```
 pip install -r requirements.txt
 python tests/test_local.py   # tests sans réseau
-python collecte.py && python papier.py && python backtest.py
+python collecte.py && python papier.py && python alertes.py && python backtest.py
 ```

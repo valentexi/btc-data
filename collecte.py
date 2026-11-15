@@ -213,6 +213,11 @@ def src_financement():
         }
     ).reset_index()
     out = out[(out["date"] < aujourd_hui()) & (out["releves"] >= 20)]  # jours complets seulement
+    # Taux heure par heure des 120 derniers jours : le mode papier vérifie avec eux les conditions de financement.
+    h = pd.DataFrame({"date": pd.to_datetime(df["timestamp"], utc=True).dt.strftime("%Y-%m-%d %H:%M"),
+                      "taux_8h_pct": df["relativeFundingRate"].astype(float) * 8 * 100})
+    limite = (maintenant() - dt.timedelta(days=120)).strftime("%Y-%m-%d")
+    fusionner("financement_kraken_h.csv", h[h["date"] >= limite])
     return fusionner("financement_kraken.csv", out), "(Kraken Futures)"
 
 
@@ -786,6 +791,69 @@ def _dernier(df: pd.DataFrame | None, col: str):
     return float(s[col].iloc[-1]), str(s["date"].iloc[-1])
 
 
+def qui_paie(taux: float) -> str:
+    if taux > 0:
+        return "positif : les longs paient les shorts"
+    if taux < 0:
+        return "négatif : les shorts paient les longs"
+    return "nul"
+
+
+def lecture_mecanique(p: pd.DataFrame | None, der: pd.DataFrame | None, pa: pd.DataFrame | None) -> list[str]:
+    """Biais mécanique, supports majeurs et conditions mécaniques de la méthode (règles fixes, sans jugement)."""
+    import backtest   # import tardif : backtest dépend de fichiers que la collecte vient d'écrire
+    import regles
+
+    donnees = backtest.charger()
+    if donnees is None or p is None or "eurusd" not in p.columns:
+        return ["## Lecture mécanique", "Historique insuffisant.", ""]
+    J = donnees[0]
+    fx = float(p["eurusd"].iloc[-1])
+    L = ["## Lecture mécanique (règles fixes de la méthode, sans jugement)"]
+    b = regles.biais_du_jour(J)
+    noms = {"structure": "structure du prix", "positionnement": "positionnement", "blockchain": "blockchain",
+            "macro": "macro", "actifs": "actifs risqués"}
+    if b["biais"] == b["biais"]:
+        fam = " · ".join(f"{noms[f]} {int(v):+d}" for f, v in b["familles"].items())
+        L.append(f"- **Biais mécanique à la clôture du {b['date']} : {int(b['biais']):+d} sur 10** ({fam}). "
+                 "Cinq familles sur sept, seuils fixes ; sans avantage démontré au backtest.")
+    else:
+        L.append(f"- Biais mécanique à la clôture du {b['date']} : incomplet (manque : {', '.join(b['manquantes'])}).")
+    h = b["historique"]
+    L.append("- Sept derniers jours : " + ", ".join(
+        f"{str(d)[5:]} {'n.d.' if v != v else f'{int(v):+d}'}" for d, v in zip(h["date"], h["biais"])))
+    actives = [r for r in regles.REGLES_PAPIER if regles.signal(r, b["biais"])]
+    L.append("- Règles mécaniques suivies en papier : "
+             + (", ".join(f"**{r['id']} active** ({r['nom'].lower()})" for r in actives) if actives
+                else "aucune active (S4 : biais ≤ −5 ; L7 : biais ≥ +5)")
+             + f". Quand une règle est active, son plan est inscrit d'office dans `papier/plans_regles.csv` "
+               f"(signaux suivis depuis la clôture du {regles.DEBUT_REGLES}, une position à la fois par règle).")
+    L.append("")
+    s = regles.supports_majeurs(J)
+    L.append(f"Supports majeurs (définition de la méthode), clôture du {s['date']} à {prix(s['cloture'], fx)} :")
+    L.append("")
+    L.append("| Support | Niveau | Écart de la clôture | État en clôture journalière |")
+    L.append("|---|---|---|---|")
+    for x in s["lignes"]:
+        if x["etat"] == "indisponible":
+            L.append(f"| {x['nom']} | historique insuffisant | | |")
+            continue
+        etat = {"tient": "tient",
+                "cassé": f"cassé le {x['depuis']} ({x['jours']} j), pas repris",
+                "repris": f"repris le {x['depuis']}"}[x["etat"]]
+        L.append(f"| {x['nom']} | {prix(x['niveau'], fx)} | {pct(x['ecart'])} | {etat} |")
+    L.append("")
+    ok, raison = s["long_retournement"]
+    L.append(f"- **Long de retournement : {'admis' if ok else 'exclu'}** ({raison}).")
+    fin_direct, _ = _dernier(der, "kraken_financement_8h_pct")
+    peur, _ = _dernier(pa, "valeur")
+    actif, detail = regles.condition_short(s, fin_direct, peur)
+    etat_short = "indéterminée" if actif is None else ("ACTIVE, pas de short" if actif else "inactive")
+    L.append(f"- **Condition éliminatoire du short (support, financement, peur) : {etat_short}** ({detail}).")
+    L.append("")
+    return L
+
+
 def ecrire_dernier(p: pd.DataFrame | None) -> None:
     """Relevé lisible : ce que l'analyse quotidienne lit en premier."""
     L: list[str] = []
@@ -831,15 +899,27 @@ def ecrire_dernier(p: pd.DataFrame | None) -> None:
         L.append("")
 
     L.append("## Dérivés et sentiment")
+    der = lire("derives_instantane.csv")
+    v, d = _dernier(der, "kraken_financement_8h_pct")
+    if v is not None:
+        heure = str(der.dropna(subset=["kraken_financement_8h_pct"])["heure_utc"].iloc[-1])
+        prev, _ = _dernier(der, "kraken_prevision_8h_pct")
+        deri, _ = _dernier(der, "deribit_financement_8h_pct")
+        L.append(
+            f"- **Financement Kraken en direct** (relevé le {d} à {heure} UTC) : {pct_brut(v, 4)} par 8 h, "
+            f"**{qui_paie(v)}**"
+            + (f" ; prévision pour l'heure suivante : {pct_brut(prev, 4)} ({qui_paie(prev)})" if prev is not None else "")
+            + (f" ; Deribit : {pct_brut(deri, 4)}" if deri is not None else "")
+            + ". C'est ce chiffre qui compte pour les conditions éliminatoires."
+        )
     fin = lire("financement_kraken.csv")
     v, d = _dernier(fin, "taux_8h_pct")
     if v is not None:
         m7 = float(fin["taux_8h_pct"].iloc[-7:].mean())
         L.append(
-            f"- Financement Kraken : {pct_brut(v, 4)} par 8 h le {d}, {pct_brut(m7, 4)} en moyenne sur 7 jours "
-            "(positif : les longs paient)"
+            f"- Financement Kraken, moyenne de la journée du {d} : {pct_brut(v, 4)} par 8 h ({qui_paie(v)}) ; "
+            f"moyenne sur 7 jours : {pct_brut(m7, 4)} ({qui_paie(m7)})"
         )
-    der = lire("derives_instantane.csv")
     v, d = _dernier(der, "kraken_interet_ouvert_btc")
     if v is not None:
         L.append(f"- Intérêt ouvert sur le contrat Kraken : {nb(v, 0)} BTC (relevé du {d})")
@@ -866,6 +946,11 @@ def ecrire_dernier(p: pd.DataFrame | None) -> None:
     if v is not None:
         L.append(f"- MVRV (prix divisé par le prix de revient moyen du réseau) : {nb(v, 2)} le {d}")
     L.append("")
+
+    try:
+        L.extend(lecture_mecanique(p, der, pa))
+    except Exception as e:  # noqa: BLE001 - le relevé reste utile sans cette section
+        L.extend(["## Lecture mécanique", f"Indisponible lors de ce lancement ({type(e).__name__} : {e}).", ""])
 
     L.append("## Macro (dernières clôtures connues)")
     mac = lire("macro.csv")

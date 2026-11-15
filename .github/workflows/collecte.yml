@@ -10,11 +10,13 @@ on:
     paths:
       - "*.py"
       - "papier/plans.csv"
+      - "papier/annulations.csv"
       - "requirements.txt"
       - ".github/workflows/collecte.yml"
 
 permissions:
   contents: write                         # le robot enregistre les données dans le dépôt
+  issues: write                           # alertes : une issue par plan déclenché (notification sur le téléphone)
 
 concurrency:
   group: collecte
@@ -40,6 +42,11 @@ jobs:
       - name: Suivre les plans en mode papier
         if: always()
         run: python papier.py
+      - name: Envoyer les alertes (issues GitHub)
+        if: always()
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python alertes.py
       - name: Lancer le backtest
         if: always() && (github.event_name != 'schedule' || github.event.schedule == '47 4 * * *')
         run: python backtest.py

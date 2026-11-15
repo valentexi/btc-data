@@ -1,16 +1,24 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Mode papier : suivi automatique des plans proposés par les analyses, sans argent réel.
+Mode papier : suivi automatique des plans, sans argent réel.
 
-Chaque plan est une ligne de papier/plans.csv, écrite AVANT que le marché ne tranche.
-Ce script rejoue ensuite le marché heure par heure (bougies de 4 heures pour les clôtures) : déclencheur atteint ou non, prix
-d'entrée théorique, sortie, résultat net de frais. Il compare les plans à deux
-références mécaniques (un long et un short systématiques au moment de chaque plan).
+Deux registres de plans, rejoués heure par heure (clôtures jugées sur les bougies de 4 heures) :
+- papier/plans.csv : plans des analyses de Claude ;
+- papier/plans_regles.csv : plans des règles mécaniques S4 et L7, inscrits d'office par ce script.
+
+Intégrité (version 3, 15 nov. 2026) :
+- papier/registre.csv garde, pour chaque plan et chaque annulation, l'heure où le robot l'a vu pour la première
+  fois et son empreinte. Une ligne déjà enregistrée ne doit plus changer : une modification est signalée et le
+  plan sort du critère.
+- Un plan de Claude ne compte au critère que s'il a été enregistré AVANT son entrée.
+- Annuler un plan : ajouter une ligne à papier/annulations.csv (id, annule_utc, motif). L'annulation prend effet
+  à l'heure la plus tardive entre `annule_utc` et son enregistrement : jamais rétroactive. Avant l'entrée, le plan
+  ne se déclenche plus ; après l'entrée, la position est soldée à la clôture de la bougie en cours à cette heure.
 
 Colonnes de plans.csv (heures en UTC, prix en dollars) :
   id, cree_utc, source, sens (long|short), declencheur, zone_bas, zone_haut, niveau,
-  entree, stop, obj1, obj2, expire_utc, sortie_utc, risque_eur, biais, note
+  entree, stop, obj1, obj2, expire_utc, sortie_utc, risque_eur, biais, note, condition_financement
 
 Déclencheurs :
   immediat         entrée à l'ouverture de la première bougie après la création
@@ -18,12 +26,17 @@ Déclencheurs :
   cloture_4h       une bougie de 4 h clôture au-delà de `niveau` (au-dessus pour un long, en dessous pour un short)
   cloture_jour     même chose pour la clôture journalière (0 h UTC)
   zone_cloture_4h  le prix entre dans la zone [zone_bas, zone_haut], puis une bougie de 4 h clôture au-delà de `niveau`
-Après un déclencheur en clôture, l'entrée théorique se fait à l'ouverture de la bougie suivante.
+Après un déclencheur en clôture, l'entrée théorique se fait à l'ouverture de la bougie suivante. Si elle est plus
+de 0,5 % moins bonne que `entree`, le plan est annulé (on ne court pas après le prix).
 obj1 vide : sortie unique à obj2. Sinon : moitié à obj1, stop ramené à l'entrée, reste à obj2.
+condition_financement (facultatif) : positif_ou_nul ou negatif_ou_nul, vérifiée sur le financement Kraken de
+l'heure du déclenchement ; non remplie ou inconnue : le plan est abandonné.
+Plans des règles : stop_pct, obj_pct et duree_h remplacent stop, obj2 et sortie_utc (calculés sur l'entrée réelle).
 """
 from __future__ import annotations
 
 import datetime as dt
+import hashlib
 import os
 import sys
 
@@ -32,18 +45,35 @@ import pandas as pd
 
 from outils import RACINE, RAPPORT, eur, lire, lire_h4, nb, prix
 from simulation import barres, simuler
-from stats import episodes, ic_episodes
+from stats import MIN_EPISODES, episodes, ic_episodes
 
 PLANS = os.environ.get("BTC_PLANS", os.path.join(RACINE, "papier", "plans.csv"))
-RESULTATS = os.path.join(os.path.dirname(PLANS), "resultats.csv")
-SEUIL_TRADES = 30          # critère de passage en réel : nombre minimal de trades papier clos
+DOSSIER = os.path.dirname(PLANS)
+PLANS_REGLES = os.path.join(DOSSIER, "plans_regles.csv")
+ANNULATIONS = os.path.join(DOSSIER, "annulations.csv")
+REGISTRE = os.path.join(DOSSIER, "registre.csv")
+RESULTATS = os.path.join(DOSSIER, "resultats.csv")
+
+PALIERS = (30, 60, 100)    # bilans à dates fixes (nombre de plans comptés clos), puis tous les 50
+ECART_MAX = 0.005          # entrée théorique plus de 0,5 % moins bonne que prévu : plan annulé
 REF_STOP, REF_OBJ, REF_BARRES = 0.04, 0.065, 42
+COLONNES = ["id", "cree_utc", "source", "sens", "declencheur", "zone_bas", "zone_haut", "niveau", "entree", "stop",
+            "obj1", "obj2", "expire_utc", "sortie_utc", "risque_eur", "biais", "note", "condition_financement"]
+COLONNES_REGLES = ["id", "regle", "cree_utc", "source", "sens", "declencheur", "stop_pct", "obj_pct", "duree_h",
+                   "expire_utc", "risque_eur", "biais", "note"]
+ENTRES = ("clos", "ouvert")
+
+
+def maintenant() -> pd.Timestamp:
+    t = os.environ.get("BTC_MAINTENANT")              # pour les tests
+    return pd.Timestamp(t, tz="UTC") if t else pd.Timestamp.now(tz="UTC")
 
 
 def _t(x) -> pd.Timestamp | None:
     if x is None or (isinstance(x, float) and x != x) or str(x).strip() == "":
         return None
-    return pd.Timestamp(str(x).strip().replace("Z", ""), tz="UTC")
+    t = pd.Timestamp(str(x).strip().replace("Z", ""))
+    return t.tz_localize("UTC") if t.tzinfo is None else t.tz_convert("UTC")
 
 
 def _f(x) -> float | None:
@@ -54,41 +84,100 @@ def _f(x) -> float | None:
         return None
 
 
-def evaluer(plan: dict, B: dict) -> dict:
-    """Rejoue un plan sur les bougies de 4 heures. Aucune information postérieure n'est utilisée pour décider."""
+def _np(t: pd.Timestamp) -> np.datetime64:
+    return np.datetime64(t.tz_convert(None))
+
+
+# ------------------------------------------------------------------ registre
+def empreinte(ligne: dict) -> str:
+    """Empreinte des champs renseignés : une colonne vide ajoutée au fichier ne change pas l'empreinte."""
+    champs = sorted((str(k), str(v).strip()) for k, v in ligne.items() if str(v).strip() not in ("", "nan"))
+    return hashlib.sha256("|".join(f"{k}={v}" for k, v in champs).encode()).hexdigest()[:16]
+
+
+def tenir_registre(entrees: list[tuple[str, dict]], quand: pd.Timestamp) -> tuple[dict, list[dict]]:
+    """Enregistre les nouvelles lignes, ne modifie jamais les anciennes. Renvoie le registre et les anomalies."""
+    reg = pd.read_csv(REGISTRE, dtype=str).fillna("") if os.path.exists(REGISTRE) else \
+        pd.DataFrame(columns=["cle", "premiere_vue_utc", "empreinte"])
+    connus = {r["cle"]: r for _, r in reg.iterrows()}
+    anomalies, nouveaux = [], []
+    presents = set()
+    for cle, ligne in entrees:
+        presents.add(cle)
+        e = empreinte(ligne)
+        if cle not in connus:
+            r = {"cle": cle, "premiere_vue_utc": quand.strftime("%Y-%m-%dT%H:%M:%SZ"), "empreinte": e}
+            nouveaux.append(r)
+            connus[cle] = r
+        elif connus[cle]["empreinte"] != e:
+            anomalies.append({"cle": cle, "nature": "modifiée après enregistrement",
+                              "enregistree": connus[cle]["premiere_vue_utc"], "empreinte": e})
+    for cle, r in connus.items():
+        if cle not in presents:
+            anomalies.append({"cle": cle, "nature": "supprimée après enregistrement",
+                              "enregistree": r["premiere_vue_utc"], "empreinte": ""})
+    if nouveaux:
+        os.makedirs(DOSSIER, exist_ok=True)
+        pd.concat([reg, pd.DataFrame(nouveaux)], ignore_index=True).to_csv(REGISTRE, index=False)
+    return connus, anomalies
+
+
+# ---------------------------------------------------------------- évaluation
+def _financement(fin_h: pd.Series | None, t: np.datetime64) -> float | None:
+    """Financement Kraken (% par 8 h) en vigueur à l'instant t : dernier taux horaire publié, 2 heures au plus."""
+    if fin_h is None or not len(fin_h):
+        return None
+    avant = fin_h[(fin_h.index <= t) & (fin_h.index >= t - np.timedelta64(2, "h"))]
+    return float(avant.iloc[-1]) if len(avant) else None
+
+
+def evaluer(plan: dict, B: dict, annule: pd.Timestamp | None = None, fin_h: pd.Series | None = None) -> dict:
+    """Rejoue un plan. Aucune information postérieure n'est utilisée pour décider."""
     sens = 1 if str(plan["sens"]).strip().lower() == "long" else -1
     cree, expire, sortie = _t(plan["cree_utc"]), _t(plan.get("expire_utc")), _t(plan.get("sortie_utc"))
     decl = str(plan["declencheur"]).strip()
     stop, obj1, obj2 = _f(plan.get("stop")), _f(plan.get("obj1")), _f(plan.get("obj2"))
+    stop_pct, obj_pct, duree_h = _f(plan.get("stop_pct")), _f(plan.get("obj_pct")), _f(plan.get("duree_h"))
+    relatif = stop_pct is not None and obj_pct is not None
     niveau, entree_prevue = _f(plan.get("niveau")), _f(plan.get("entree"))
     zb, zh = _f(plan.get("zone_bas")), _f(plan.get("zone_haut"))
+    cond = str(plan.get("condition_financement", "") or "").strip()
     res = {"id": plan["id"], "sens": "long" if sens == 1 else "short", "etat": "", "t_entree": "", "prix_entree": np.nan,
-           "t_sortie": "", "motif": "", "R": np.nan, "R_fin": np.nan, "eur": np.nan, "detail": ""}
-    if stop is None or obj2 is None or cree is None:
+           "t_sortie": "", "motif": "", "R": np.nan, "R_fin": np.nan, "eur": np.nan, "detail": "", "t_declenche": "",
+           "stop_calcule": np.nan, "obj2_calcule": np.nan}
+    if cree is None or (not relatif and (stop is None or obj2 is None)):
         res["etat"] = "plan incomplet"
         return res
+    if annule is not None:
+        expire = annule if expire is None else min(expire, annule)
     pas = int(B.get("pas_h", 4))
     debut = B["t"]                                   # début de chaque bougie
     fin = debut + np.timedelta64(pas, "h")
     heure_fin = (pd.DatetimeIndex(debut).hour.to_numpy() + pas) % 24
     cloture_4h, cloture_jour = heure_fin % 4 == 0, heure_fin == 0    # la bougie termine-t-elle une bougie de 4 h, un jour ?
-    cree64 = np.datetime64(cree.tz_convert(None))
-    exp64 = np.datetime64(expire.tz_convert(None)) if expire is not None else np.datetime64("2262-01-01")
+    cree64 = _np(cree)
+    exp64 = _np(expire) if expire is not None else np.datetime64("2262-01-01")
     apres = np.flatnonzero(debut >= cree64)          # bougies entièrement postérieures à la création
     closes = np.flatnonzero((fin > cree64) & (fin <= exp64))   # clôtures connues après la création, avant expiration
     derniere = B["n"] - 1
     perime = fin[derniere] >= exp64                  # les données couvrent-elles l'expiration ?
+    fin_ou_attente = "expiré sans entrée"
+    if annule is not None and (expire is None or annule <= expire) and perime:
+        fin_ou_attente = "annulé avant entrée"
 
     def au_dela(k):                                  # clôture du bon côté du niveau
         return B["c"][k] > niveau if sens == 1 else B["c"][k] < niveau
 
     i, prix_limite = None, None
     if decl == "immediat":
-        if len(apres):
+        if len(apres) and debut[apres[0]] < exp64:
             i = int(apres[0])
+        elif len(apres):
+            res["etat"] = fin_ou_attente
+            return res
     elif decl == "limite" and entree_prevue is not None:
         for k in apres:
-            if debut[k] > exp64:
+            if debut[k] >= exp64:
                 break
             touche = B["l"][k] <= entree_prevue if sens == 1 else B["h"][k] >= entree_prevue
             if touche:
@@ -115,34 +204,70 @@ def evaluer(plan: dict, B: dict) -> dict:
         return res
 
     if i is None:
-        res["etat"] = "expiré sans entrée" if perime else "en attente du déclencheur"
+        res["etat"] = fin_ou_attente if perime else "en attente du déclencheur"
         return res
+    t_decl = debut[i] if i <= derniere else fin[derniere]   # heure de la clôture qui déclenche (ou de l'entrée)
+    res["t_declenche"] = str(pd.Timestamp(t_decl))[:16]
+    if cond:
+        v = _financement(fin_h, t_decl)
+        if v is None:
+            dernier_taux = fin_h.index[-1] if fin_h is not None and len(fin_h) else None
+            if dernier_taux is None or dernier_taux < t_decl:
+                res["etat"] = "déclenché, condition de financement en attente de donnée"
+            else:
+                res["etat"] = "abandonné : financement inconnu au déclenchement"
+            return res
+        ok = v >= 0 if cond == "positif_ou_nul" else (v <= 0 if cond == "negatif_ou_nul" else False)
+        res["detail"] = f"financement au déclenchement {v:+.4f} % par 8 h".replace(".", ",")
+        if not ok:
+            res["etat"] = "abandonné : condition de financement non remplie"
+            return res
     if i > derniere:
         res["etat"] = "déclenché, entrée à la prochaine bougie"
         return res
-    i_max = derniere
-    if sortie is not None:
-        avant = np.flatnonzero(fin <= np.datetime64(sortie.tz_convert(None)))
-        i_max = int(avant[-1]) if len(avant) else i
-        i_max = max(i_max, i)
+    E = float(B["o"][i]) if prix_limite is None else prix_limite
+    if entree_prevue is not None and prix_limite is None and sens * (E - entree_prevue) / entree_prevue > ECART_MAX:
+        res.update({"etat": "annulé : entrée trop éloignée du prix prévu", "t_entree": str(B["date"][i]),
+                    "detail": f"ouverture à {E:,.0f} $ pour {entree_prevue:,.0f} $ prévus".replace(",", " ")})
+        return res
+    if relatif:
+        stop, obj1, obj2 = E * (1 - sens * stop_pct), None, E * (1 + sens * obj_pct)
+        fin_duree = pd.Timestamp(debut[i], tz="UTC") + pd.Timedelta(hours=duree_h or 168)
+        sortie = fin_duree if sortie is None else min(sortie, fin_duree)
+        res["stop_calcule"], res["obj2_calcule"] = stop, obj2
+    i_max, termine, coupe = derniere, False, False
+    if sortie is not None:                           # sortie prévue : dernière clôture avant l'heure limite
+        avant = np.flatnonzero(fin <= _np(sortie))
+        i_max = max(int(avant[-1]) if len(avant) else i, i)
+        termine = bool(fin[derniere] >= _np(sortie))
+    if annule is not None:                           # annulation : première clôture après, jamais avant
+        apres_a = np.flatnonzero(fin >= _np(annule))
+        if len(apres_a) and max(int(apres_a[0]), i) < i_max:
+            i_max, coupe = max(int(apres_a[0]), i), True
+        termine = termine or bool(len(apres_a))
     t = simuler(B, i, sens, stop, obj1, obj2, i_max, entree=prix_limite)
     if t is None:
         res["etat"] = "annulé : stop déjà dépassé à l'entrée"
         res["t_entree"] = str(B["date"][i])
         return res
-    ouvert = "durée" in t["motif"] and (sortie is None or fin[derniere] < np.datetime64(sortie.tz_convert(None)))
+    ouvert = "durée" in t["motif"] and not termine
+    motif = t["motif"]
+    if not ouvert and "durée" in motif and coupe:
+        motif = "sortie sur annulation"
     risque = _f(plan.get("risque_eur")) or 0.0
+    detail = res["detail"]
+    if entree_prevue is not None:
+        detail = (detail + " ; " if detail else "") + f"écart à l'entrée prévue {(t['entree'] / entree_prevue - 1) * 100:+.2f} %".replace(".", ",")
     res.update({"etat": "ouvert" if ouvert else "clos", "t_entree": t["t_entree"], "prix_entree": t["entree"],
-                "t_sortie": "" if ouvert else t["t_sortie"], "motif": "en cours" if ouvert else t["motif"],
-                "R": t["R"], "R_fin": t["R_fin"], "eur": t["R"] * risque,
-                "detail": "" if entree_prevue is None else f"écart à l'entrée prévue {(t['entree'] / entree_prevue - 1) * 100:+.2f} %"})
+                "t_sortie": "" if ouvert else t["t_sortie"], "motif": "en cours" if ouvert else motif,
+                "R": t["R"], "R_fin": t["R_fin"], "eur": t["R"] * risque, "detail": detail})
     return res
 
 
 def reference(plan: dict, B: dict, sens: int) -> float:
     """Long ou short systématique au moment où le plan est créé : stop 4 %, objectif 6,5 %, 7 jours."""
     cree = _t(plan["cree_utc"])
-    apres = np.flatnonzero(B["t"] >= np.datetime64(cree.tz_convert(None)))
+    apres = np.flatnonzero(B["t"] >= _np(cree))
     if not len(apres):
         return float("nan")
     i = int(apres[0])
@@ -154,21 +279,132 @@ def reference(plan: dict, B: dict, sens: int) -> float:
     return t["R"]
 
 
+# ------------------------------------------------------------- critère
+def paliers_atteints(n: int) -> list[int]:
+    out, k, liste = [], 0, list(PALIERS)
+    while True:
+        k = liste[len(out)] if len(out) < len(liste) else liste[-1] + 50 * (len(out) - len(liste) + 1)
+        if k > n:
+            return out
+        out.append(k)
+
+
+def prochain_palier(n: int) -> int:
+    faits = paliers_atteints(n)
+    k = len(faits)
+    return PALIERS[k] if k < len(PALIERS) else PALIERS[-1] + 50 * (k - len(PALIERS) + 1)
+
+
+def bilans(clos: pd.DataFrame) -> list[dict]:
+    """Bilan à chaque palier atteint, sur les k premiers plans comptés clos (ordre d'entrée)."""
+    c = clos.sort_values("t_entree")
+    out = []
+    for k in paliers_atteints(len(c)):
+        sub = c.iloc[:k]
+        r = sub["R"].to_numpy(float)
+        ep = episodes(sub["t_entree"])
+        ne = int(ep.max()) + 1 if len(ep) else 0
+        lo, hi = ic_episodes(r, ep)
+        if ne < MIN_EPISODES:
+            v = f"épisodes insuffisants ({ne} sur {MIN_EPISODES})"
+        elif lo > 0:
+            v = "favorable"
+        elif hi < 0:
+            v = "défavorable"
+        else:
+            v = "non concluant"
+        out.append({"palier": k, "r": float(r.mean()), "lo": lo, "hi": hi, "episodes": ne, "verdict": v})
+    return out
+
+
+# ---------------------------------------------------- règles mécaniques
+def generer_regles(regles_df: pd.DataFrame, evals: dict, quand: pd.Timestamp) -> pd.DataFrame:
+    """Inscrit d'office le plan d'une règle mécanique active à la dernière clôture (une position à la fois)."""
+    import backtest
+    import regles
+
+    donnees = backtest.charger()
+    if donnees is None:
+        return regles_df
+    b = regles.biais_du_jour(donnees[0])
+    jour = b["date"]
+    if jour < regles.DEBUT_REGLES:
+        return regles_df
+    limite = pd.Timestamp(jour, tz="UTC") + pd.Timedelta(days=2)   # au plus 24 h après la clôture
+    if quand >= limite:
+        return regles_df
+    nouveaux = []
+    for r in regles.REGLES_PAPIER:
+        ident = f"{r['id']}-{jour}"
+        if not regles.signal(r, b["biais"]) or ident in set(regles_df["id"]):
+            continue
+        en_cours = [p for p in regles_df[regles_df["regle"] == r["id"]]["id"]
+                    if evals.get(p, {}).get("etat", "") not in ("clos", "expiré sans entrée", "annulé avant entrée")
+                    and not str(evals.get(p, {}).get("etat", "")).startswith("annulé")]
+        if en_cours:
+            continue                                   # une position à la fois par règle, comme au backtest
+        nouveaux.append({
+            "id": ident, "regle": r["id"], "cree_utc": quand.strftime("%Y-%m-%dT%H:%M"),
+            "source": f"règle {r['id']} : {r['nom']}", "sens": "long" if r["sens"] == 1 else "short",
+            "declencheur": "immediat", "stop_pct": regles.STOP_PCT, "obj_pct": regles.OBJ_PCT,
+            "duree_h": regles.DUREE_H, "expire_utc": (quand + pd.Timedelta(hours=6)).strftime("%Y-%m-%dT%H:%M"),
+            "risque_eur": 2.5, "biais": int(b["biais"]), "note": f"signal de la clôture du {jour}",
+        })
+    if not nouveaux:
+        return regles_df
+    out = pd.concat([regles_df, pd.DataFrame(nouveaux).astype(str)], ignore_index=True)
+    out[COLONNES_REGLES].to_csv(PLANS_REGLES, index=False)
+    return out
+
+
+# ------------------------------------------------------------- rapport
 def r_(x):
     return "n.d." if x != x else f"{x:+.2f}".replace(".", ",") + " R"
+
+
+def _lire(chemin_: str, colonnes: list[str]) -> pd.DataFrame:
+    if not os.path.exists(chemin_):
+        return pd.DataFrame(columns=colonnes)
+    df = pd.read_csv(chemin_, dtype=str).fillna("")
+    for c in colonnes:
+        if c not in df.columns:
+            df[c] = ""
+    return df
+
+
+def _resume(df: pd.DataFrame) -> str:
+    clos = df[df["etat"] == "clos"]
+    n = len(clos)
+    if not n:
+        return "aucun plan clos"
+    r = clos["R"].to_numpy(float)
+    txt = (f"{n} clos, {nb((r > 0).mean() * 100)} % gagnants, {r_(r.mean())} par trade, "
+           f"{r_(r.sum())} au total ({eur(float(clos['eur'].sum()), 2)})")
+    if n >= 5:
+        lo, hi = ic_episodes(r, episodes(clos["t_entree"]))
+        txt += f", intervalle à 95 % {r_(lo)} à {r_(hi)}"
+    return txt
 
 
 def main() -> int:
     os.makedirs(RAPPORT, exist_ok=True)
     sortie = os.path.join(RAPPORT, "papier.md")
+    quand = maintenant()
     h4, p = lire_h4(), lire("btc_jour.csv")
     if not os.path.exists(PLANS) or h4 is None:
         with open(sortie, "w", encoding="utf-8") as f:
             f.write("# Mode papier\n\nAucun plan enregistré ou bougies de 4 heures indisponibles.\n")
         return 0
-    plans = pd.read_csv(PLANS, dtype=str).fillna("")
+    plans = _lire(PLANS, COLONNES)
+    regles_df = _lire(PLANS_REGLES, COLONNES_REGLES)
+    annul = _lire(ANNULATIONS, ["id", "annule_utc", "motif"])
     fk = lire("financement_kraken.csv")
     fin = {} if fk is None else {d: v / 100.0 for d, v in zip(fk["date"], fk["cumul_jour_pct"])}
+    fh = lire("financement_kraken_h.csv")
+    fin_h = None
+    if fh is not None:
+        fin_h = pd.Series(fh["taux_8h_pct"].to_numpy(float),
+                          index=pd.to_datetime(fh["date"]).to_numpy().astype("datetime64[s]")).sort_index()
     B4 = barres(h4.sort_values("date").reset_index(drop=True), fin)
     h1 = lire("h1_recent.csv")
     B1 = barres(h1.sort_values("date").reset_index(drop=True), fin, pas_h=1) if h1 is not None and len(h1) > 48 else None
@@ -176,75 +412,180 @@ def main() -> int:
     def bougies_pour(pl):
         """Bougies d'une heure quand elles couvrent le plan (déclencheurs jugés à l'heure près), sinon de 4 heures."""
         cree = _t(pl.get("cree_utc"))
-        if B1 is not None and cree is not None and np.datetime64(cree.tz_convert(None)) >= B1["t"][0]:
+        if B1 is not None and cree is not None and _np(cree) >= B1["t"][0]:
             return B1
         return B4
 
     B = B1 if B1 is not None else B4
     fx = float(p["eurusd"].dropna().iloc[-1]) if p is not None and "eurusd" in p.columns else float("nan")
 
-    lignes = []
-    for _, pl in plans.iterrows():
-        pl = pl.to_dict()
+    # 1. Règles mécaniques : état des plans existants, puis inscription d'un nouveau plan si une règle est active
+    def evaluer_sur(pl, annule=None):
         try:
-            Bp = bougies_pour(pl)
-            r = evaluer(pl, Bp)
-            r["ref_long"], r["ref_short"] = reference(pl, Bp, 1), reference(pl, Bp, -1)
+            return evaluer(pl, bougies_pour(pl), annule, fin_h)
         except Exception as e:  # noqa: BLE001 - une ligne mal saisie ne doit pas bloquer les autres
-            r = {"id": pl.get("id", "?"), "sens": pl.get("sens", ""), "etat": f"ligne illisible : {e}", "t_entree": "",
-                 "prix_entree": np.nan, "t_sortie": "", "motif": "", "R": np.nan, "R_fin": np.nan, "eur": np.nan,
-                 "detail": "", "ref_long": np.nan, "ref_short": np.nan}
-        r.update({"cree_utc": pl.get("cree_utc", ""), "source": pl.get("source", ""), "note": pl.get("note", "")})
-        lignes.append(r)
-    R = pd.DataFrame(lignes)
-    R.to_csv(RESULTATS, index=False, float_format="%.5g")
+            return {"id": pl.get("id", "?"), "sens": pl.get("sens", ""), "etat": f"ligne illisible : {e}",
+                    "t_entree": "", "prix_entree": np.nan, "t_sortie": "", "motif": "", "R": np.nan, "R_fin": np.nan,
+                    "eur": np.nan, "detail": "", "t_declenche": "", "stop_calcule": np.nan, "obj2_calcule": np.nan}
 
-    clos = R[R["etat"] == "clos"]
-    n = len(clos)
-    L = [f"# Mode papier ({dt.datetime.now(dt.timezone.utc).strftime('%d/%m/%Y %H:%M')} UTC)", ""]
-    L.append("Suivi automatique des plans des analyses, sans argent réel. Déclencheurs, stops et objectifs suivis heure "
-             "par heure ; clôtures jugées sur les bougies de 4 heures. Prix d'entrée théorique : ouverture de la "
-             "bougie qui suit le déclencheur. Résultats nets de frais et de glissement. "
-             f"Dernière bougie connue : {B['date'][-1]} UTC.")
+    try:
+        evals_regles = {pl["id"]: evaluer_sur(pl) for pl in regles_df.to_dict("records")}
+        regles_df = generer_regles(regles_df, evals_regles, quand)
+    except Exception as e:  # noqa: BLE001
+        print(f"Règles mécaniques : échec ({e})")
+
+    # 2. Registre : première apparition et empreinte de chaque ligne
+    entrees = [(pl["id"], {k: pl.get(k, "") for k in COLONNES}) for pl in plans.to_dict("records")]
+    entrees += [(pl["id"], {k: pl.get(k, "") for k in COLONNES_REGLES}) for pl in regles_df.to_dict("records")]
+    entrees += [(f"annulation:{a['id']}", a) for a in annul.to_dict("records")]
+    registre, anomalies = tenir_registre(entrees, quand)
+    modifiees = {a["cle"] for a in anomalies}
+
+    def vue(cle):
+        r = registre.get(cle)
+        return _t(r["premiere_vue_utc"]) if r is not None else None
+
+    effets = {}
+    for a in annul.to_dict("records"):
+        t_a, t_v = _t(a.get("annule_utc")), vue(f"annulation:{a['id']}")
+        if t_a is not None and t_v is not None and a["id"] not in effets:
+            effets[a["id"]] = max(t_a, t_v)
+
+    # 3. Évaluation
+    lignes = []
+    for registre_nom, df in (("claude", plans), ("regle", regles_df)):
+        for pl in df.to_dict("records"):
+            r = evaluer_sur(pl, effets.get(pl["id"]) if registre_nom == "claude" else None)
+            if registre_nom == "claude" and not str(r["etat"]).startswith("ligne illisible"):
+                Bp = bougies_pour(pl)
+                r["ref_long"], r["ref_short"] = reference(pl, Bp, 1), reference(pl, Bp, -1)
+            else:
+                r["ref_long"], r["ref_short"] = np.nan, np.nan
+            v = vue(pl["id"])
+            r["enregistre_utc"] = "" if v is None else v.strftime("%Y-%m-%d %H:%M")
+            compte, raison = "", ""
+            if registre_nom == "claude" and r["etat"] in ENTRES:
+                if pl["id"] in modifiees:
+                    compte, raison = "non", "ligne modifiée après enregistrement"
+                elif v is None or v > _t(r["t_entree"]):
+                    compte, raison = "non", "enregistré après l'entrée"
+                else:
+                    compte = "oui"
+            r.update({"registre": registre_nom, "compte": compte, "raison": raison, "cree_utc": pl.get("cree_utc", ""),
+                      "source": pl.get("source", ""), "note": pl.get("note", ""), "risque_eur": pl.get("risque_eur", ""),
+                      "entree_prevue": pl.get("entree", ""), "stop": pl.get("stop", ""), "obj1": pl.get("obj1", ""),
+                      "obj2": pl.get("obj2", ""), "declencheur": pl.get("declencheur", ""),
+                      "sortie_prevue": pl.get("sortie_utc", "")})
+            lignes.append(r)
+    R = pd.DataFrame(lignes)
+    R.to_csv(RESULTATS, index=False, float_format="%.6g")
+    if anomalies:
+        pd.DataFrame(anomalies).to_csv(os.path.join(DOSSIER, "anomalies.csv"), index=False)
+    elif os.path.exists(os.path.join(DOSSIER, "anomalies.csv")):
+        os.remove(os.path.join(DOSSIER, "anomalies.csv"))
+
+    C = R[R["registre"] == "claude"]
+    G = R[R["registre"] == "regle"]
+    comptes_clos = C[(C["etat"] == "clos") & (C["compte"] == "oui")]
+    n = len(comptes_clos)
+
+    L = [f"# Mode papier ({quand.strftime('%d/%m/%Y %H:%M')} UTC)", ""]
+    L.append("Suivi automatique, sans argent réel. Déclencheurs, stops et objectifs suivis heure par heure ; clôtures "
+             "jugées sur les bougies de 4 heures ; entrée théorique à l'ouverture de la bougie qui suit le déclencheur. "
+             f"Résultats nets de frais et de glissement. Dernière bougie connue : {B['date'][-1]} UTC.")
     L.append("")
-    L.append("## Bilan")
-    L.append(f"- Plans enregistrés : {len(R)}. Entrés : {int(R['etat'].isin(['clos', 'ouvert']).sum())}. "
-             f"Clos : {n}. Ouverts : {int((R['etat'] == 'ouvert').sum())}. "
-             f"En attente : {int(R['etat'].str.startswith('en attente').sum())}. "
-             f"Expirés sans entrée : {int((R['etat'] == 'expiré sans entrée').sum())}.")
-    if n:
-        r = clos["R"].to_numpy(float)
-        lo, hi = ic_episodes(r, episodes(clos["t_entree"])) if n >= 5 else (float("nan"), float("nan"))
-        L.append(f"- Plans clos : {nb((r > 0).mean() * 100)} % gagnants, {r_(r.mean())} par trade, {r_(r.sum())} au total, "
-                 f"soit {eur(float(clos['eur'].sum()), 2)}." + (f" Intervalle à 95 % : {r_(lo)} à {r_(hi)}." if n >= 5 else ""))
-    rl, rs = R["ref_long"].dropna(), R["ref_short"].dropna()
-    L.append(f"- Référence « long systématique à chaque plan » : {r_(rl.mean()) if len(rl) else 'n.d.'} sur {len(rl)} dénoués. "
-             f"Référence « short systématique » : {r_(rs.mean()) if len(rs) else 'n.d.'} sur {len(rs)}.")
-    L.append("- Référence « ne rien faire » : 0 R.")
+    L.append("## Plans de Claude")
+    etats = C["etat"].astype(str)
+    L.append(f"- Enregistrés : {len(C)}. Entrés : {int(etats.isin(ENTRES).sum())} (clos {int((etats == 'clos').sum())}, "
+             f"ouverts {int((etats == 'ouvert').sum())}). En attente : {int(etats.str.startswith('en attente').sum() + etats.str.startswith('déclenché').sum())}. "
+             f"Expirés ou annulés sans entrée : {int((etats.str.startswith('expiré') | etats.str.startswith('annulé')).sum())}. "
+             f"Abandonnés (condition non remplie) : {int(etats.str.startswith('abandonné').sum())}.")
+    L.append(f"- **Comptés au critère** (enregistrés avant leur entrée, jamais modifiés) : {_resume(C[C['compte'] == 'oui'])}. "
+             f"Ouverts et comptés : {int(((C['etat'] == 'ouvert') & (C['compte'] == 'oui')).sum())}.")
+    hors = C[C["compte"] == "non"]
+    if len(hors):
+        L.append("- Hors critère : " + " ; ".join(f"{x['id']} ({x['raison']})" for _, x in hors.iterrows()) + ".")
+    L.append(f"- Tous les plans entrés, pour mémoire : {_resume(C)}.")
     L.append("")
     L.append("## Critère de passage en réel")
-    ok_n = n >= SEUIL_TRADES
-    ok_ic = bool(n >= SEUIL_TRADES and ic_episodes(clos["R"].to_numpy(float), episodes(clos["t_entree"]))[0] > 0)
-    ok_ref = bool(n and len(rl) and len(rs) and clos["R"].mean() > max(rl.mean(), rs.mean(), 0))
-    L.append(f"- Au moins {SEUIL_TRADES} plans clos : {'oui' if ok_n else f'non ({n} sur {SEUIL_TRADES})'}.")
-    L.append(f"- Résultat moyen positif avec un intervalle à 95 % entièrement positif : {'oui' if ok_ic else 'non'}.")
-    L.append(f"- Mieux que les références : {'oui' if ok_ref else 'non'}.")
-    L.append(f"- **Verdict : {'CRITÈRE ATTEINT' if (ok_n and ok_ic and ok_ref) else 'CRITÈRE NON ATTEINT, rester en mode papier'}.**")
+    L.append(f"Bilans à dates fixes : à {', '.join(str(k) for k in PALIERS)} plans comptés clos, puis tous les 50. "
+             f"Un bilan est favorable si l'intervalle à 95 % (tirage par épisodes) est entièrement au-dessus de 0 R, "
+             f"donc meilleur que « ne rien faire », avec au moins {MIN_EPISODES} épisodes de marché distincts. "
+             "Entre deux bilans, aucune conclusion.")
     L.append("")
-    L.append("## Plans")
-    L.append("| Plan | Créé (UTC) | Sens | État | Entrée | Sortie | Motif | Résultat | En euros | Réf. long | Réf. short |")
-    L.append("|---|---|---|---|---|---|---|---|---|---|---|")
-    for _, x in R.iloc[::-1].iterrows():
-        entree = "" if x["prix_entree"] != x["prix_entree"] else f"{x['t_entree']} à {prix(x['prix_entree'], fx)}"
-        L.append(f"| {x['id']} | {x['cree_utc']} | {x['sens']} | {x['etat']} | {entree} | {x['t_sortie']} | {x['motif']} | "
-                 f"{r_(x['R'])} | {'' if x['eur'] != x['eur'] else eur(x['eur'], 2)} | {r_(x['ref_long'])} | {r_(x['ref_short'])} |")
+    B_ = bilans(comptes_clos)
+    if B_:
+        L.append("| Bilan | R moyen | Intervalle à 95 % | Épisodes | Verdict |")
+        L.append("|---|---|---|---|---|")
+        for b in B_:
+            L.append(f"| {b['palier']} plans | {r_(b['r'])} | {r_(b['lo'])} à {r_(b['hi'])} | {b['episodes']} | {b['verdict']} |")
+        L.append("")
+    atteint = any(b["verdict"] == "favorable" for b in B_)
+    L.append(f"- Prochain bilan à {prochain_palier(n)} plans comptés clos ({n} pour l'instant).")
+    if atteint:
+        verdict = "CRITÈRE ATTEINT"
+    elif B_ and B_[-1]["verdict"] == "défavorable":
+        verdict = "CRITÈRE NON ATTEINT, bilan défavorable : revoir la méthode avant de continuer"
+    else:
+        verdict = "CRITÈRE NON ATTEINT, rester en mode papier"
+    L.append(f"- **Verdict : {verdict}.**")
     L.append("")
-    L.append("Les résultats sont hors financement quand celui de Kraken n'est pas encore publié pour la période. "
-             "Un plan « ouvert » affiche son résultat provisoire à la dernière clôture.")
+    L.append("## Règles mécaniques inscrites d'office (sans jugement)")
+    L.append("S4 : short quand le biais mécanique est ≤ −5. L7 : long quand il est ≥ +5. Plan identique au backtest "
+             "(stop 4 %, objectif 6,5 %, 7 jours au plus), entrée à l'ouverture de l'heure qui suit l'inscription, "
+             "une position à la fois par règle. Elles servent d'étalon : le jugement de Claude n'a d'intérêt que s'il "
+             "fait mieux qu'elles.")
+    L.append("")
+    for ident in ("S4", "L7"):
+        L.append(f"- {ident} : {_resume(G[G['id'].str.startswith(ident + '-')])}"
+                 f" ; ouverts {int(((G['etat'] == 'ouvert') & G['id'].str.startswith(ident + '-')).sum())}.")
+    L.append(f"- Comparaison, plans clos : Claude (comptés) {r_(comptes_clos['R'].mean()) if n else 'n.d.'} sur {n} ; "
+             f"règles {r_(G[G['etat'] == 'clos']['R'].mean()) if (G['etat'] == 'clos').any() else 'n.d.'} "
+             f"sur {int((G['etat'] == 'clos').sum())}. Pour mémoire, long systématique à chaque plan de Claude "
+             f"{r_(C['ref_long'].mean()) if C['ref_long'].notna().any() else 'n.d.'}, short systématique "
+             f"{r_(C['ref_short'].mean()) if C['ref_short'].notna().any() else 'n.d.'}.")
+    L.append("")
+    L.append("## Intégrité du registre")
+    if anomalies:
+        L.append(f"**{len(anomalies)} anomalie(s) : une ligne déjà enregistrée a changé ou disparu.** Les plans "
+                 "concernés sortent du critère. Pour corriger un plan, ajouter une annulation et un nouveau plan.")
+        for a in anomalies:
+            L.append(f"- {a['cle']} : {a['nature']} (enregistrée le {a['enregistree']}).")
+    else:
+        L.append(f"Aucune modification détectée sur les {len(registre)} lignes enregistrées (`papier/registre.csv`).")
+    L.append("")
+    if len(annul):
+        L.append("## Annulations")
+        for a in annul.to_dict("records"):
+            e = effets.get(a["id"])
+            L.append(f"- {a['id']} : demandée pour {a['annule_utc']}, effective le "
+                     f"{e.strftime('%Y-%m-%d %H:%M') if e is not None else 'n.d.'} UTC ({a.get('motif', '')}).")
+        L.append("")
+
+    def table(df, regle):
+        T = ["| Plan | Créé (UTC) | Enregistré (UTC) | Sens | État | Entrée | Sortie | Motif | Résultat | En euros |"
+             + (" Compté |" if not regle else "")]
+        T.append("|---|---|---|---|---|---|---|---|---|---|" + ("---|" if not regle else ""))
+        for _, x in df.iloc[::-1].iterrows():
+            entree = "" if x["prix_entree"] != x["prix_entree"] else f"{x['t_entree']} à {prix(x['prix_entree'], fx)}"
+            T.append(f"| {x['id']} | {x['cree_utc']} | {x['enregistre_utc']} | {x['sens']} | {x['etat']} | {entree} | "
+                     f"{x['t_sortie']} | {x['motif']} | {r_(x['R'])} | {'' if x['eur'] != x['eur'] else eur(x['eur'], 2)} |"
+                     + (f" {x['compte'] or '–'}{' (' + x['raison'] + ')' if x['raison'] else ''} |" if not regle else ""))
+        return T
+
+    L.append("## Détail des plans de Claude")
+    L.extend(table(C, False))
+    L.append("")
+    if len(G):
+        L.append("## Détail des plans des règles")
+        L.extend(table(G, True))
+        L.append("")
+    L.append("Un plan « ouvert » affiche son résultat provisoire à la dernière clôture. Résultats hors financement "
+             "quand celui de Kraken n'est pas encore publié pour la période.")
     L.append("")
     with open(sortie, "w", encoding="utf-8") as f:
         f.write("\n".join(L))
-    print(f"Papier : {len(R)} plans, {n} clos.")
+    print(f"Papier : {len(C)} plans de Claude ({n} comptés clos), {len(G)} plans de règles, {len(anomalies)} anomalie(s).")
     return 0
 
 

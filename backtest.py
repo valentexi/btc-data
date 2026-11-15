@@ -88,12 +88,21 @@ def charger():
     return J, B
 
 
+FAMILLES = ["structure", "positionnement", "blockchain", "macro", "actifs"]
+
+
 def biais_mecanique(J: pd.DataFrame) -> pd.Series:
     """Approximation mécanique du biais de la méthode, sur cinq des sept familles.
 
     Seuils conventionnels fixés à l'avance, non optimisés. Les familles « flux » (ETF) et
     « événements » n'ont pas d'historique exploitable : elles sont absentes de ce test.
     """
+    f = familles_mecaniques(J)
+    return f["structure"] + f["positionnement"] + f["blockchain"] + f["macro"] + f["actifs"]
+
+
+def familles_mecaniques(J: pd.DataFrame) -> pd.DataFrame:
+    """Note de chaque famille (de −2 à +2), jour par jour. NaN quand la donnée de la famille manque."""
     c = J["cloture"]
     f1 = np.sign(c - J["mm200"]) + np.sign(c - J["mm50"])                     # structure du prix
     fin3 = J["fin_jour"].rolling(3).mean()
@@ -112,7 +121,8 @@ def biais_mecanique(J: pd.DataFrame) -> pd.Series:
     f6 = (np.sign(J["ndx"] - J["ndx"].rolling(50).mean())
           + (J["vix"] < 15).astype(float) - (J["vix"] > 25).astype(float)).clip(-2, 2)
     f6[J["vix"].isna()] = np.nan
-    return f1 + f2 + f4 + f5 + f6                                             # de −10 à +10, NaN si une famille manque
+    # somme de −10 à +10, NaN si une famille manque
+    return pd.DataFrame({"structure": f1, "positionnement": f2, "blockchain": f4, "macro": f5, "actifs": f6})
 
 
 # ---------------------------------------------------------------- simulations

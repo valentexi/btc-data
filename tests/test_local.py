@@ -210,6 +210,91 @@ def test_papier():
     verifier("papier : référence non dénouée = NaN", papier.reference(tard, B, 1) != papier.reference(tard, B, 1))
 
 
+def test_papier_v3():
+    import alertes
+    import regles
+    base = {"id": "T", "source": "test", "risque_eur": "2.5", "zone_bas": "", "zone_haut": "", "niveau": "",
+            "entree": "", "obj1": "", "expire_utc": "2024-01-03T00:00", "sortie_utc": "2024-01-04T00:00"}
+    B = bougies([(100, 101, 99, 100), (100, 103, 100, 102), (102, 102.5, 98, 98.5), (98.5, 99, 93, 94),
+                 (94, 95, 93.5, 94), (94, 94, 94, 94), (94, 94, 94, 94)])
+    pl = {**base, "cree_utc": "2024-01-01T03:00", "sens": "short", "declencheur": "zone_cloture_4h",
+          "zone_bas": "101.5", "zone_haut": "103", "niveau": "99", "stop": "103.5", "obj2": "93.5"}
+    # Annulations : jamais rétroactives
+    r = papier.evaluer(pl, B, annule=pd.Timestamp("2024-01-01T06:00", tz="UTC"))
+    verifier("annulation avant l'entrée", r["etat"] == "annulé avant entrée", r["etat"])
+    r = papier.evaluer({**pl, "obj2": "90"}, B, annule=pd.Timestamp("2024-01-01T13:00", tz="UTC"))
+    verifier("annulation après l'entrée : sortie à la clôture suivante", r["etat"] == "clos"
+             and r["motif"] == "sortie sur annulation" and r["t_sortie"] == "2024-01-01 12:00", f"{r['etat']} {r['motif']} {r['t_sortie']}")
+    r = papier.evaluer({**pl, "obj2": "90"}, B, annule=pd.Timestamp("2024-01-01T17:00", tz="UTC"))
+    verifier("annulation : jamais avant son heure", r["t_sortie"] == "2024-01-01 16:00", f"{r['etat']} {r['t_sortie']}")
+    # Entrée théorique trop éloignée du prix prévu (short prévu à 99,5, ouverture à 98,5 : −1 %)
+    r = papier.evaluer({**pl, "entree": "99.5"}, B)
+    verifier("entrée à plus de 0,5 % du prix prévu : annulé", r["etat"].startswith("annulé : entrée trop"), r["etat"])
+    r = papier.evaluer({**pl, "entree": "98.9"}, B)
+    verifier("entrée à moins de 0,5 % : pris", r["etat"] == "clos", r["etat"])
+    # Condition de financement, vérifiée à l'heure du déclenchement (12 h)
+    t12 = np.datetime64("2024-01-01T12:00")
+    fin_pos = pd.Series([0.01], index=[t12])
+    fin_neg = pd.Series([-0.01], index=[t12])
+    fin_vieux = pd.Series([0.01], index=[np.datetime64("2024-01-01T08:00")])
+    c = {**pl, "condition_financement": "positif_ou_nul"}
+    verifier("condition de financement remplie", papier.evaluer(c, B, fin_h=fin_pos)["etat"] == "clos")
+    r = papier.evaluer(c, B, fin_h=fin_neg)
+    verifier("condition de financement non remplie : abandonné", r["etat"].startswith("abandonné"), r["etat"])
+    r = papier.evaluer(c, B, fin_h=fin_vieux)
+    verifier("financement pas encore publié : en attente", "en attente de donnée" in r["etat"], r["etat"])
+    r = papier.evaluer(c, B, fin_h=pd.Series([0.01, 0.01], index=[np.datetime64("2024-01-01T08:00"), np.datetime64("2024-01-01T20:00")]))
+    verifier("financement inconnu au déclenchement : abandonné", r["etat"].startswith("abandonné : financement inconnu"), r["etat"])
+    # Plan de règle : stop et objectif en pourcentage de l'entrée réelle
+    pr = {"id": "S4-x", "cree_utc": "2024-01-01T07:30", "sens": "short", "declencheur": "immediat", "stop_pct": "0.04",
+          "obj_pct": "0.05", "duree_h": "168", "expire_utc": "2024-01-01T13:30", "risque_eur": "2.5"}
+    r = papier.evaluer(pr, B)
+    verifier("plan de règle : entrée, stop et objectif relatifs", r["t_entree"] == "2024-01-01 08:00"
+             and proche(r["stop_calcule"], 102 * 1.04) and proche(r["obj2_calcule"], 102 * 0.95) and r["motif"] == "objectif",
+             f"{r['etat']} {r['motif']}")
+    r = papier.evaluer({**pr, "cree_utc": "2024-01-01T21:00", "expire_utc": "2024-01-01T23:00"}, B)
+    verifier("plan de règle : expiré si aucune bougie avant l'expiration", r["etat"] == "expiré sans entrée", r["etat"])
+    # Empreintes
+    e1 = papier.empreinte({"id": "P1", "stop": "100", "note": "x"})
+    verifier("empreinte : colonne vide ajoutée sans effet", e1 == papier.empreinte({"id": "P1", "stop": "100", "note": "x", "cond": ""}))
+    verifier("empreinte : valeur changée détectée", e1 != papier.empreinte({"id": "P1", "stop": "101", "note": "x"}))
+    # Paliers des bilans
+    verifier("paliers des bilans", papier.paliers_atteints(29) == [] and papier.paliers_atteints(30) == [30]
+             and papier.paliers_atteints(149) == [30, 60, 100] and papier.paliers_atteints(150) == [30, 60, 100, 150]
+             and papier.prochain_palier(0) == 30 and papier.prochain_palier(100) == 150)
+    jours_ = pd.date_range("2024-01-01", periods=30, freq="12D").strftime("%Y-%m-%d %H:%M")
+    bon = papier.bilans(pd.DataFrame({"t_entree": jours_, "R": [1.0, 0.5, 0.8] * 10}))
+    peu = papier.bilans(pd.DataFrame({"t_entree": pd.date_range("2024-01-01", periods=30, freq="D").strftime("%Y-%m-%d %H:%M"),
+                                      "R": [1.0] * 30}))
+    verifier("bilan favorable à 30 plans", len(bon) == 1 and bon[0]["verdict"] == "favorable", str(bon))
+    verifier("bilan : moins de 10 épisodes, pas de conclusion", peu[0]["verdict"].startswith("épisodes insuffisants"), str(peu))
+    # Supports majeurs et condition du short
+    n_ = 1500
+    cl = np.r_[np.linspace(100, 200, n_ - 3), [150, 140, 145]]
+    Js = pd.DataFrame({"date": pd.date_range("2020-01-01", periods=n_, freq="D").strftime("%Y-%m-%d"),
+                       "cloture": cl, "bas": cl * 0.99})
+    Js["mm200s"] = Js["cloture"].rolling(1400).mean()
+    Js["mm200"] = Js["cloture"].rolling(200).mean()
+    s_ = regles.supports_majeurs(Js)
+    etats = {x["nom"]: x["etat"] for x in s_["lignes"]}
+    verifier("supports : moyenne 200 jours cassée, retournement exclu", etats["Moyenne 200 jours"] == "cassé"
+             and s_["long_retournement"][0] is False, str(etats))
+    Js2 = Js.copy()
+    Js2.loc[Js2.index[-1], "cloture"] = 196.0      # reprise au-dessus de la moyenne 200 jours
+    s2 = regles.supports_majeurs(Js2)
+    verifier("supports : reprise en clôture reconnue", {x["nom"]: x["etat"] for x in s2["lignes"]}["Moyenne 200 jours"] == "repris")
+    verifier("condition du short : active seulement si les trois", regles.condition_short({"pose": [1]}, -0.01, 10)[0] is True
+             and regles.condition_short({"pose": [1]}, 0.01, 10)[0] is False and regles.condition_short({"pose": []}, -0.01, 10)[0] is False
+             and regles.condition_short({"pose": [1]}, None, 10)[0] is None)
+    # Alertes : simulation, une seule fois par événement
+    sim_ = alertes.Simulation()
+    x = {"id": "P9", "sens": "short", "etat": "déclenché, entrée à la prochaine bougie", "t_declenche": "2030-01-01 00:00",
+         "entree_prevue": "63100", "stop": "64900", "obj1": "62000", "obj2": "59500", "risque_eur": "2.5", "detail": ""}
+    titre, corps = alertes.corps_entree(x, 1.1, 63000.0, pd.Timestamp("2030-01-01T00:20", tz="UTC"))
+    verifier("alerte : titre et ordres", "P9 déclenché" in titre and "marge isolée" in corps and "0,5 %" in corps
+             and outils.prix(63100, 1.1) in corps and "@valentexi" in corps, titre)
+
+
 # -------------------------------------------------------------- 4. collecte
 class Reponse:
     def __init__(self, data=None, text="", content=b""):
@@ -443,6 +528,12 @@ def test_collecte():
         "bougies de 4 heures", "Contrat perpétuel Kraken", "croisée par défaut", "Liens avec le Bitcoin",
         "toutes les sources sont à jour", "max pain", "€ (")))
     verifier("relevé : pas de valeur manquante affichée", re.search(r"\bnan\b", texte.lower()) is None)
+    verifier("relevé : financement en direct et lecture mécanique", all(s_ in texte for s_ in (
+        "Financement Kraken en direct", "les longs paient les shorts", "Biais mécanique à la clôture",
+        "Supports majeurs", "Long de retournement :", "Condition éliminatoire du short")), texte[texte.find("## Dérivés"):][:300])
+    fh = outils.lire("financement_kraken_h.csv")
+    verifier("financement horaire enregistré", fh is not None and len(fh) > 24 * 100 and fh["date"].is_unique
+             and proche(fh["taux_8h_pct"].iloc[0], 0.0000125 * 800) or proche(fh["taux_8h_pct"].iloc[0], -0.00002 * 800))
 
     # Deuxième lancement : rien n'est perdu, rien n'est dupliqué
     noms = ("btc_jour.csv", "financement_kraken.csv", "financement_deribit.csv", "dvol.csv", "macro.csv",
@@ -556,6 +647,54 @@ def test_backtest():
     verifier("papier : bout en bout", code == 0 and res.loc["P1", "etat"] == "clos" and res.loc["P1", "motif"] == "durée"
              and res.loc["P2", "etat"] == "en attente du déclencheur" and "illisible" in res.loc["P3", "etat"]
              and "CRITÈRE NON ATTEINT" in txt, str(res["etat"].to_dict()))
+    reg = pd.read_csv(papier.REGISTRE, dtype=str)
+    verifier("registre : chaque plan enregistré une fois", sorted(reg["cle"]) == ["P1", "P2", "P3"])
+    verifier("plan enregistré après son entrée : hors critère", res.loc["P1", "compte"] == "non"
+             and "après l'entrée" in res.loc["P1", "raison"], str(res.loc["P1", "raison"]))
+    # Modifier une ligne enregistrée : anomalie signalée, registre inchangé
+    lignes_ = open(papier.PLANS, encoding="utf-8").read().replace("P2,", "P2,", 1).replace(",2099-01-01T00:00,", ",2098-01-01T00:00,")
+    open(papier.PLANS, "w", encoding="utf-8").write(lignes_)
+    papier.main()
+    txt2 = open(os.path.join(outils.RAPPORT, "papier.md"), encoding="utf-8").read()
+    reg2 = pd.read_csv(papier.REGISTRE, dtype=str)
+    verifier("registre : modification après coup détectée", "P2 : modifiée après enregistrement" in txt2
+             and reg2.equals(reg) and os.path.exists(os.path.join(papier.DOSSIER, "anomalies.csv")))
+    # Alertes en simulation : rien d'enregistré hors de GitHub Actions
+    import alertes
+    alertes.main()
+    verifier("alertes : simulation sans enregistrement", not os.path.exists(alertes.ALERTES))
+    sim_ = alertes.Simulation()
+    os.environ["BTC_MAINTENANT"] = str(pd.Timestamp(h4.iloc[-100]["date"]) + pd.Timedelta(hours=10))
+    alertes.main(client=sim_)
+    verifier("alertes : anomalie du registre signalée", any("registre papier" in e_[1] for e_ in sim_.envois), str(sim_.envois))
+    n_envois = len(sim_.envois)
+    alertes.main(client=sim_)
+    verifier("alertes : pas de doublon", len(sim_.envois) == n_envois, str(len(sim_.envois)))
+    del os.environ["BTC_MAINTENANT"]
+    # Règle mécanique : inscrite d'office seulement si le signal est actif et frais
+    import regles
+    J_, _ = backtest.charger()
+    b_ = regles.biais_du_jour(J_)
+    seuil0 = [dict(r) for r in regles.REGLES_PAPIER]
+    debut0 = regles.DEBUT_REGLES
+    regles.DEBUT_REGLES = "2000-01-01"
+    for r in regles.REGLES_PAPIER:
+        r["seuil"] = b_["biais"]                       # force le signal sur la dernière clôture
+    os.environ["BTC_MAINTENANT"] = str(pd.Timestamp(b_["date"]) + pd.Timedelta(hours=24, minutes=12))
+    papier.main()
+    pr_ = pd.read_csv(papier.PLANS_REGLES, dtype=str)
+    papier.main()
+    pr2 = pd.read_csv(papier.PLANS_REGLES, dtype=str)
+    verifier("règles : plans inscrits d'office, une fois", len(pr_) == 2 and len(pr2) == 2
+             and set(pr_["regle"]) == {"S4", "L7"}, str(pr_[["id", "cree_utc"]].values.tolist()))
+    os.environ["BTC_MAINTENANT"] = str(pd.Timestamp(b_["date"]) + pd.Timedelta(hours=49))
+    os.remove(papier.PLANS_REGLES)
+    papier.main()
+    verifier("règles : signal trop ancien ignoré", not os.path.exists(papier.PLANS_REGLES))
+    del os.environ["BTC_MAINTENANT"]
+    regles.DEBUT_REGLES = debut0
+    for r, r0 in zip(regles.REGLES_PAPIER, seuil0):
+        r["seuil"] = r0["seuil"]
     return texte, txt
 
 
@@ -563,6 +702,7 @@ if __name__ == "__main__":
     test_simulation()
     test_stats()
     test_papier()
+    test_papier_v3()
     test_collecte()
     rapport, pap = test_backtest()
     print()
