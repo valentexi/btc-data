@@ -1,3 +1,3 @@
 date,options_oi_calls_btc,options_oi_puts_btc,options_puts_calls_oi,options_puts_calls_volume,options_echeance,options_echeance_oi_btc,options_echeance_max_pain_usd,heure_utc,kraken_prix_marque,kraken_interet_ouvert_btc,kraken_financement_8h_pct,kraken_prevision_8h_pct,kraken_volume_24h_btc,deribit_interet_ouvert_usd,deribit_financement_8h_pct
 2026-11-14,,,,,,,,19:17,65516.05687,2301.5194,0.00333103,-0.0070065,8247.9172,729252580,3.2e-05
-2026-11-15,215128.6,161018.7,0.7484764927,2.075773961,2026-12-25,146343.4,75000,07:09,64411.16481,2172.8702,-0.00789181,-0.0014148,13768.364,760221430,3.1e-05
+2026-11-15,212388.4,160129.7,0.7539474849,2.125861799,2026-12-25,146355,75000,08:47,64685.0316,2104.4433,-0.00135292,0.01265896333,14296.9524,745403440,-3e-05

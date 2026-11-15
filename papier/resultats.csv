@@ -5,5 +5,5 @@ P003,short,expiré sans entrée,,,,,,,,,-1,,2026-11-14T14:25,journal (signal 9 v
 P004,short,expiré sans entrée,,,,,,,,,-1,,2026-11-14T16:53,journal (signal 10 plan A),Remplacé par le signal 11 (stop jugé trop proche)
 P005,short,expiré sans entrée,,,,,,,,,-1,,2026-11-14T16:53,journal (signaux 10 et 11 plan B),Cassure en clôture journalière ; remplacé par le signal 13 le 15 nov. à 1 h 08
 P006,short,expiré sans entrée,,,,,,,,,-1,,2026-11-14T19:20,journal (signal 11 plan A'),Rebond raté sous la moyenne 200 semaines ; remplacé par le signal 13 le 15 nov. à 1 h 08
-P007,short,ouvert,2026-11-15 04:00,64783,,en cours,0.16655,,0.41636,écart à l'entrée prévue -0.18 %,,,2026-11-15T00:08,journal (signaux 13 et 14 plan A''),Rebond raté ; configuration D-S au backtest : pas d avantage démontré
+P007,short,ouvert,2026-11-15 04:00,64783,,en cours,0.42822,,1.0705,écart à l'entrée prévue -0.18 %,,,2026-11-15T00:08,journal (signaux 13 et 14 plan A''),Rebond raté ; configuration D-S au backtest : pas d avantage démontré
 P008,short,en attente du déclencheur,,,,,,,,,,,2026-11-15T00:08,journal (signaux 13 et 14 plan B'),"Cassure ; soumis à un financement nul ou positif (signal 14), condition non vérifiable par le suivi automatique"

@@ -1,6 +1,6 @@
-# Mode papier (15/11/2026 07:09 UTC)
+# Mode papier (15/11/2026 08:47 UTC)
 
-Suivi automatique des plans des analyses, sans argent réel. Déclencheurs, stops et objectifs suivis heure par heure ; clôtures jugées sur les bougies de 4 heures. Prix d'entrée théorique : ouverture de la bougie qui suit le déclencheur. Résultats nets de frais et de glissement. Dernière bougie connue : 2026-11-15 06:00 UTC.
+Suivi automatique des plans des analyses, sans argent réel. Déclencheurs, stops et objectifs suivis heure par heure ; clôtures jugées sur les bougies de 4 heures. Prix d'entrée théorique : ouverture de la bougie qui suit le déclencheur. Résultats nets de frais et de glissement. Dernière bougie connue : 2026-11-15 07:00 UTC.
 
 ## Bilan
 - Plans enregistrés : 8. Entrés : 2. Clos : 1. Ouverts : 1. En attente : 1. Expirés sans entrée : 5.
@@ -18,7 +18,7 @@ Suivi automatique des plans des analyses, sans argent réel. Déclencheurs, stop
 | Plan | Créé (UTC) | Sens | État | Entrée | Sortie | Motif | Résultat | En euros | Réf. long | Réf. short |
 |---|---|---|---|---|---|---|---|---|---|---|
 | P008 | 2026-11-15T00:08 | short | en attente du déclencheur |  |  |  | n.d. |  | n.d. | n.d. |
-| P007 | 2026-11-15T00:08 | short | ouvert | 2026-11-15 04:00 à 58 617 € (64 783 $) |  | en cours | +0,17 R | 0,42 € | n.d. | n.d. |
+| P007 | 2026-11-15T00:08 | short | ouvert | 2026-11-15 04:00 à 58 617 € (64 783 $) |  | en cours | +0,43 R | 1,07 € | n.d. | n.d. |
 | P006 | 2026-11-14T19:20 | short | expiré sans entrée |  |  |  | n.d. |  | -1,00 R | n.d. |
 | P005 | 2026-11-14T16:53 | short | expiré sans entrée |  |  |  | n.d. |  | -1,00 R | n.d. |
 | P004 | 2026-11-14T16:53 | short | expiré sans entrée |  |  |  | n.d. |  | -1,00 R | n.d. |
