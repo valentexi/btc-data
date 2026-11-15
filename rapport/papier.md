@@ -1,6 +1,6 @@
-# Mode papier (15/11/2026 15:38 UTC)
+# Mode papier (15/11/2026 18:13 UTC)
 
-Suivi automatique, sans argent réel. Déclencheurs, stops et objectifs suivis heure par heure ; clôtures jugées sur les bougies de 4 heures ; entrée théorique à l'ouverture de la bougie qui suit le déclencheur. Résultats nets de frais et de glissement. Dernière bougie connue : 2026-11-15 14:00 UTC.
+Suivi automatique, sans argent réel. Déclencheurs, stops et objectifs suivis heure par heure ; clôtures jugées sur les bougies de 4 heures ; entrée théorique à l'ouverture de la bougie qui suit le déclencheur. Résultats nets de frais et de glissement. Dernière bougie connue : 2026-11-15 17:00 UTC.
 
 ## Plans de Claude
 - Enregistrés : 8. Entrés : 2 (clos 1, ouverts 1). En attente : 1. Expirés ou annulés sans entrée : 5. Abandonnés (condition non remplie) : 0.
@@ -15,7 +15,7 @@ Bilans à dates fixes : à 30, 60, 100 plans comptés clos, puis tous les 50. Un
 - **Verdict : CRITÈRE NON ATTEINT, rester en mode papier.**
 
 ## Règles mécaniques inscrites d'office (sans jugement)
-S4 : short quand le biais mécanique est ≤ −5. L7 : long quand il est ≥ +5. Plan identique au backtest (stop 4 %, objectif 6,5 %, 7 jours au plus), entrée à l'ouverture de l'heure qui suit l'inscription, une position à la fois par règle. Elles servent d'étalon : le jugement de Claude n'a d'intérêt que s'il fait mieux qu'elles.
+S4 : short quand le biais mécanique est ≤ −5. L7 : long quand il est ≥ +5. Plan identique au backtest (stop 4 %, objectif 6,5 %, 7 jours au plus), entrée à 0 h UTC, à l'ouverture qui suit la clôture du signal (même si le robot passe en retard, 24 h au plus), une position à la fois par règle. Elles servent d'étalon : le jugement de Claude n'a d'intérêt que s'il fait mieux qu'elles.
 
 - S4 : aucun plan clos ; ouverts 0.
 - L7 : aucun plan clos ; ouverts 0.
@@ -28,7 +28,7 @@ Aucune modification détectée sur les 8 lignes enregistrées (`papier/registre.
 | Plan | Créé (UTC) | Enregistré (UTC) | Sens | État | Entrée | Sortie | Motif | Résultat | En euros | Compté |
 |---|---|---|---|---|---|---|---|---|---|---|
 | P008 | 2026-11-15T00:08 | 2026-11-15 00:50 | short | en attente du déclencheur |  |  |  | n.d. |  | – |
-| P007 | 2026-11-15T00:08 | 2026-11-15 00:50 | short | ouvert | 2026-11-15 04:00 à 58 617 € (64 783 $) |  | en cours | -0,00 R | -0,01 € | oui |
+| P007 | 2026-11-15T00:08 | 2026-11-15 00:50 | short | ouvert | 2026-11-15 04:00 à 58 617 € (64 783 $) |  | en cours | +0,11 R | 0,27 € | oui |
 | P006 | 2026-11-14T19:20 | 2026-11-15 00:44 | short | expiré sans entrée |  |  |  | n.d. |  | – |
 | P005 | 2026-11-14T16:53 | 2026-11-15 00:44 | short | expiré sans entrée |  |  |  | n.d. |  | – |
 | P004 | 2026-11-14T16:53 | 2026-11-15 00:44 | short | expiré sans entrée |  |  |  | n.d. |  | – |
