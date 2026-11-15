@@ -22,8 +22,10 @@ FRAIS_STRESS = 0.0010       # conditions dégradées : frais doublés
 GLISSEMENT_STRESS = 0.0030  # et glissement triplé
 
 
-def barres(h4: pd.DataFrame, fin_jour: dict[str, float] | None = None) -> dict:
-    """Prépare les tableaux. fin_jour : part payée par les longs chaque jour (fraction), par date."""
+def barres(h4: pd.DataFrame, fin_jour: dict[str, float] | None = None, pas_h: int = 4) -> dict:
+    """Prépare les tableaux pour des bougies de `pas_h` heures (4 par défaut, 1 pour le suivi papier).
+
+    fin_jour : part payée par les longs chaque jour (fraction), par date."""
     t = pd.to_datetime(h4["date"], utc=True)
     B = {
         "t": t.dt.tz_convert(None).to_numpy().astype("datetime64[s]"),   # début de chaque bougie, UTC
@@ -34,10 +36,11 @@ def barres(h4: pd.DataFrame, fin_jour: dict[str, float] | None = None) -> dict:
         "l": h4["bas"].to_numpy(float),
         "c": h4["cloture"].to_numpy(float),
         "n": len(h4),
+        "pas_h": pas_h,
     }
     fin = np.full(len(h4), np.nan)
     if fin_jour:
-        fin = np.array([fin_jour.get(j, np.nan) for j in B["jour"]], float) / 6.0
+        fin = np.array([fin_jour.get(j, np.nan) for j in B["jour"]], float) / (24.0 / pas_h)
     B["fin"] = fin
     return B
 

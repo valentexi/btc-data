@@ -4,7 +4,7 @@
 Mode papier : suivi automatique des plans proposés par les analyses, sans argent réel.
 
 Chaque plan est une ligne de papier/plans.csv, écrite AVANT que le marché ne tranche.
-Ce script rejoue ensuite les bougies de 4 heures : déclencheur atteint ou non, prix
+Ce script rejoue ensuite le marché heure par heure (bougies de 4 heures pour les clôtures) : déclencheur atteint ou non, prix
 d'entrée théorique, sortie, résultat net de frais. Il compare les plans à deux
 références mécaniques (un long et un short systématiques au moment de chaque plan).
 
@@ -67,8 +67,11 @@ def evaluer(plan: dict, B: dict) -> dict:
     if stop is None or obj2 is None or cree is None:
         res["etat"] = "plan incomplet"
         return res
+    pas = int(B.get("pas_h", 4))
     debut = B["t"]                                   # début de chaque bougie
-    fin = debut + np.timedelta64(4, "h")
+    fin = debut + np.timedelta64(pas, "h")
+    heure_fin = (pd.DatetimeIndex(debut).hour.to_numpy() + pas) % 24
+    cloture_4h, cloture_jour = heure_fin % 4 == 0, heure_fin == 0    # la bougie termine-t-elle une bougie de 4 h, un jour ?
     cree64 = np.datetime64(cree.tz_convert(None))
     exp64 = np.datetime64(expire.tz_convert(None)) if expire is not None else np.datetime64("2262-01-01")
     apres = np.flatnonzero(debut >= cree64)          # bougies entièrement postérieures à la création
@@ -94,7 +97,7 @@ def evaluer(plan: dict, B: dict) -> dict:
                 break
     elif decl in ("cloture_4h", "cloture_jour") and niveau is not None:
         for k in closes:
-            if decl == "cloture_jour" and not str(B["date"][k]).endswith("20:00"):
+            if not (cloture_jour[k] if decl == "cloture_jour" else cloture_4h[k]):
                 continue
             if au_dela(k):
                 i = int(k) + 1
@@ -104,7 +107,7 @@ def evaluer(plan: dict, B: dict) -> dict:
         for k in closes:
             if debut[k] >= cree64 and (B["h"][k] >= zb if sens == -1 else B["l"][k] <= zh):
                 dans_zone = True
-            if dans_zone and au_dela(k):
+            if dans_zone and cloture_4h[k] and au_dela(k):
                 i = int(k) + 1
                 break
     else:
@@ -144,7 +147,7 @@ def reference(plan: dict, B: dict, sens: int) -> float:
         return float("nan")
     i = int(apres[0])
     E = B["o"][i]
-    i_max = i + REF_BARRES - 1
+    i_max = i + REF_BARRES * 4 // int(B.get("pas_h", 4)) - 1
     t = simuler(B, i, sens, E * (1 - sens * REF_STOP), None, E * (1 + sens * REF_OBJ), i_max)
     if t is None or (i_max > B["n"] - 1 and "durée" in t["motif"]):
         return float("nan")                           # pas encore dénoué
@@ -166,15 +169,27 @@ def main() -> int:
     plans = pd.read_csv(PLANS, dtype=str).fillna("")
     fk = lire("financement_kraken.csv")
     fin = {} if fk is None else {d: v / 100.0 for d, v in zip(fk["date"], fk["cumul_jour_pct"])}
-    B = barres(h4.sort_values("date").reset_index(drop=True), fin)
+    B4 = barres(h4.sort_values("date").reset_index(drop=True), fin)
+    h1 = lire("h1_recent.csv")
+    B1 = barres(h1.sort_values("date").reset_index(drop=True), fin, pas_h=1) if h1 is not None and len(h1) > 48 else None
+
+    def bougies_pour(pl):
+        """Bougies d'une heure quand elles couvrent le plan (déclencheurs jugés à l'heure près), sinon de 4 heures."""
+        cree = _t(pl.get("cree_utc"))
+        if B1 is not None and cree is not None and np.datetime64(cree.tz_convert(None)) >= B1["t"][0]:
+            return B1
+        return B4
+
+    B = B1 if B1 is not None else B4
     fx = float(p["eurusd"].dropna().iloc[-1]) if p is not None and "eurusd" in p.columns else float("nan")
 
     lignes = []
     for _, pl in plans.iterrows():
         pl = pl.to_dict()
         try:
-            r = evaluer(pl, B)
-            r["ref_long"], r["ref_short"] = reference(pl, B, 1), reference(pl, B, -1)
+            Bp = bougies_pour(pl)
+            r = evaluer(pl, Bp)
+            r["ref_long"], r["ref_short"] = reference(pl, Bp, 1), reference(pl, Bp, -1)
         except Exception as e:  # noqa: BLE001 - une ligne mal saisie ne doit pas bloquer les autres
             r = {"id": pl.get("id", "?"), "sens": pl.get("sens", ""), "etat": f"ligne illisible : {e}", "t_entree": "",
                  "prix_entree": np.nan, "t_sortie": "", "motif": "", "R": np.nan, "R_fin": np.nan, "eur": np.nan,
@@ -187,8 +202,9 @@ def main() -> int:
     clos = R[R["etat"] == "clos"]
     n = len(clos)
     L = [f"# Mode papier ({dt.datetime.now(dt.timezone.utc).strftime('%d/%m/%Y %H:%M')} UTC)", ""]
-    L.append("Suivi automatique des plans des analyses, sans argent réel. Prix d'entrée théorique : ouverture de la "
-             "bougie de 4 heures qui suit le déclencheur. Résultats nets de frais et de glissement. "
+    L.append("Suivi automatique des plans des analyses, sans argent réel. Déclencheurs, stops et objectifs suivis heure "
+             "par heure ; clôtures jugées sur les bougies de 4 heures. Prix d'entrée théorique : ouverture de la "
+             "bougie qui suit le déclencheur. Résultats nets de frais et de glissement. "
              f"Dernière bougie connue : {B['date'][-1]} UTC.")
     L.append("")
     L.append("## Bilan")

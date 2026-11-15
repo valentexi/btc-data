@@ -19,6 +19,7 @@ Fichiers produits dans data/ :
   macro.csv               taux américains (Trésor), VIX (CBOE), Nasdaq-100, S&P 500, DXY, Brent (Yahoo)
   onchain.csv             données de la blockchain (Coin Metrics, offre gratuite)
   h4/btc_h4_AAAA-MM.csv   bougies de 4 heures (Coinbase, heures agrégées), un fichier par mois
+  h1_recent.csv           bougies d'une heure des 75 derniers jours (suivi papier)
   financement_deribit.csv financement historique réel du contrat perpétuel Deribit, depuis 2019
   kraken_contrat.csv      paramètres réels du contrat Kraken (marges, levier maximum, frais)
   actifs.csv, betas.csv   cours d'un panier d'actifs liés au Bitcoin et leurs bêtas
@@ -460,16 +461,33 @@ def agreger_h4(lignes: list, maintenant_: dt.datetime) -> pd.DataFrame:
     return out[["date", "ouverture", "haut", "bas", "cloture", "volume_btc", "heures"]]
 
 
+def enregistrer_heures(lignes: list, maintenant_: dt.datetime, jours: int = 75) -> None:
+    """Garde les bougies d'une heure terminées des 75 derniers jours : le suivi papier s'en sert
+    pour juger les déclencheurs à l'heure près."""
+    h = pd.DataFrame(lignes, columns=["t", "bas", "haut", "ouverture", "cloture", "volume_btc"]).astype(float)
+    h = h.drop_duplicates(subset="t")
+    h = h[h["t"] + 3600 <= maintenant_.timestamp()]
+    if h.empty:
+        return
+    h["date"] = pd.to_datetime(h["t"], unit="s", utc=True).dt.strftime("%Y-%m-%d %H:%M")
+    tout = fusionner("h1_recent.csv", h[["date", "ouverture", "haut", "bas", "cloture"]])
+    limite = (maintenant_ - dt.timedelta(days=jours)).strftime("%Y-%m-%d %H:%M")
+    tout[tout["date"] >= limite].to_csv(chemin("h1_recent.csv"), index=False, float_format="%.10g")
+
+
 def src_h4():
     ancien = lire_h4()
     if ancien is None:
         d0 = dt.datetime.fromisoformat(DEBUT_H4 + "T00:00:00+00:00")
     else:
         d0 = dt.datetime.fromisoformat(str(ancien["date"].max()).replace(" ", "T") + ":00+00:00") - dt.timedelta(days=2)
+    if lire("h1_recent.csv") is None:   # première fois : il faut 60 jours d'heures pour le suivi papier
+        d0 = min(d0, maintenant() - dt.timedelta(days=60))
     lignes, note = _heures_coinbase(d0, maintenant())
     source = "(Coinbase, heures agrégées"
     if lignes:
         df = agreger_h4(lignes, maintenant())
+        enregistrer_heures(lignes, maintenant())
     else:  # secours : Kraken ne donne que les 720 dernières bougies de 4 heures
         j = get("https://api.kraken.com/0/public/OHLC", {"pair": "XBTUSD", "interval": 240}).json()
         cle = [k for k in j["result"] if k != "last"][0]

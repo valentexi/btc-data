@@ -191,6 +191,20 @@ def test_papier():
     r = papier.evaluer({**base, "cree_utc": "2024-01-01T00:00", "sens": "long", "declencheur": "immediat",
                         "stop": "", "obj2": "110"}, B)
     verifier("papier : plan incomplet signalé", r["etat"] == "plan incomplet")
+    # Suivi heure par heure : plan créé à 0 h 08, zone touchée à 1 h, clôture 4 h (bougie de 3 h) sous le niveau
+    hh = pd.DataFrame([(100, 100.5, 99.5, 100), (100, 102, 100, 101.5), (101.5, 101.6, 99, 99.5), (99.5, 99.8, 98, 98.6),
+                       (98.6, 98.7, 96, 96.5), (96.5, 96.6, 93, 93.4), (93.4, 93.5, 93.2, 93.3)],
+                      columns=["ouverture", "haut", "bas", "cloture"]).astype(float)
+    hh["date"] = [f"2024-01-01 {k:02d}:00" for k in range(len(hh))]
+    B1 = sim.barres(hh, {"2024-01-01": 0.0}, pas_h=1)
+    ph = {**pl, "cree_utc": "2024-01-01T00:08", "zone_bas": "101.5", "zone_haut": "103", "niveau": "99"}
+    r = papier.evaluer(ph, B1)
+    verifier("papier : déclencheur à l'heure près", r["t_entree"] == "2024-01-01 04:00" and proche(r["prix_entree"], 98.6)
+             and r["motif"] == "objectif", f"{r['etat']} {r['t_entree']}")
+    r = papier.evaluer({**ph, "niveau": "99.6"}, B1)   # la clôture de 2 h est sous 99,6 mais ne termine pas une bougie de 4 h
+    verifier("papier : seules les clôtures de 4 heures comptent", r["t_entree"] == "2024-01-01 04:00", r["t_entree"])
+    r = papier.evaluer({**ph, "cree_utc": "2024-01-01T02:30"}, B1)   # créé après le passage dans la zone
+    verifier("papier : heure de création respectée", r["etat"] != "clos", r["etat"])
     verifier("papier : référence long dénouée au stop", proche(papier.reference(pl, B, 1), -1.0))
     tard = {**pl, "cree_utc": "2024-01-02T00:00"}
     verifier("papier : référence non dénouée = NaN", papier.reference(tard, B, 1) != papier.reference(tard, B, 1))
@@ -383,6 +397,10 @@ def test_collecte():
     verifier("4 heures : calées sur 0, 4, 8... h UTC, un fichier par mois",
              set(h4["date"].str[11:]) == {"00:00", "04:00", "08:00", "12:00", "16:00", "20:00"}
              and len(os.listdir(outils.chemin("h4"))) > 50)
+
+    h1 = outils.lire("h1_recent.csv")
+    verifier("heures récentes : 75 jours au plus, heures terminées", 59 * 24 <= len(h1) <= 75 * 24 + 1
+             and h1["date"].is_unique and h1["date"].max() == H1["t"].iloc[-1].strftime("%Y-%m-%d %H:%M"), str(len(h1)))
 
     f = outils.lire("financement_kraken.csv")
     verifier("financement Kraken : jour incomplet écarté, 0,01 % par 8 h",
