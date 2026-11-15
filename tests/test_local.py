@@ -224,7 +224,8 @@ def test_scenarios_et_bougies():
              papier.configuration("P7", "Rebond raté ; configuration D-S au backtest : pas d avantage", {}) == "D-S"
              and papier.configuration("P8", "Cassure ; soumis à un financement", {}) == ""
              and papier.configuration("P8", "Cassure", {"P8": "C-S"}) == "C-S"
-             and papier.configuration("P9", "config B-S-mm200", {}) == "B-S-mm200")
+             and papier.configuration("P9", "config B-S-mm200", {}) == "B-S-mm200"
+             and papier.configuration("P9", "B-L-mm200s : rebond sur la moyenne 200 semaines", {}) == "B-L-mm200s")
     # Scénario : jugé sur la clôture de la dernière bougie de 4 heures terminée à l'échéance
     B = bougies([(100, 101, 99, 100)] * 5 + [(100, 101, 94, 95), (95, 120, 95, 118), (118, 119, 117, 118)])
     sc = {"id": "S", "cree_utc": "2024-01-01T02:00", "horizon_j": "1", "seuil_bas": "100", "seuil_haut": "110",

@@ -409,7 +409,7 @@ def configuration(ident: str, note: str, table: dict[str, str]) -> str:
     """Code de la configuration du backtest (A-L, C-S, D-S...) : fichier configurations.csv, sinon lu dans la note."""
     if table.get(ident):
         return table[ident]
-    m = re.search(r"(?<![\w-])([A-D]-[LS]\+?(?:-mm\d+)?)(?![\w-])", str(note))
+    m = re.search(r"(?<![\w-])([A-D]-[LS]\+?(?:-mm\d+s?)?)(?![\w-])", str(note))
     return m.group(1) if m else ""
 
 
