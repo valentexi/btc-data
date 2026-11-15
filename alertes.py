@@ -144,6 +144,16 @@ def main(client=None) -> int:
     simule = client is None and not (jeton and os.environ.get("GITHUB_ACTIONS") == "true")
     if client is None:
         client = Simulation() if simule else GitHub(jeton)
+    if os.environ.get("BTC_TEST_ALERTE", "").lower() == "true":
+        # Test de bout en bout, lancé à la main (case « test_alerte » du bouton Run workflow) : rien n'est enregistré.
+        try:
+            n = client.ouvrir("BTC · test d'alerte (rien à faire)",
+                              f"{DESTINATAIRE} Ceci est un **test** envoyé par le robot le {paris(quand)} (Paris). "
+                              "Si cette notification arrive sur ton téléphone, les alertes de plans arriveront aussi.")
+            client.commenter_et_fermer(n, "Test terminé, issue fermée automatiquement.")
+            print("Alertes : test envoyé.")
+        except Exception as e:  # noqa: BLE001
+            print(f"Alerte de test : échec {e}")
     p, h1 = lire("btc_jour.csv"), lire("h1_recent.csv")
     fx = float(p["eurusd"].dropna().iloc[-1]) if p is not None and "eurusd" in p.columns else 1.0
     dernier = float(h1.sort_values("date")["cloture"].iloc[-1]) if h1 is not None and len(h1) else None

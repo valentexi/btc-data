@@ -330,8 +330,12 @@ def generer_regles(regles_df: pd.DataFrame, evals: dict, quand: pd.Timestamp) ->
     jour = b["date"]
     if jour < regles.DEBUT_REGLES:
         return regles_df
-    limite = pd.Timestamp(jour, tz="UTC") + pd.Timedelta(days=2)   # au plus 24 h après la clôture
-    if quand >= limite:
+    # Le plan est daté de la clôture qui donne le signal (0 h UTC), pas du passage du robot : l'entrée se fait
+    # à l'ouverture de 0 h UTC, comme au backtest, même si le lancement programmé a du retard. L'heure réelle
+    # d'inscription reste dans papier/registre.csv (première apparition).
+    cloture = pd.Timestamp(jour, tz="UTC") + pd.Timedelta(days=1)
+    limite = cloture + pd.Timedelta(days=1)                         # au plus 24 h après la clôture
+    if quand < cloture or quand >= limite:
         return regles_df
     nouveaux = []
     for r in regles.REGLES_PAPIER:
@@ -344,10 +348,10 @@ def generer_regles(regles_df: pd.DataFrame, evals: dict, quand: pd.Timestamp) ->
         if en_cours:
             continue                                   # une position à la fois par règle, comme au backtest
         nouveaux.append({
-            "id": ident, "regle": r["id"], "cree_utc": quand.strftime("%Y-%m-%dT%H:%M"),
+            "id": ident, "regle": r["id"], "cree_utc": cloture.strftime("%Y-%m-%dT%H:%M"),
             "source": f"règle {r['id']} : {r['nom']}", "sens": "long" if r["sens"] == 1 else "short",
             "declencheur": "immediat", "stop_pct": regles.STOP_PCT, "obj_pct": regles.OBJ_PCT,
-            "duree_h": regles.DUREE_H, "expire_utc": (quand + pd.Timedelta(hours=6)).strftime("%Y-%m-%dT%H:%M"),
+            "duree_h": regles.DUREE_H, "expire_utc": (cloture + pd.Timedelta(hours=6)).strftime("%Y-%m-%dT%H:%M"),
             "risque_eur": 2.5, "biais": int(b["biais"]), "note": f"signal de la clôture du {jour}",
         })
     if not nouveaux:
@@ -532,7 +536,8 @@ def main() -> int:
     L.append("")
     L.append("## Règles mécaniques inscrites d'office (sans jugement)")
     L.append("S4 : short quand le biais mécanique est ≤ −5. L7 : long quand il est ≥ +5. Plan identique au backtest "
-             "(stop 4 %, objectif 6,5 %, 7 jours au plus), entrée à l'ouverture de l'heure qui suit l'inscription, "
+             "(stop 4 %, objectif 6,5 %, 7 jours au plus), entrée à 0 h UTC, à l'ouverture qui suit la clôture du signal (même si le "
+             "robot passe en retard, 24 h au plus), "
              "une position à la fois par règle. Elles servent d'étalon : le jugement de Claude n'a d'intérêt que s'il "
              "fait mieux qu'elles.")
     L.append("")

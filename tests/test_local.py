@@ -687,6 +687,15 @@ def test_backtest():
     pr2 = pd.read_csv(papier.PLANS_REGLES, dtype=str)
     verifier("règles : plans inscrits d'office, une fois", len(pr_) == 2 and len(pr2) == 2
              and set(pr_["regle"]) == {"S4", "L7"}, str(pr_[["id", "cree_utc"]].values.tolist()))
+    # Un passage en retard du robot ne décale pas l'étalon : le plan reste daté de la clôture (0 h UTC)
+    cloture_ = (pd.Timestamp(b_["date"]) + pd.Timedelta(days=1)).strftime("%Y-%m-%dT%H:%M")
+    os.environ["BTC_MAINTENANT"] = str(pd.Timestamp(b_["date"]) + pd.Timedelta(hours=30))
+    os.remove(papier.PLANS_REGLES)
+    papier.main()
+    pr3 = pd.read_csv(papier.PLANS_REGLES, dtype=str)
+    verifier("règles : plan daté de la clôture, même inscrit en retard", len(pr3) == 2
+             and set(pr_["cree_utc"]) == {cloture_} and set(pr3["cree_utc"]) == {cloture_}
+             and pr3[papier.COLONNES_REGLES].equals(pr_[papier.COLONNES_REGLES]), str(pr3["cree_utc"].tolist()))
     os.environ["BTC_MAINTENANT"] = str(pd.Timestamp(b_["date"]) + pd.Timedelta(hours=49))
     os.remove(papier.PLANS_REGLES)
     papier.main()

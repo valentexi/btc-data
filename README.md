@@ -9,7 +9,8 @@ GitHub Actions lance les scripts tout seul :
 | Quand (UTC) | Quoi |
 |---|---|
 | 4 h 47 chaque jour | Relevé complet (`collecte.py`), suivi papier (`papier.py`), backtest (`backtest.py`) |
-| 0 h 12, 8 h 12, 12 h 12, 16 h 12, 20 h 12 | Mise à jour légère après chaque clôture de bougie de 4 heures : relevé et suivi papier |
+| Toutes les heures, à la minute 12 | Relevé, suivi papier et alertes. GitHub ne garantit pas ses horaires (retards, passages sautés) : un passage par heure rend l'outil insensible à un passage manqué ; le backtest est rattrapé s'il a plus de 26 heures |
+| À la main, case « test_alerte » | Envoie une alerte de test (issue ouverte puis fermée) pour vérifier la notification sur le téléphone |
 | À chaque modification du code ou de `papier/plans.csv` | Tests, puis tout le reste |
 
 ## Où regarder

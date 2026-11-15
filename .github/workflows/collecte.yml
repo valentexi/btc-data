@@ -2,9 +2,16 @@ name: Collecte BTC
 
 on:
   schedule:
-    - cron: "47 4 * * *"                 # relevé complet et backtest, tous les jours à 4 h 47 UTC
-    - cron: "12 0,8,12,16,20 * * *"      # mise à jour légère après chaque clôture de bougie de 4 heures
+    # Les lancements programmés de GitHub ne sont pas garantis (retards de plusieurs heures, passages sautés :
+    # constaté les 14 et 15 nov. 2026). Un passage par heure rend l'outil insensible à un passage manqué.
+    - cron: "47 4 * * *"                 # relevé et backtest du jour, à 4 h 47 UTC
+    - cron: "12 * * * *"                 # relevé, suivi papier et alertes, toutes les heures
   workflow_dispatch:                      # bouton « Run workflow » dans l'onglet Actions
+    inputs:
+      test_alerte:
+        description: "Envoyer une alerte de test sur le téléphone"
+        type: boolean
+        default: false
   push:
     branches: [main]
     paths:
@@ -46,9 +53,23 @@ jobs:
         if: always()
         env:
           GITHUB_TOKEN: ${{ github.token }}
+          BTC_TEST_ALERTE: ${{ github.event_name == 'workflow_dispatch' && inputs.test_alerte }}
         run: python alertes.py
+      - name: Le backtest a-t-il plus de 26 heures ?
+        id: bt
+        if: always()
+        run: |
+          python - <<'EOF' >> "$GITHUB_OUTPUT"
+          import datetime as dt, pathlib, re
+          p = pathlib.Path("rapport/backtest.md")
+          m = re.search(r"\((\d{2})/(\d{2})/(\d{4}) (\d{2}):(\d{2}) UTC\)", p.read_text(encoding="utf-8").split("\n", 1)[0]) if p.exists() else None
+          fait = dt.datetime(int(m[3]), int(m[2]), int(m[1]), int(m[4]), int(m[5]), tzinfo=dt.timezone.utc) if m else None
+          age = (dt.datetime.now(dt.timezone.utc) - fait).total_seconds() / 3600 if fait else 1e9
+          print("en_retard=" + ("oui" if age > 26 else "non"))
+          EOF
       - name: Lancer le backtest
-        if: always() && (github.event_name != 'schedule' || github.event.schedule == '47 4 * * *')
+        # À chaque envoi de code, au passage de 4 h 47, et en rattrapage si ce passage a été sauté.
+        if: always() && (github.event_name != 'schedule' || github.event.schedule == '47 4 * * *' || steps.bt.outputs.en_retard == 'oui')
         run: python backtest.py
       - name: Enregistrer dans le dépôt
         if: always()
