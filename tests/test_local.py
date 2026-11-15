@@ -3,11 +3,13 @@
 """
 Tests locaux, sans réseau.
 
-1. Simulation : cas construits à la main (stop, objectif, les deux le même jour, écart, durée, short).
-2. Collecte : réponses simulées dans le format exact renvoyé par chaque API.
-3. Bout en bout : collecte simulée puis backtest sur un historique artificiel.
+1. Simulation d'un trade sur bougies de 4 heures : cas construits à la main.
+2. Statistiques : épisodes, bootstrap par blocs.
+3. Mode papier : chaque type de déclencheur.
+4. Collecte : réponses simulées au format exact de chaque API, relance, pannes.
+5. Backtest de bout en bout sur un historique artificiel, sans regard vers l'avenir.
 
-Usage : python tests/test_local.py
+Usage : python tests/test_local.py [--rapport]
 """
 from __future__ import annotations
 
@@ -27,11 +29,15 @@ ICI = os.path.dirname(os.path.abspath(__file__))
 TMP = tempfile.mkdtemp(prefix="btc-test-")
 os.environ["BTC_DATA_DIR"] = os.path.join(TMP, "data")
 os.environ["BTC_RAPPORT_DIR"] = os.path.join(TMP, "rapport")
+os.environ["BTC_PLANS"] = os.path.join(TMP, "papier", "plans.csv")
 sys.path.insert(0, os.path.dirname(ICI))
 
 import backtest  # noqa: E402
 import collecte  # noqa: E402
 import outils  # noqa: E402
+import papier  # noqa: E402
+import simulation as sim  # noqa: E402
+import stats  # noqa: E402
 
 ECHECS = []
 
@@ -47,86 +53,150 @@ def proche(a: float, b: float, tol: float = 1e-9) -> bool:
 
 
 # ------------------------------------------------------------ 1. simulation
-def bougies(lignes):
-    """lignes : (ouverture, haut, bas, clôture)."""
+def bougies(lignes, debut="2024-01-01 00:00", fin=0.0):
+    """lignes : (ouverture, haut, bas, clôture), bougies de 4 heures consécutives."""
     df = pd.DataFrame(lignes, columns=["ouverture", "haut", "bas", "cloture"]).astype(float)
-    df["date"] = [(dt.date(2024, 1, 1) + dt.timedelta(days=i)).isoformat() for i in range(len(df))]
-    df["fin_jour"] = 0.0      # pas de financement, pour vérifier les calculs à la main
-    df["eurusd"] = 1.10
-    return df
+    t0 = pd.Timestamp(debut)
+    df["date"] = [(t0 + pd.Timedelta(hours=4 * i)).strftime("%Y-%m-%d %H:%M") for i in range(len(df))]
+    jours = {d[:10] for d in df["date"]}
+    return sim.barres(df, None if fin is None else {j: fin for j in jours})
 
 
 def test_simulation():
-    risque = 0.04 + 2 * backtest.FRAIS + backtest.GLISSEMENT
-    sig = np.array([True, False, False, False, False])
+    F, G = sim.FRAIS, sim.GLISSEMENT
+    risque = 0.04 + 2 * F + G
+    plat = (100, 100, 100, 100)
 
-    # Long, objectif touché le 2e jour de position
-    df = bougies([(100, 100, 100, 100), (100, 102, 99, 101), (101, 107, 100, 106), (106, 106, 105, 105),
-                  (105, 105, 105, 105)])
-    t = backtest.simuler(df, sig, 1)[0]
-    verifier("long objectif : motif", t["motif"] == "objectif")
-    verifier("long objectif : net", proche(t["net"], 0.065 - 2 * backtest.FRAIS), f"{t['net']:.5f}")
-    verifier("long objectif : R", proche(t["R"], (0.065 - 0.001) / risque), f"{t['R']:.3f}")
+    B = bougies([(100, 102, 99, 101), (101, 107, 100, 106), plat])            # long, objectif unique
+    t = sim.simuler(B, 0, 1, 96, None, 106.5, 2)
+    verifier("long objectif unique", t["motif"] == "objectif" and proche(t["net"], 0.065 - 2 * F)
+             and proche(t["R"], (0.065 - 2 * F) / risque), f"{t['R']:.3f}")
 
-    # Long, stop touché
-    df = bougies([(100, 100, 100, 100), (100, 101, 95, 96), (96, 97, 95, 96), (96, 96, 96, 96), (96, 96, 96, 96)])
-    t = backtest.simuler(df, sig, 1)[0]
-    verifier("long stop : motif", t["motif"] == "stop")
-    verifier("long stop : perte = 1 R exactement", proche(t["R"], -1.0), f"{t['R']:.4f}")
+    B = bougies([(100, 101, 95, 96), plat])                                    # long, stop
+    t = sim.simuler(B, 0, 1, 96, None, 106.5, 1)
+    verifier("long stop = −1 R exactement", t["motif"] == "stop" and proche(t["R"], -1.0), f"{t['R']:.4f}")
 
-    # Stop et objectif touchés le même jour : on compte le stop
-    df = bougies([(100, 100, 100, 100), (100, 108, 95, 104), (104, 104, 104, 104), (104, 104, 104, 104),
-                  (104, 104, 104, 104)])
-    t = backtest.simuler(df, sig, 1)[0]
-    verifier("même jour : stop prioritaire", t["motif"] == "stop")
+    B = bougies([(100, 108, 95, 104), plat])                                   # les deux dans la même bougie
+    t = sim.simuler(B, 0, 1, 96, None, 106.5, 1)
+    verifier("même bougie : stop prioritaire", t["motif"] == "stop")
 
-    # Ouverture en écart sous le stop : sortie à l'ouverture, perte supérieure à 1 R
-    df = bougies([(100, 100, 100, 100), (100, 101, 99, 100), (90, 91, 89, 90), (90, 90, 90, 90), (90, 90, 90, 90)])
-    t = backtest.simuler(df, sig, 1)[0]
-    verifier("écart : sortie à l'ouverture", t["motif"] == "stop" and proche(t["prix_sortie"], 90.0))
-    verifier("écart : perte pire que 1 R", t["R"] < -2.0, f"{t['R']:.2f}")
+    B = bougies([(100, 101, 99, 100), (90, 91, 89, 90), plat])                 # ouverture en écart sous le stop
+    t = sim.simuler(B, 0, 1, 96, None, 106.5, 2)
+    verifier("écart : sortie à l'ouverture, pire que 1 R", t["motif"] == "stop" and t["R"] < -2.0, f"{t['R']:.2f}")
 
-    # Sortie à la durée : clôture du 3e jour avec durée = 3
-    df = bougies([(100, 100, 100, 100), (100, 101, 99, 100), (100, 102, 99, 101), (101, 103, 100, 102),
-                  (102, 110, 102, 110)])
-    t = backtest.simuler(df, sig, 1, duree=3)[0]
-    verifier("durée : motif et prix", t["motif"] == "durée" and proche(t["prix_sortie"], 102.0))
-    verifier("durée : net", proche(t["net"], 0.02 - 2 * backtest.FRAIS), f"{t['net']:.5f}")
+    B = bougies([(100, 101, 99, 100), (100, 102, 99, 101), (101, 103, 100, 102), (102, 110, 102, 110)])
+    t = sim.simuler(B, 0, 1, 96, None, 106.5, 2)                                # sortie à la durée
+    verifier("durée : clôture de la dernière bougie", t["motif"] == "durée" and proche(t["net"], 0.02 - 2 * F))
 
-    # Short, objectif touché (miroir du long)
-    df = bougies([(100, 100, 100, 100), (100, 101, 98, 99), (99, 100, 93, 94), (94, 94, 94, 94), (94, 94, 94, 94)])
-    t = backtest.simuler(df, sig, -1)[0]
-    verifier("short objectif : motif", t["motif"] == "objectif" and t["sens"] == "short")
-    verifier("short objectif : net", proche(t["net"], 0.065 - 2 * backtest.FRAIS), f"{t['net']:.5f}")
+    B = bougies([(100, 101, 98, 99), (99, 100, 93, 94), plat])                 # short, objectif
+    t = sim.simuler(B, 0, -1, 104, None, 93.5, 2)
+    verifier("short objectif", t["motif"] == "objectif" and proche(t["net"], 0.065 - 2 * F))
+    B = bougies([(100, 105, 99, 104), plat])
+    t = sim.simuler(B, 0, -1, 104, None, 93.5, 1)
+    verifier("short stop = −1 R", t["motif"] == "stop" and proche(t["R"], -1.0))
 
-    # Short, stop touché
-    df = bougies([(100, 100, 100, 100), (100, 105, 99, 104), (104, 104, 104, 104), (104, 104, 104, 104),
-                  (104, 104, 104, 104)])
-    t = backtest.simuler(df, sig, -1)[0]
-    verifier("short stop : perte = 1 R", t["motif"] == "stop" and proche(t["R"], -1.0), f"{t['R']:.4f}")
+    # Gestion en deux temps : moitié à l'objectif 1, stop ramené à l'entrée, reste à l'objectif 2
+    B = bougies([(100, 105, 99, 104), (104, 110, 103, 109), plat])
+    t = sim.simuler(B, 0, 1, 96, 104.8, 109.6, 2)
+    verifier("deux objectifs atteints", t["motif"] == "objectif"
+             and proche(t["net"], 0.5 * 0.048 + 0.5 * 0.096 - 2 * F), f"{t['net']:.5f}")
+    B = bougies([(100, 105, 99, 104), (104, 104, 99.5, 100), plat])
+    t = sim.simuler(B, 0, 1, 96, 104.8, 109.6, 2)
+    verifier("objectif 1 puis stop à l'entrée", t["motif"] == "stop à l'entrée"
+             and proche(t["net"], 0.5 * 0.048 - 2 * F - 0.5 * G), f"{t['net']:.5f}")
+    B = bougies([(100, 105, 99.5, 104), plat, plat])
+    t = sim.simuler(B, 0, 1, 96, 104.8, 109.6, 0)
+    verifier("stop à l'entrée inactif dans la bougie de l'objectif 1", t["motif"] == "objectif 1 puis durée"
+             and proche(t["net"], 0.5 * 0.048 + 0.5 * 0.04 - 2 * F), f"{t['net']:.5f}")
 
-    # Financement : un long paie quand il est positif, un short encaisse
-    df = bougies([(100, 100, 100, 100), (100, 101, 99, 100), (100, 101, 99, 100), (100, 100, 100, 100),
-                  (100, 100, 100, 100)])
-    df["fin_jour"] = 0.001
-    tl = backtest.simuler(df, sig, 1, duree=2)[0]
-    ts = backtest.simuler(df, sig, -1, duree=2)[0]
-    verifier("financement : le long paie", proche(tl["net"], -2 * backtest.FRAIS - 0.002), f"{tl['net']:.5f}")
-    verifier("financement : le short encaisse", proche(ts["net"], -2 * backtest.FRAIS + 0.002), f"{ts['net']:.5f}")
+    # Financement : jamais inventé
+    B = bougies([(100, 101, 99, 100)] * 6, fin=0.0012)                           # 0,12 % par jour, 6 bougies
+    tl, ts = sim.simuler(B, 0, 1, 90, None, 120, 5), sim.simuler(B, 0, -1, 110, None, 80, 5)
+    rl = 0.10 + 2 * F + G
+    verifier("financement : le long paie, le short encaisse",
+             proche(tl["R_fin"], (-2 * F - 0.0012) / rl) and proche(ts["R_fin"], (-2 * F + 0.0012) / rl),
+             f"{tl['R_fin']:.4f} {ts['R_fin']:.4f}")
+    verifier("financement absent du résultat de base", proche(tl["R"], -2 * F / rl))
+    B = bougies([(100, 101, 99, 100)] * 6, fin=None)
+    t = sim.simuler(B, 0, 1, 90, None, 120, 5)
+    verifier("financement inconnu : NaN, pas d'hypothèse", t["R_fin"] != t["R_fin"] and proche(t["R"], -2 * F / rl))
 
-    # Une position à la fois, et pas d'entrée sur un signal donné le dernier jour
-    df = bougies([(100, 100, 100, 100)] * 12)
-    tr = backtest.simuler(df, np.array([True] * 12), 1, duree=3)
-    verifier("une position à la fois", [t["entree"][-2:] for t in tr] == ["02", "05", "08", "11"],
-             str([t["entree"][-2:] for t in tr]))
-
-    # Épisodes : jours séparés de plus de 7 jours = épisodes distincts
-    m = np.zeros(40, bool)
-    m[[1, 2, 3, 20, 21, 35]] = True
-    verifier("épisodes", backtest.episodes(m) == 3)
+    verifier("stop déjà dépassé : pas de trade", sim.simuler(B, 0, 1, 101, None, 120, 5) is None)
+    t = sim.simuler(bougies([(100, 101, 97, 98), plat]), 0, 1, 94, None, 110, 1, entree=98.0)
+    verifier("ordre limite : entrée au prix demandé", proche(t["entree"], 98.0))
+    verifier("stop de structure borné", sim.plan_structure(100, 1, 99.5)[1] == 0.015
+             and sim.plan_structure(100, 1, 90) is None and proche(sim.plan_structure(100, -1, 103)[1], 0.03))
+    verifier("coûts dégradés plus lourds", tl["R_stress"] < tl["R"])
 
 
-# -------------------------------------------------------------- 2. collecte
+# ------------------------------------------------------------ 2. statistiques
+def test_stats():
+    t = ["2024-01-01 00:00", "2024-01-03 00:00", "2024-01-05 00:00", "2024-02-01 00:00", "2024-02-02 00:00",
+         "2024-03-20 00:00"]
+    ep = stats.episodes(t)
+    verifier("épisodes : écart de plus de 10 jours", list(ep) == [0, 0, 0, 1, 1, 2], str(list(ep)))
+    continu = [f"2024-01-{j:02d} 00:00" for j in range(1, 29)] + [f"2024-02-{j:02d} 00:00" for j in range(1, 29)]
+    verifier("épisodes : 30 jours au plus", stats.episodes(continu).max() == 1, str(stats.episodes(continu).max()))
+    rng = np.random.default_rng(1)
+    # 40 épisodes de 10 trades identiques : l'intervalle par épisodes doit être bien plus large que l'intervalle naïf
+    moy = rng.normal(0.0, 1.0, 40)
+    r = np.repeat(moy, 10)
+    ep = np.repeat(np.arange(40), 10)
+    lo, hi = stats.ic_episodes(r, ep)
+    naif = 1.96 * r.std(ddof=1) / np.sqrt(len(r))
+    verifier("bootstrap par épisodes plus large que l'intervalle naïf", (hi - lo) / 2 > 2.5 * naif,
+             f"{(hi - lo) / 2:.3f} contre {naif:.3f}")
+    verifier("intervalle autour de la moyenne", lo < r.mean() < hi)
+    idx = next(stats.tirages_blocs(100, 30, 1))
+    verifier("blocs consécutifs", len(idx) == 100 and (np.diff(idx)[:29] == 1).all())
+    tr = [{"R": 1.0, "R_fin": float("nan"), "R_stress": 0.9, "t_entree": f"2024-{m:02d}-01 00:00"} for m in range(1, 13)]
+    s = stats.resume(tr * 3, "2024-07-01")
+    verifier("verdict : jamais « validé »", "candidat" in stats.verdict({**s, "lo": 0.5, "hi": 1.5, "episodes": 12}, 0.0)
+             and stats.verdict({**s, "n": 10}, 0.0) == "échantillon insuffisant"
+             and stats.verdict({**s, "lo": -0.1, "hi": 0.4, "episodes": 12}, 0.0) == "pas d'avantage démontré")
+
+
+# ------------------------------------------------------------ 3. mode papier
+def test_papier():
+    base = {"id": "T", "source": "test", "risque_eur": "2.5", "zone_bas": "", "zone_haut": "", "niveau": "",
+            "entree": "", "obj1": "", "expire_utc": "2024-01-03T00:00", "sortie_utc": "2024-01-04T00:00"}
+    #            0 h              4 h              8 h               12 h             16 h            20 h
+    B = bougies([(100, 101, 99, 100), (100, 103, 100, 102), (102, 102.5, 98, 98.5), (98.5, 99, 93, 94),
+                 (94, 95, 93.5, 94), (94, 94, 94, 94), (94, 94, 94, 94)])
+    # Short sur rebond raté : zone 101,5–103 touchée à 4 h, clôture sous 99 à 8 h, entrée à l'ouverture de 12 h
+    pl = {**base, "cree_utc": "2024-01-01T03:00", "sens": "short", "declencheur": "zone_cloture_4h",
+          "zone_bas": "101.5", "zone_haut": "103", "niveau": "99", "stop": "103.5", "obj2": "93.5"}
+    r = papier.evaluer(pl, B)
+    verifier("papier : rebond raté déclenché", r["etat"] == "clos" and r["t_entree"] == "2024-01-01 12:00"
+             and proche(r["prix_entree"], 98.5) and r["motif"] == "objectif", str(r["etat"]) + " " + str(r["t_entree"]))
+    verifier("papier : résultat en euros", proche(r["eur"], r["R"] * 2.5) and r["R"] > 0)
+    # Même plan créé après le passage dans la zone : pas de déclenchement
+    r = papier.evaluer({**pl, "cree_utc": "2024-01-01T08:30"}, B)
+    verifier("papier : zone touchée avant la création, ignorée", r["etat"] == "en attente du déclencheur", r["etat"])
+    # Expiration avant la clôture qui déclenche
+    r = papier.evaluer({**pl, "expire_utc": "2024-01-01T10:00"}, B)
+    verifier("papier : expiré sans entrée", r["etat"] == "expiré sans entrée", r["etat"])
+    # Clôture journalière : seule la bougie de 20 h compte
+    pj = {**base, "cree_utc": "2024-01-01T01:00", "sens": "short", "declencheur": "cloture_jour", "niveau": "95",
+          "stop": "97", "obj2": "90"}
+    r = papier.evaluer(pj, B)
+    verifier("papier : clôture journalière", r["t_entree"] == "2024-01-02 00:00" and r["etat"] == "ouvert", r["etat"])
+    r = papier.evaluer({**pj, "declencheur": "cloture_4h"}, B)
+    verifier("papier : clôture 4 heures", r["t_entree"] == "2024-01-01 16:00", r["t_entree"])
+    # Ordre limite long à 99 : touché dans la bougie de 8 h
+    r = papier.evaluer({**base, "cree_utc": "2024-01-01T04:00", "sens": "long", "declencheur": "limite", "entree": "99",
+                        "stop": "97", "obj2": "101"}, B)
+    verifier("papier : ordre limite", r["t_entree"] == "2024-01-01 08:00" and proche(r["prix_entree"], 99.0)
+             and r["motif"] == "stop", f"{r['t_entree']} {r['motif']}")
+    r = papier.evaluer({**base, "cree_utc": "2024-01-01T00:00", "sens": "long", "declencheur": "immediat",
+                        "stop": "", "obj2": "110"}, B)
+    verifier("papier : plan incomplet signalé", r["etat"] == "plan incomplet")
+    verifier("papier : référence long dénouée au stop", proche(papier.reference(pl, B, 1), -1.0))
+    tard = {**pl, "cree_utc": "2024-01-02T00:00"}
+    verifier("papier : référence non dénouée = NaN", papier.reference(tard, B, 1) != papier.reference(tard, B, 1))
+
+
+# -------------------------------------------------------------- 4. collecte
 class Reponse:
     def __init__(self, data=None, text="", content=b""):
         self._data, self.text, self.content, self.status_code = data, text, content, 200
@@ -135,23 +205,32 @@ class Reponse:
         return self._data
 
 
-def historique(n=3300, graine=7):
-    """Historique artificiel avec phases de hausse et de baisse."""
+def historique(jours=1750, graine=7):
+    """Historique artificiel heure par heure, avec phases de hausse et de baisse."""
     rng = np.random.default_rng(graine)
-    fin = dt.date.today() - dt.timedelta(days=1)
-    dates = [fin - dt.timedelta(days=n - 1 - i) for i in range(n)]
-    derive = np.where((np.arange(n) // 400) % 2 == 0, 0.0025, -0.0018)
-    r = rng.normal(derive, 0.035)
-    c = 5000 * np.exp(np.cumsum(r))
+    fin = pd.Timestamp(dt.datetime.now(dt.timezone.utc)).tz_convert(None).floor("h")
+    n = jours * 24
+    t = pd.date_range(end=fin - pd.Timedelta(hours=1), periods=n, freq="h")
+    derive = np.where((np.arange(n) // (300 * 24)) % 2 == 0, 0.00011, -0.00008)
+    c = 5000 * np.exp(np.cumsum(rng.normal(derive, 0.0075)))
     o = np.concatenate([[c[0]], c[:-1]])
-    h = np.maximum(o, c) * (1 + np.abs(rng.normal(0, 0.012, n)))
-    b = np.minimum(o, c) * (1 - np.abs(rng.normal(0, 0.012, n)))
-    var7 = pd.Series(c).pct_change(7).fillna(0).to_numpy()
-    peur = np.clip(50 + var7 * 250 + rng.normal(0, 8, n), 3, 97).astype(int)
-    return dates, o, h, b, c, peur
+    h = np.maximum(o, c) * (1 + np.abs(rng.normal(0, 0.002, n)))
+    b = np.minimum(o, c) * (1 - np.abs(rng.normal(0, 0.002, n)))
+    H = pd.DataFrame({"t": t, "o": o, "h": h, "l": b, "c": c})
+    H["ts"] = (H["t"] - pd.Timestamp("1970-01-01")) // pd.Timedelta(seconds=1)
+    H["jour"] = H["t"].dt.strftime("%Y-%m-%d")
+    g = H.groupby("jour")
+    J = pd.DataFrame({"o": g["o"].first(), "h": g["h"].max(), "l": g["l"].min(), "c": g["c"].last(),
+                      "n": g["o"].count()}).reset_index()
+    J = J[J["n"] == 24].reset_index(drop=True)
+    var7 = J["c"].pct_change(7).fillna(0).to_numpy()
+    J["peur"] = np.clip(50 + var7 * 250 + rng.normal(0, 8, len(J)), 3, 97).astype(int)
+    return H, J
 
 
-DATES, O, H, B, C, PEUR = historique()
+H1, JOURS = historique()
+DATES = [dt.date.fromisoformat(d) for d in JOURS["jour"]]
+AUJ = dt.datetime.now(dt.timezone.utc).date()
 
 
 def ts(d: dt.date) -> int:
@@ -160,12 +239,19 @@ def ts(d: dt.date) -> int:
 
 def faux_get(url, params=None, **_):
     params = params or {}
-    if "coinbase" in url:  # [temps, bas, haut, ouverture, clôture, volume], récent d'abord
-        d0 = dt.date.fromisoformat(params["start"][:10])
-        d1 = dt.date.fromisoformat(params["end"][:10])
-        lignes = [[ts(d), B[i], H[i], O[i], C[i], 1000.0] for i, d in enumerate(DATES) if d0 <= d <= d1]
-        if d1 >= dt.date.today():  # bougie du jour, incomplète : doit être écartée
-            lignes.append([ts(dt.date.today()), 1.0, 1.0, 1.0, 1.0, 1.0])
+    if "coinbase" in url:   # [temps, bas, haut, ouverture, clôture, volume], récent d'abord
+        if params["granularity"] == 3600:
+            t0 = pd.Timestamp(params["start"]).tz_convert(None)
+            t1 = pd.Timestamp(params["end"]).tz_convert(None)
+            x = H1[(H1["t"] >= t0) & (H1["t"] <= t1)]
+            return Reponse([[int(a), l, h, o, c, 10.0] for a, l, h, o, c in
+                            zip(x["ts"], x["l"], x["h"], x["o"], x["c"])][::-1])
+        d0, d1 = params["start"][:10], params["end"][:10]
+        x = JOURS[(JOURS["jour"] >= d0) & (JOURS["jour"] <= d1)]
+        lignes = [[ts(dt.date.fromisoformat(j)), l, h, o, c, 1000.0] for j, l, h, o, c in
+                  zip(x["jour"], x["l"], x["h"], x["o"], x["c"])]
+        if d1 >= AUJ.isoformat():   # bougie du jour, incomplète : doit être écartée
+            lignes.append([ts(AUJ), 1.0, 1.0, 1.0, 1.0, 1.0])
         return Reponse(lignes[::-1])
     if "eurofxref" in url:
         csv = "Date,USD,JPY,\n" + "\n".join(
@@ -177,177 +263,295 @@ def faux_get(url, params=None, **_):
         return Reponse(content=buf.getvalue())
     if "historicalfundingrates" in url:
         rates = []
-        for d in DATES[-370:] + [dt.date.today()]:
-            heures = 24 if d != dt.date.today() else 5
-            for hh in range(heures):
+        for d in DATES[-370:] + [AUJ]:
+            for hh in range(24 if d != AUJ else 3):
                 rates.append({"timestamp": f"{d.isoformat()}T{hh:02d}:00:00Z", "fundingRate": 1.3,
                               "relativeFundingRate": 0.0000125 if d.day % 5 else -0.00002})
         return Reponse({"result": "success", "serverTime": "x", "rates": rates})
+    if "get_funding_rate_history" in url:
+        t0, t1 = params["start_timestamp"] // 1000, params["end_timestamp"] // 1000
+        x = H1[(H1["ts"] >= t0) & (H1["ts"] <= t1) & (H1["jour"] >= DATES[500].isoformat())]   # pas d'historique avant
+        return Reponse({"jsonrpc": "2.0", "result": [
+            {"timestamp": int(a) * 1000, "index_price": 1.0, "prev_index_price": 1.0, "interest_8h": 0.0001,
+             "interest_1h": 0.00001 if int(a) // 86400 % 7 else -0.00003} for a in x["ts"]][-744:]})
+    if "get_book_summary_by_currency" in url:
+        e1 = (AUJ + dt.timedelta(days=12)).strftime("%d%b%y").upper().lstrip("0")
+        e2 = (AUJ + dt.timedelta(days=200)).strftime("%d%b%y").upper()
+        return Reponse({"jsonrpc": "2.0", "result": [
+            {"instrument_name": f"BTC-{e1}-75000-P", "open_interest": 300.0, "volume": 30.0},
+            {"instrument_name": f"BTC-{e1}-70000-C", "open_interest": 500.0, "volume": 20.0},
+            {"instrument_name": f"BTC-{e1}-80000-C", "open_interest": 100.0, "volume": 10.0},
+            {"instrument_name": f"BTC-{e2}-90000-C", "open_interest": 50.0, "volume": 0.0},
+            {"instrument_name": "BTC-PERPETUAL", "open_interest": 1.0, "volume": 1.0}]})
+    if url.endswith("/instruments"):
+        paliers = [{"contracts": 0, "initialMargin": 0.1, "maintenanceMargin": 0.05},
+                   {"contracts": 30000000, "initialMargin": 0.2, "maintenanceMargin": 0.1}]
+        return Reponse({"result": "success", "instruments": [
+            {"symbol": "PF_ETHUSD"},
+            {"symbol": "PF_XBTUSD", "maxPositionSize": 1200, "maxRelativeFundingRate": 0.005, "feeScheduleUid": "u1",
+             "marginLevels": [{"contracts": 0, "initialMargin": 0.01, "maintenanceMargin": 0.005}],
+             "marginSchedules": {"europa": {"retail": paliers, "professional": paliers}}}]})
+    if url.endswith("/feeschedules"):
+        return Reponse({"feeSchedules": [{"uid": "u1", "tiers": [{"makerFee": 0.02, "takerFee": 0.05, "usdVolume": 0},
+                                                                  {"makerFee": 0.015, "takerFee": 0.04, "usdVolume": 1e5}]}]})
     if "tickers/PF_XBTUSD" in url:
         return Reponse({"result": "success", "ticker": {
             "symbol": "PF_XBTUSD", "markPrice": 71410.18, "openInterest": 2568.4497, "vol24h": 6303.05,
-            "fundingRate": 1.0975, "relativeFundingRate": 0.000015378041666667,
-            "relativeFundingRatePrediction": 0.000012484875}})
+            "relativeFundingRate": 0.000015378041666667, "relativeFundingRatePrediction": 0.000012484875}})
     if "public/ticker" in url:
         return Reponse({"result": {"open_interest": 1.2e9, "funding_8h": 0.00004}})
     if "get_volatility_index_data" in url:
-        fin = params["end_timestamp"]
-        lignes = [[ts(d) * 1000, 40.0, 41.0, 39.0, 40.5] for d in DATES[-900:] if ts(d) * 1000 >= params["start_timestamp"]]
-        lignes = [x for x in lignes if x[0] <= fin]
+        lignes = [[ts(d) * 1000, 40.0, 41.0, 39.0, 40.5] for d in DATES[-900:]
+                  if params["start_timestamp"] <= ts(d) * 1000 <= params["end_timestamp"]]
         page, reste = lignes[-500:], lignes[:-500]   # deux pages, pour tester la suite
         return Reponse({"jsonrpc": "2.0", "result": {"data": page, "continuation": reste[-1][0] if reste else None}})
     if "alternative.me" in url:
-        data = [{"value": str(PEUR[i]), "value_classification": "x", "timestamp": str(ts(d))}
-                for i, d in list(enumerate(DATES))[::-1] if d >= dt.date(2018, 2, 1)]
-        return Reponse({"name": "Fear and Greed Index", "data": data, "metadata": {"error": None}})
+        return Reponse({"name": "Fear and Greed Index", "metadata": {"error": None}, "data": [
+            {"value": str(v), "value_classification": "x", "timestamp": str(ts(d))}
+            for d, v in list(zip(DATES, JOURS["peur"]))[::-1]]})
     if "treasury.gov" in url:
         annee = int(url.split("daily-treasury-rates.csv/")[1][:4])
         if "real_yield" in url:
             raise RuntimeError("HTTP 404 simulé")   # une série en échec ne doit pas bloquer les autres
-        lignes = [f"{d.strftime('%m/%d/%Y')},4.10,4.88,4.98,5.15,5.47" for d in DATES[::-1]
-                  if d.year == annee and d.weekday() < 5]
+        lignes = [f"{d.strftime('%m/%d/%Y')},4.10,4.88,4.98,{5.0 + 0.3 * np.sin(i / 40):.2f},5.47"
+                  for i, d in list(enumerate(DATES))[::-1] if d.year == annee and d.weekday() < 5]
         return Reponse(text='Date,"1 Mo","2 Yr","5 Yr","10 Yr","30 Yr"\n' + "\n".join(lignes))
     if "cboe.com" in url:
-        lignes = [f"{d.strftime('%m/%d/%Y')},18.0,19.0,17.5,18.7" for d in DATES if d.weekday() < 5]
-        lignes.append(f"{dt.date.today().strftime('%m/%d/%Y')},1,1,1,99.0")   # séance du jour : doit être écartée
+        lignes = [f"{d.strftime('%m/%d/%Y')},18.0,19.0,17.5,{18 + 9 * np.sin(i / 25):.2f}"
+                  for i, d in enumerate(DATES) if d.weekday() < 5]
+        lignes.append(f"{AUJ.strftime('%m/%d/%Y')},1,1,1,99.0")   # séance du jour : doit être écartée
         return Reponse(text="DATE,OPEN,HIGH,LOW,CLOSE\n" + "\n".join(lignes))
     if "finance.yahoo.com" in url:
-        jours = [d for d in DATES if d.weekday() < 5 and ts(d) >= params["period1"]]
-        return Reponse({"chart": {"result": [{
-            "timestamp": [ts(d) + 52200 for d in jours],
-            "indicators": {"quote": [{"close": [None if k % 61 == 0 else 25000.0 + k for k in range(len(jours))]}]},
-        }], "error": None}})
+        if "MNDY" in url:
+            raise RuntimeError("HTTP 429 simulé")   # un titre en échec ne bloque pas les autres
+        suit_btc = any(s in url for s in ("MSTR", "IREN", "CLSK", "SOL"))
+        cours = dict(zip(JOURS["jour"], JOURS["c"]))
+        jours = [d for d in DATES if (d.weekday() < 5 or "SOL" in url) and ts(d) >= params["period1"]]
+        if suit_btc:   # actif qui amplifie le BTC d'un facteur 1,5
+            vals = [float(cours[d.isoformat()]) ** 1.5 for d in jours]
+        else:
+            vals = [None if k % 61 == 0 else 25000.0 + 40 * np.sin(k / 9) + k for k in range(len(jours))]
+        return Reponse({"chart": {"error": None, "result": [{
+            "timestamp": [ts(d) + 52200 for d in jours], "indicators": {"quote": [{"close": vals}]}}]}})
     if "fredgraph" in url:
         raise RuntimeError("FRED ne répond pas (simulé)")
     if "coinmetrics" in url:
         m = params["metrics"]
-        if m in ("FlowInExNtv", "FlowOutExNtv", "SplyExNtv"):
+        if m in ("FlowInExNtv", "FlowOutExNtv"):
             raise RuntimeError("HTTP 403 simulé")   # métriques absentes de l'offre gratuite
         data = []
         for i, d in enumerate(DATES):
             if d.isoformat() < params["start_time"]:
                 continue
-            ligne = {"asset": "btc", "time": f"{d.isoformat()}T00:00:00.000000000Z", f"{m.split(',')[0]}-status": "reviewed"}
+            x = {"asset": "btc", "time": f"{d.isoformat()}T00:00:00.000000000Z", f"{m.split(',')[0]}-status": "reviewed"}
             for k in m.split(","):
-                ligne[k] = str(C[i] if k == "PriceUSD" else 1.39)
-            data.append(ligne)
+                x[k] = str({"PriceUSD": JOURS["c"][i], "CapMVRVCur": 0.8 + 2.6 * (0.5 + 0.5 * np.sin(i / 120)),
+                            "SplyExNtv": 2.5e6 * (1 + 0.05 * np.sin(i / 60))}.get(k, 1.0))
+            data.append(x)
         return Reponse({"data": data})
     raise RuntimeError(f"URL non prévue dans le test : {url}")
+
+
+def etat():
+    return json.load(open(outils.chemin("etat.json"), encoding="utf-8"))["sources"]
 
 
 def test_collecte():
     collecte.get = faux_get
     collecte.time.sleep = lambda *_: None
     code = collecte.main()
-    verifier("collecte : code de sortie 0", code == 0)
-    etat = json.load(open(outils.chemin("etat.json"), encoding="utf-8"))["sources"]
-    verifier("collecte : toutes les sources ok", all(e["ok"] for e in etat.values()),
-             str({k: v["note"] for k, v in etat.items() if not v["ok"]}))
+    e = etat()
+    verifier("collecte : code 0 et 13 sources ok", code == 0 and len(e) == 13 and all(x["ok"] for x in e.values()),
+             str({k: v["note"] for k, v in e.items() if not v["ok"]}))
 
     p = outils.lire("btc_jour.csv")
-    verifier("prix : nombre de jours", len(p) == len(DATES), f"{len(p)} / {len(DATES)}")
-    verifier("prix : bougie du jour écartée", p["date"].max() == DATES[-1].isoformat())
-    verifier("prix : colonnes dans le bon ordre", proche(p["haut"].iloc[-1], H[-1], 1e-4)
-             and proche(p["bas"].iloc[-1], B[-1], 1e-4) and proche(p["ouverture"].iloc[-1], O[-1], 1e-4))
-    verifier("prix : euros présents partout", p["cloture_eur"].notna().all() and p["eurusd"].between(1.0, 1.2).all())
-    verifier("prix : conversion", proche(p["cloture_eur"].iloc[-1], p["cloture"].iloc[-1] / p["eurusd"].iloc[-1], 1e-6))
+    verifier("prix : jours complets, bougie du jour écartée", len(p) == len(DATES) and p["date"].max() == DATES[-1].isoformat())
+    verifier("prix : colonnes dans le bon ordre", proche(p["haut"].iloc[-1], JOURS["h"].iloc[-1], 1e-3)
+             and proche(p["bas"].iloc[-1], JOURS["l"].iloc[-1], 1e-3))
+    verifier("prix : euros partout", p["cloture_eur"].notna().all()
+             and proche(p["cloture_eur"].iloc[-1], p["cloture"].iloc[-1] / p["eurusd"].iloc[-1], 1e-6))
+
+    h4 = outils.lire_h4()
+    attendu = H1.assign(b=H1["ts"] // 14400).groupby("b").agg(o=("o", "first"), h=("h", "max"), l=("l", "min"),
+                                                                 c=("c", "last"), n=("o", "count"))
+    complet = attendu[(attendu.index + 1) * 14400 <= dt.datetime.now(dt.timezone.utc).timestamp()]
+    verifier("4 heures : nombre de bougies", len(h4) == len(complet), f"{len(h4)} / {len(complet)}")
+    k = complet.iloc[-5]
+    x = h4[h4["date"] == pd.to_datetime(complet.index[-5] * 14400, unit="s").strftime("%Y-%m-%d %H:%M")].iloc[0]
+    verifier("4 heures : agrégation exacte", proche(x["ouverture"], k["o"], 1e-3) and proche(x["haut"], k["h"], 1e-3)
+             and proche(x["bas"], k["l"], 1e-3) and proche(x["cloture"], k["c"], 1e-3))
+    verifier("4 heures : calées sur 0, 4, 8... h UTC, un fichier par mois",
+             set(h4["date"].str[11:]) == {"00:00", "04:00", "08:00", "12:00", "16:00", "20:00"}
+             and len(os.listdir(outils.chemin("h4"))) > 50)
 
     f = outils.lire("financement_kraken.csv")
-    verifier("financement : jour incomplet écarté", f["date"].max() == DATES[-1].isoformat() and (f["releves"] == 24).all())
-    attendu = 0.0000125 * 8 * 100
-    verifier("financement : 0,01 % par 8 h", proche(f.loc[f["taux_8h_pct"] > 0, "taux_8h_pct"].iloc[0], attendu, 1e-9),
-             f"{f['taux_8h_pct'].max():.5f}")
-    verifier("financement : cumul du jour", proche(f.loc[f["taux_8h_pct"] > 0, "cumul_jour_pct"].iloc[0], attendu * 3, 1e-9))
+    verifier("financement Kraken : jour incomplet écarté, 0,01 % par 8 h",
+             f["date"].max() == DATES[-1].isoformat() and (f["releves"] == 24).all()
+             and proche(f["taux_8h_pct"].max(), 0.01, 1e-9))
+    fd = outils.lire("financement_deribit.csv")
+    verifier("financement Deribit : historique paginé", len(fd) > 1000 and fd["date"].is_unique and fd["date"].min() == DATES[500].isoformat()
+             and proche(fd["cumul_jour_pct"].max(), 0.024, 1e-9), f"{len(fd)} jours")
 
-    d = outils.lire("dvol.csv")
-    verifier("dvol : pagination complète", len(d) == 900, str(len(d)))
+    der = outils.lire("derives_instantane.csv").iloc[-1]
+    verifier("options : rapport puts/calls", proche(der["options_puts_calls_oi"], 300 / 650, 1e-9)
+             and proche(der["options_puts_calls_volume"], 1.0, 1e-9))
+    verifier("options : échéance principale et max pain", proche(der["options_echeance_max_pain_usd"], 70000.0)
+             and der["options_echeance"] == (AUJ + dt.timedelta(days=12)).isoformat(), str(der["options_echeance_max_pain_usd"]))
+    verifier("dérivés et options sur la même ligne", proche(der["kraken_financement_8h_pct"], 0.000015378041666667 * 800, 1e-9))
+
+    kc = outils.lire("kraken_contrat.csv").iloc[-1]
+    verifier("contrat Kraken : barème Europe", proche(kc["marge_initiale"], 0.1) and proche(kc["marge_maintenance"], 0.05)
+             and proche(kc["levier_max"], 10) and proche(kc["frais_preneur_pct"], 0.05))
+
     m = outils.lire("macro.csv")
-    verifier("macro : série en échec ignorée", "taux_reel_10ans" not in m.columns and "vix" in m.columns)
-    verifier("macro : toutes les autres séries", {"taux_10ans", "taux_2ans", "nasdaq100", "sp500", "dxy", "brent"} <= set(m.columns),
-             str(list(m.columns)))
-    verifier("macro : valeurs", proche(m["taux_10ans"].iloc[-1], 5.15) and proche(m["vix"].iloc[-1], 18.7)
-             and m["date"].max() < dt.date.today().isoformat(), f"{m['vix'].iloc[-1]} {m['date'].max()}")
-    verifier("macro : note d'état", "taux_reel_10ans" in etat["macro"]["note"])
+    verifier("macro : séries présentes, échec partiel signalé", {"taux_10ans", "vix", "nasdaq100", "dxy"} <= set(m.columns)
+             and "taux_reel_10ans" not in m.columns and "taux_reel_10ans" in e["macro"]["note"]
+             and m["date"].max() < AUJ.isoformat())
     o = outils.lire("onchain.csv")
-    verifier("onchain : pas de colonne d'état", not any("-status" in c for c in o.columns), str(list(o.columns)))
-    verifier("onchain : métriques optionnelles", "mvrv" in o.columns and "hashrate" in o.columns
-             and "btc_sur_plateformes" not in o.columns)
-    der = outils.lire("derives_instantane.csv")
-    verifier("dérivés : financement en cours", proche(der["kraken_financement_8h_pct"].iloc[0], 0.000015378041666667 * 800, 1e-9))
+    verifier("onchain : sans colonne d'état", not any("-status" in c for c in o.columns) and "btc_sur_plateformes" in o.columns)
 
+    be = pd.read_csv(outils.chemin("betas.csv"))
+    b = be.set_index("actif")
+    verifier("bêtas : actif qui amplifie le BTC de 1,5", abs(b.loc["Strategy (MSTR)", "beta_90j"] - 1.5) < 0.1
+             and b.loc["Strategy (MSTR)", "correlation_90j"] > 0.95, f"{b.loc['Strategy (MSTR)', 'beta_90j']:.2f}")
+    verifier("bêtas : actif sans lien", abs(b.loc["Microsoft", "beta_90j"]) < 0.3 and "Monday.com" not in b.index
+             and "MNDY" in e["actifs"]["note"])
+
+    verifier("fraîcheur : nature et âge de chaque source", all(x["fraicheur"].startswith("à jour") for x in e.values())
+             and e["macro"]["nature"] == "différée" and e["options"]["nature"] == "instantanée"
+             and e["prix"]["age_jours"] == 1, str({k: v["fraicheur"] for k, v in e.items() if not v["fraicheur"].startswith("à jour")}))
     texte = open(outils.chemin("dernier.md"), encoding="utf-8").read()
-    verifier("relevé : euros puis dollars", "€ (" in texte and "$)" in texte)
-    verifier("relevé : moyenne 200 semaines calculée", "200 semaines | historique insuffisant" not in texte)
+    verifier("relevé : sections nouvelles", all(s in texte for s in (
+        "bougies de 4 heures", "Contrat perpétuel Kraken", "croisée par défaut", "Liens avec le Bitcoin",
+        "toutes les sources sont à jour", "max pain", "€ (")))
+    verifier("relevé : pas de valeur manquante affichée", re.search(r"\bnan\b", texte.lower()) is None)
 
     # Deuxième lancement : rien n'est perdu, rien n'est dupliqué
-    avant = {n: len(outils.lire(n)) for n in ("btc_jour.csv", "financement_kraken.csv", "dvol.csv", "macro.csv",
-                                             "peur_avidite.csv", "onchain.csv", "eurusd.csv")}
+    noms = ("btc_jour.csv", "financement_kraken.csv", "financement_deribit.csv", "dvol.csv", "macro.csv",
+            "peur_avidite.csv", "onchain.csv", "eurusd.csv", "actifs.csv", "kraken_contrat.csv", "derives_instantane.csv")
+    avant = {n: len(outils.lire(n)) for n in noms} | {"h4": len(outils.lire_h4())}
     collecte.main()
-    apres = {n: len(outils.lire(n)) for n in avant}
-    verifier("2e lancement : mêmes fichiers", avant == apres, str({k: (avant[k], apres[k]) for k in avant if avant[k] != apres[k]}))
-    verifier("2e lancement : pas de doublon", not outils.lire("btc_jour.csv")["date"].duplicated().any())
+    apres = {n: len(outils.lire(n)) for n in noms} | {"h4": len(outils.lire_h4())}
+    verifier("2e lancement : mêmes fichiers, pas de doublon", avant == apres and outils.lire_h4()["date"].is_unique,
+             str({k: (avant[k], apres[k]) for k in avant if avant[k] != apres[k]}))
 
-    # Panne d'une source secondaire : le lancement continue et l'ancien fichier reste
+    # Pannes : une source secondaire, puis Coinbase
     def panne(url, params=None, **k):
-        if "alternative.me" in url:
+        if "alternative.me" in url or "get_book_summary" in url:
             raise RuntimeError("panne simulée")
         return faux_get(url, params, **k)
 
     collecte.get = panne
     code = collecte.main()
-    etat = json.load(open(outils.chemin("etat.json"), encoding="utf-8"))["sources"]
-    verifier("panne secondaire : code 0", code == 0)
-    verifier("panne secondaire : signalée", not etat["peur_avidite"]["ok"] and len(outils.lire("peur_avidite.csv")) == apres["peur_avidite.csv"])
+    e = etat()
+    texte = open(outils.chemin("dernier.md"), encoding="utf-8").read()
+    verifier("panne secondaire : lancement réussi, anomalie affichée", code == 0 and not e["peur_avidite"]["ok"]
+             and not e["options"]["ok"] and "2 source(s) en échec ou en retard" in texte
+             and len(outils.lire("peur_avidite.csv")) == apres["peur_avidite.csv"])
 
-    # Coinbase en panne : secours Kraken
     def sans_coinbase(url, params=None, **k):
         if "coinbase" in url:
             raise RuntimeError("panne simulée")
         if "api.kraken.com" in url:
-            lignes = [[ts(d), str(O[i]), str(H[i]), str(B[i]), str(C[i]), "0", "12.5", 10] for i, d in enumerate(DATES)][-720:]
-            return Reponse({"error": [], "result": {"XXBTZUSD": lignes, "last": 1}})
+            if params["interval"] == 240:
+                x = H1.assign(b=H1["ts"] // 14400).groupby("b").agg(o=("o", "first"), h=("h", "max"), l=("l", "min"),
+                                                                      c=("c", "last")).iloc[-720:]
+                return Reponse({"error": [], "result": {"XXBTZUSD": [
+                    [int(b_) * 14400, str(r.o), str(r.h), str(r.l), str(r.c), "0", "1.0", 5] for b_, r in x.iterrows()],
+                    "last": 1}})
+            return Reponse({"error": [], "result": {"XXBTZUSD": [
+                [ts(dt.date.fromisoformat(j)), str(o_), str(h_), str(l_), str(c_), "0", "12.5", 10]
+                for j, o_, h_, l_, c_ in zip(JOURS["jour"], JOURS["o"], JOURS["h"], JOURS["l"], JOURS["c"])][-720:],
+                "last": 1}})
         return faux_get(url, params, **k)
 
     collecte.get = sans_coinbase
     code = collecte.main()
-    etat = json.load(open(outils.chemin("etat.json"), encoding="utf-8"))["sources"]
-    verifier("secours Kraken", code == 0 and "secours Kraken" in etat["prix"]["note"]
-             and len(outils.lire("btc_jour.csv")) == len(DATES))
+    e = etat()
+    verifier("secours Kraken : prix et 4 heures", code == 0 and "secours Kraken" in e["prix"]["note"]
+             and "secours Kraken" in e["h4"]["note"] and len(outils.lire_h4()) == apres["h4"])
     collecte.get = faux_get
+    collecte.main()
 
 
-# -------------------------------------------------------- 3. bout en bout
+# -------------------------------------------------------- 5. bout en bout
 def test_backtest():
     code = backtest.main()
-    chemin = os.path.join(outils.RAPPORT, "backtest.md")
-    texte = open(chemin, encoding="utf-8").read()
+    texte = open(os.path.join(outils.RAPPORT, "backtest.md"), encoding="utf-8").read()
     trades = pd.read_csv(os.path.join(outils.RAPPORT, "trades.csv"))
-    verifier("backtest : code 0 et rapport écrit", code == 0 and len(texte) > 2000)
-    verifier("backtest : toutes les règles ont des trades", set(trades["regle"]) >= {"L0", "L1", "L2", "L4", "S0", "S1", "S3"},
-             str(sorted(set(trades["regle"]))))
-    verifier("backtest : pas de valeur aberrante", trades["R"].between(-6, 3).all(), f"{trades['R'].min():.2f} à {trades['R'].max():.2f}")
-    verifier("backtest : entrée après le signal", (trades["entree"] > trades["signal"]).all())
+    verifier("backtest : rapport écrit", code == 0 and len(texte) > 4000)
+    presentes = set(trades["regle"])
+    verifier("backtest : règles journalières et configurations 4 h", {"L0", "L1", "L4", "S0", "A-L", "A-S", "C-L", "C-S",
+                                                                       "D-S", "B-L-mm200", "B-S-mm50"} <= presentes,
+             str(sorted(presentes)))
+    verifier("backtest : pertes au stop bornées", trades["R"].min() > -4 and trades["R"].max() < 3,
+             f"{trades['R'].min():.2f} à {trades['R'].max():.2f}")
+    verifier("backtest : entrée avant la sortie", (trades["t_entree"] <= trades["t_sortie"]).all())
+    verifier("backtest : financement réel sur une partie seulement", 0 < trades["R_fin"].notna().mean() < 1,
+             f"{trades['R_fin'].notna().mean():.2f}")
+    verifier("backtest : sections attendues", all(s in texte for s in (
+        "## En bref", "Intervalle à 95 %", "Hors échantillon", "biais mécanique", "Sensibilité à la liquidité",
+        "Avec financement réel", "Suivi de tendance")))
     verifier("backtest : pas de 'nan' dans le rapport", re.search(r"\bnan\b", texte.lower()) is None)
-    df = backtest.charger()
-    # Aucun regard vers l'avenir : tronquer l'historique ne change pas les trades déjà clos
-    t_complet = backtest.simuler(df, (df["peur"] <= 20).fillna(False).to_numpy(bool), 1)
-    coupe = df.iloc[:-300].reset_index(drop=True)
-    t_coupe = backtest.simuler(coupe, (coupe["peur"] <= 20).fillna(False).to_numpy(bool), 1)
-    communs = [t for t in t_complet if t["sortie"] < coupe["date"].iloc[-10]]
-    identiques = all(proche(a["R"], b["R"]) and a["entree"] == b["entree"] for a, b in zip(communs, t_coupe))
-    verifier("backtest : aucun regard vers l'avenir", len(communs) > 5 and identiques, f"{len(communs)} trades comparés")
-    return texte
+    verifier("backtest : aucun verdict « validé »", "validé" not in texte.replace("n'est pas validé", ""))
+
+    # Aucun regard vers l'avenir : tronquer l'historique ne change aucun trade déjà dénoué
+    J, B = backtest.charger()
+    complet = {c["id"]: c["trades"] for c in backtest.configurations_h4(J, B)}
+    lire0, h40 = backtest.lire, backtest.lire_h4
+    coupe_j = J["date"].iloc[-200]
+    backtest.lire = lambda nom: (lambda d: None if d is None else d[d["date"] <= coupe_j])(lire0(nom))
+    backtest.lire_h4 = lambda: (lambda d: d[d["date"] < coupe_j + " 24"])(h40())
+    try:
+        J2, B2 = backtest.charger()
+        tronque = {c["id"]: c["trades"] for c in backtest.configurations_h4(J2, B2)}
+        jour_tr = backtest.trades_jour(J2, B2, (J2["peur"] <= 20).fillna(False), 1)
+    finally:
+        backtest.lire, backtest.lire_h4 = lire0, h40
+    limite = J["date"].iloc[-215]
+    n_cmp, identiques = 0, True
+    for ident, tr in complet.items():
+        a = [(t["t_entree"], round(t["R"], 9)) for t in tr if t["t_sortie"] < limite]
+        b = [(t["t_entree"], round(t["R"], 9)) for t in tronque[ident] if t["t_sortie"] < limite]
+        n_cmp += len(a)
+        identiques &= a == b
+    jour_c = backtest.trades_jour(J, B, (J["peur"] <= 20).fillna(False), 1)
+    a = [(t["t_entree"], round(t["R"], 9)) for t in jour_c if t["t_sortie"] < limite]
+    b = [(t["t_entree"], round(t["R"], 9)) for t in jour_tr if t["t_sortie"] < limite]
+    verifier("backtest : aucun regard vers l'avenir", identiques and a == b and n_cmp > 200, f"{n_cmp + len(a)} trades comparés")
+    verifier("backtest : biais mécanique borné", J["biais"].dropna().between(-10, 10).all() and J["biais"].notna().sum() > 200)
+
+    # Mode papier de bout en bout
+    os.makedirs(os.path.dirname(papier.PLANS), exist_ok=True)
+    h4 = outils.lire_h4()
+    ref = h4.iloc[-120]
+    with open(papier.PLANS, "w", encoding="utf-8") as f_:
+        f_.write("id,cree_utc,source,sens,declencheur,zone_bas,zone_haut,niveau,entree,stop,obj1,obj2,expire_utc,"
+                 "sortie_utc,risque_eur,biais,note\n")
+        f_.write(f"P1,{ref['date'].replace(' ', 'T')},test,long,immediat,,,,,{ref['cloture'] * 0.9},,"
+                 f"{ref['cloture'] * 1.2},,{h4.iloc[-100]['date'].replace(' ', 'T')},2.5,0,test\n")
+        f_.write(f"P2,{h4.iloc[-3]['date'].replace(' ', 'T')},test,short,cloture_jour,,,1,,2,,0.5,2099-01-01T00:00,,2.5,0,test\n")
+        f_.write("P3,pas une date,test,long,immediat,,,,,1,,2,,,2.5,0,ligne abîmée\n")
+    code = papier.main()
+    res = pd.read_csv(papier.RESULTATS).set_index("id")
+    txt = open(os.path.join(outils.RAPPORT, "papier.md"), encoding="utf-8").read()
+    verifier("papier : bout en bout", code == 0 and res.loc["P1", "etat"] == "clos" and res.loc["P1", "motif"] == "durée"
+             and res.loc["P2", "etat"] == "en attente du déclencheur" and "illisible" in res.loc["P3", "etat"]
+             and "CRITÈRE NON ATTEINT" in txt, str(res["etat"].to_dict()))
+    return texte, txt
 
 
 if __name__ == "__main__":
     test_simulation()
+    test_stats()
+    test_papier()
     test_collecte()
-    rapport = test_backtest()
+    rapport, pap = test_backtest()
     print()
     if ECHECS:
         print(f"{len(ECHECS)} ECHEC(S) : {ECHECS}")
         sys.exit(1)
     print("TOUS LES TESTS PASSENT")
     if "--rapport" in sys.argv:
-        print("\n" + rapport)
+        print("\n" + rapport + "\n" + pap)
         print(open(outils.chemin("dernier.md"), encoding="utf-8").read())

@@ -1,52 +1,62 @@
 # btc-data
 
-Collecte quotidienne de données sur le Bitcoin et backtest de règles simples, long et short.
-Outil d'analyse uniquement : aucun ordre n'est passé, aucune clé d'API, aucune donnée personnelle.
+Collecte de données sur le Bitcoin, backtest de règles long et short, et suivi de plans en mode papier.
+Outil d'analyse uniquement : **aucun ordre n'est passé**, aucune clé d'API, aucune donnée personnelle.
 
 ## Ce que fait le dépôt
-Chaque jour à 4 h 47 UTC, GitHub Actions lance deux scripts puis enregistre le résultat :
+GitHub Actions lance les scripts tout seul :
 
-1. `collecte.py` télécharge les données et met à jour le dossier `data/`.
-2. `backtest.py` rejoue les règles sur tout l'historique et écrit `rapport/backtest.md`.
-
-Au premier lancement, tout l'historique disponible est téléchargé. Ensuite, seuls les derniers jours sont mis à jour.
+| Quand (UTC) | Quoi |
+|---|---|
+| 4 h 47 chaque jour | Relevé complet (`collecte.py`), suivi papier (`papier.py`), backtest (`backtest.py`) |
+| 0 h 12, 8 h 12, 12 h 12, 16 h 12, 20 h 12 | Mise à jour légère après chaque clôture de bougie de 4 heures : relevé et suivi papier |
+| À chaque modification du code ou de `papier/plans.csv` | Tests, puis tout le reste |
 
 ## Où regarder
 | Fichier | Contenu |
 |---|---|
-| `data/dernier.md` | Relevé du jour : prix en euros (dollars entre parenthèses), moyennes mobiles, financement, sentiment, macro |
-| `rapport/backtest.md` | Résultats du backtest |
-| `data/etat.json` | État de chaque source au dernier lancement |
-| `rapport/trades.csv` | Tous les trades simulés |
+| `data/dernier.md` | Relevé du moment : prix en euros (dollars entre parenthèses), moyennes mobiles, bougies de 4 heures, financement, options, macro, contrat Kraken, bêtas, fraîcheur de chaque source |
+| `rapport/backtest.md` | Ce que les règles et les configurations ont donné sur le passé, avec intervalles de confiance |
+| `rapport/papier.md` | Suivi des plans en mode papier, comparé à des stratégies de référence |
+| `data/etat.json` | État et fraîcheur de chaque source au dernier lancement |
 
 ## Données collectées
-| Fichier | Source | Historique |
+| Fichier | Source | Nature |
 |---|---|---|
-| `btc_jour.csv` | Coinbase (secours : Kraken) | depuis 2017 |
-| `eurusd.csv` | Banque centrale européenne | depuis 2017 |
-| `financement_kraken.csv` | Kraken Futures, contrat perpétuel | environ un an, puis s'allonge |
-| `derives_instantane.csv` | Kraken Futures, Deribit | un relevé par jour à partir du premier lancement |
-| `dvol.csv` | Deribit (volatilité implicite) | depuis 2021 |
-| `peur_avidite.csv` | alternative.me (Fear & Greed) | depuis 2018 |
-| `macro.csv` | Trésor américain (taux), CBOE (VIX), Yahoo Finance (Nasdaq-100, S&P 500, DXY, Brent) | depuis 2017 |
-| `onchain.csv` | Coin Metrics, offre gratuite : MVRV et autres | depuis 2017 |
+| `btc_jour.csv` | Coinbase (secours : Kraken) | Clôtures journalières depuis 2017 |
+| `h4/btc_h4_AAAA-MM.csv` | Coinbase, heures agrégées (secours : Kraken) | Bougies de 4 heures depuis 2017 |
+| `eurusd.csv` | Banque centrale européenne | Taux de référence, différé |
+| `financement_kraken.csv` | Kraken Futures | Financement réel du contrat perpétuel, un an glissant puis cumulé |
+| `financement_deribit.csv` | Deribit | Financement réel du contrat perpétuel depuis 2019 |
+| `derives_instantane.csv` | Kraken Futures, Deribit | Relevé instantané : intérêt ouvert, financement, options (puts/calls, échéance principale) |
+| `kraken_contrat.csv` | Kraken Futures | Marges, levier maximum et frais réels du contrat PF_XBTUSD |
+| `dvol.csv` | Deribit | Volatilité implicite depuis 2021 |
+| `peur_avidite.csv` | alternative.me | Fear & Greed depuis 2018 |
+| `macro.csv` | Trésor américain, CBOE, Yahoo Finance | Taux, VIX, Nasdaq-100, S&P 500, DXY, Brent |
+| `onchain.csv` | Coin Metrics, offre gratuite | MVRV, plateformes, activité |
+| `actifs.csv`, `betas.csv` | Yahoo Finance | Panier d'actifs liés au Bitcoin et leurs bêtas |
 
-Non collecté : flux des ETF Bitcoin et carte des liquidations (pas de source gratuite fiable).
+Non collecté : flux des ETF Bitcoin et liquidations (aucune source gratuite fiable).
 
 ## Règles du backtest
-- Règles fixées à l'avance, aucun réglage optimisé sur le passé.
-- Signal à la clôture du jour J, entrée à l'ouverture du jour J+1.
-- Stop et objectif touchés le même jour : on compte le stop.
-- Frais, glissement et financement déduits.
-- Résultat en R : 1 R = la perte prévue quand le stop saute.
+- Règles et paramètres fixés à l'avance, rien n'est optimisé sur le passé.
+- Signal à la clôture d'une bougie, entrée à l'ouverture de la suivante, sorties suivies en 4 heures.
+- Stop et objectif dans la même bougie : on compte le stop.
+- Frais et glissement déduits. Financement réel quand il existe, jamais supposé.
+- Trades regroupés par épisodes ; intervalles de confiance par bootstrap de blocs.
+- Tests hors échantillon : deux moitiés, puis sélection année par année.
+- Un backtest ne valide rien : au mieux, il désigne un candidat à confirmer en mode papier.
+
+## Mode papier
+`papier/plans.csv` contient les plans, écrits avant que le marché ne tranche (format décrit en tête de `papier.py`).
+`papier.py` rejoue les bougies de 4 heures et calcule le résultat net de chaque plan.
+Critère de passage en réel affiché dans `rapport/papier.md` : 30 plans clos, résultat positif avec un intervalle
+à 95 % entièrement positif, et mieux que les références.
 
 ## Lancer à la main
-Onglet **Actions**, « Collecte BTC », bouton **Run workflow**.
-
-Sur un ordinateur :
+Onglet **Actions**, « Collecte BTC », bouton **Run workflow**. Sur un ordinateur :
 ```
 pip install -r requirements.txt
 python tests/test_local.py   # tests sans réseau
-python collecte.py
-python backtest.py
+python collecte.py && python papier.py && python backtest.py
 ```

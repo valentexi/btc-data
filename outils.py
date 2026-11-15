@@ -43,9 +43,33 @@ def fusionner(nom: str, nouveau: pd.DataFrame) -> pd.DataFrame:
     else:
         tout = nouveau
     tout = tout.sort_index().reset_index()
-    os.makedirs(DATA, exist_ok=True)
+    os.makedirs(os.path.dirname(chemin(nom)), exist_ok=True)
     tout.to_csv(chemin(nom), index=False, float_format="%.10g")
     return tout
+
+
+def lire_h4() -> pd.DataFrame | None:
+    """Toutes les bougies de 4 heures (un fichier par mois dans data/h4). Colonne date = début UTC."""
+    dossier = chemin("h4")
+    if not os.path.isdir(dossier):
+        return None
+    morceaux = [pd.read_csv(os.path.join(dossier, f), dtype={"date": str})
+                for f in sorted(os.listdir(dossier)) if f.endswith(".csv")]
+    morceaux = [m for m in morceaux if len(m)]
+    if not morceaux:
+        return None
+    df = pd.concat(morceaux, ignore_index=True).drop_duplicates(subset="date", keep="last")
+    return df.sort_values("date").reset_index(drop=True)
+
+
+def ecrire_h4(df: pd.DataFrame) -> int:
+    """Enregistre les bougies de 4 heures, un fichier par mois (seuls les mois modifiés changent)."""
+    df = df.copy()
+    df["date"] = df["date"].astype(str)
+    n = 0
+    for mois, bloc in df.groupby(df["date"].str[:7]):
+        n += len(fusionner(f"h4/btc_h4_{mois}.csv", bloc))
+    return n
 
 
 def nb(x: float, d: int = 0) -> str:
