@@ -1,4 +1,4 @@
-# Backtest BTC, version 2 (16/11/2026 13:11 UTC)
+# Backtest BTC, version 2 (16/11/2026 13:35 UTC)
 
 ## En bref
 - 31 règles ou configurations testées, dont 26 avec assez de trades pour conclure (au moins 30 trades et 10 épisodes).
@@ -6,7 +6,7 @@
 - 2 nettement perdante(s) : B-S-mm200 Short sur rejet sous la moyenne 200 jours ; D-L Long sur retour au-dessus d'une résistance cassée.
 - Avec 26 tests, le hasard seul ferait ressortir environ 0,7 faux « positif ». Un résultat isolé ne prouve rien.
 - Hors échantillon (règle choisie chaque année sur le passé, puis suivie) : 55 trades, -0,12 R par trade, intervalle -0,38 R à +0,13 R.
-- Biais mécanique (cinq familles sur sept) et variation du prix à 7 jours : aucun lien mesurable (corrélation de rang 0,04, intervalle -0,03 à 0,13).
+- Biais mécanique (cinq familles sur sept) et variation du prix à 7 jours : aucun lien mesurable (corrélation de rang 0,04, intervalle -0,03 à 0,12).
 - Le biais complet de la méthode (avec les flux des ETF et les événements) ne peut pas être rejoué sur le passé : seul le mode papier (`rapport/papier.md`) peut le juger.
 
 ## Comment lire

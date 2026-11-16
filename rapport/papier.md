@@ -1,4 +1,4 @@
-# Mode papier (16/11/2026 13:11 UTC)
+# Mode papier (16/11/2026 13:35 UTC)
 
 Suivi automatique, sans argent réel. Déclencheurs, stops et objectifs suivis heure par heure ; clôtures jugées sur les bougies de 4 heures ; entrée théorique à l'ouverture de la bougie qui suit le déclencheur. Résultats nets de frais et de glissement. Dernière bougie connue : 2026-11-16 12:00 UTC.
 
@@ -39,15 +39,16 @@ Plans clos seulement ; pour Claude, plans comptés au critère. À lire au premi
 ## Scénarios à 7 jours : justesse des probabilités
 Chaque analyse donne trois probabilités (baissier, neutre, haussier) séparées par deux seuils de prix. À l'échéance, le robot regarde où le prix a fini. Une prévision ne compte que si elle a été enregistrée dans les 6 heures suivant l'analyse.
 
-- Enregistrées : 1. Résolues : 0 (comptées : 0). En cours : 1.
+- Enregistrées : 2. Résolues : 0 (comptées : 0). En cours : 2.
 - Prévisions indépendantes (qui ne se recouvrent pas) parmi les comptées résolues : 0. **Aucune conclusion avant 20 prévisions comptées résolues.**
 
 | Prévision | Créée (UTC) | Échéance (UTC) | Seuils | Baissier / neutre / haussier | État | Prix | Issue | Probabilité donnée | Comptée |
 |---|---|---|---|---|---|---|---|---|---|
+| SC016 | 2026-11-16 12:39 | 2026-11-23 12:39 | 56 098 € (62 000 $) et 60 170 € (66 500 $) | 42 % / 35 % / 23 % | en cours | 58 249 € (64 377 $) | neutre (provisoire) |  | oui |
 | SC015 | 2026-11-15 16:00 | 2026-11-22 16:00 | 56 098 € (62 000 $) et 61 392 € (67 850 $) | 45 % / 35 % / 20 % | en cours | 58 249 € (64 377 $) | neutre (provisoire) |  | oui |
 
 ## Intégrité du registre
-Aucune modification détectée sur les 10 lignes enregistrées (`papier/registre.csv`).
+Aucune modification détectée sur les 11 lignes enregistrées (`papier/registre.csv`).
 
 ## Détail des plans de Claude
 | Plan | Créé (UTC) | Enregistré (UTC) | Sens | État | Entrée | Sortie | Motif | Résultat | En euros | Compté | Configuration | Bougies |
