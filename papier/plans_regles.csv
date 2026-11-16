@@ -1,0 +1,2 @@
+id,regle,cree_utc,source,sens,declencheur,stop_pct,obj_pct,duree_h,expire_utc,risque_eur,biais,note
+S4-2026-11-15,S4,2026-11-16T00:00,règle S4 : Short quand le biais mécanique est ≤ −5,short,immediat,0.04,0.065,168,2026-11-16T06:00,2.5,-5,signal de la clôture du 2026-11-15
