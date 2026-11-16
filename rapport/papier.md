@@ -1,8 +1,8 @@
-# Mode papier (16/11/2026 06:16 UTC)
+# Mode papier (16/11/2026 13:11 UTC)
 
-Suivi automatique, sans argent réel. Déclencheurs, stops et objectifs suivis heure par heure ; clôtures jugées sur les bougies de 4 heures ; entrée théorique à l'ouverture de la bougie qui suit le déclencheur. Résultats nets de frais et de glissement. Dernière bougie connue : 2026-11-16 05:00 UTC.
+Suivi automatique, sans argent réel. Déclencheurs, stops et objectifs suivis heure par heure ; clôtures jugées sur les bougies de 4 heures ; entrée théorique à l'ouverture de la bougie qui suit le déclencheur. Résultats nets de frais et de glissement. Dernière bougie connue : 2026-11-16 12:00 UTC.
 
-Bougies utilisées : les plans créés depuis le 2026-11-15 à 19:00 UTC sont rejoués sur le **contrat perpétuel Kraken PF_XBTUSD** (le prix auquel un ordre serait exécuté) ; les plans antérieurs restent sur le prix au comptant de Coinbase, comme à leur enregistrement. Dernière bougie du contrat Kraken : 2026-11-16 05:00 UTC.
+Bougies utilisées : les plans créés depuis le 2026-11-15 à 19:00 UTC sont rejoués sur le **contrat perpétuel Kraken PF_XBTUSD** (le prix auquel un ordre serait exécuté) ; les plans antérieurs restent sur le prix au comptant de Coinbase, comme à leur enregistrement. Dernière bougie du contrat Kraken : 2026-11-16 12:00 UTC.
 
 ## Plans de Claude
 - Enregistrés : 8. Entrés : 2 (clos 1, ouverts 1). En attente : 1. Expirés ou annulés sans entrée : 5. Abandonnés (condition non remplie) : 0.
@@ -44,7 +44,7 @@ Chaque analyse donne trois probabilités (baissier, neutre, haussier) séparées
 
 | Prévision | Créée (UTC) | Échéance (UTC) | Seuils | Baissier / neutre / haussier | État | Prix | Issue | Probabilité donnée | Comptée |
 |---|---|---|---|---|---|---|---|---|---|
-| SC015 | 2026-11-15 16:00 | 2026-11-22 16:00 | 56 098 € (62 000 $) et 61 392 € (67 850 $) | 45 % / 35 % / 20 % | en cours | 58 860 € (65 052 $) | neutre (provisoire) |  | oui |
+| SC015 | 2026-11-15 16:00 | 2026-11-22 16:00 | 56 098 € (62 000 $) et 61 392 € (67 850 $) | 45 % / 35 % / 20 % | en cours | 58 249 € (64 377 $) | neutre (provisoire) |  | oui |
 
 ## Intégrité du registre
 Aucune modification détectée sur les 10 lignes enregistrées (`papier/registre.csv`).
@@ -53,7 +53,7 @@ Aucune modification détectée sur les 10 lignes enregistrées (`papier/registre
 | Plan | Créé (UTC) | Enregistré (UTC) | Sens | État | Entrée | Sortie | Motif | Résultat | En euros | Compté | Configuration | Bougies |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
 | P008 | 2026-11-15T00:08 | 2026-11-15 00:50 | short | en attente du déclencheur |  |  |  | n.d. |  | – | C-S | Coinbase |
-| P007 | 2026-11-15T00:08 | 2026-11-15 00:50 | short | ouvert | 2026-11-15 04:00 à 58 617 € (64 783 $) |  | en cours | +0,17 R | 0,43 € | oui | D-S | Coinbase |
+| P007 | 2026-11-15T00:08 | 2026-11-15 00:50 | short | ouvert | 2026-11-15 04:00 à 58 617 € (64 783 $) |  | en cours | +0,36 R | 0,89 € | oui | D-S | Coinbase |
 | P006 | 2026-11-14T19:20 | 2026-11-15 00:44 | short | expiré sans entrée |  |  |  | n.d. |  | – | – | Coinbase |
 | P005 | 2026-11-14T16:53 | 2026-11-15 00:44 | short | expiré sans entrée |  |  |  | n.d. |  | – | – | Coinbase |
 | P004 | 2026-11-14T16:53 | 2026-11-15 00:44 | short | expiré sans entrée |  |  |  | n.d. |  | – | – | Coinbase |
@@ -64,6 +64,6 @@ Aucune modification détectée sur les 10 lignes enregistrées (`papier/registre
 ## Détail des plans des règles
 | Plan | Créé (UTC) | Enregistré (UTC) | Sens | État | Entrée | Sortie | Motif | Résultat | En euros | Configuration | Bougies |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| S4-2026-11-15 | 2026-11-16T00:00 | 2026-11-16 06:16 | short | ouvert | 2026-11-16 00:00 à 59 097 € (65 314 $) |  | en cours | +0,30 R | 0,76 € | S4 | contrat Kraken |
+| S4-2026-11-15 | 2026-11-16T00:00 | 2026-11-16 06:16 | short | ouvert | 2026-11-16 00:00 à 59 097 € (65 314 $) |  | en cours | +0,42 R | 1,04 € | S4 | contrat Kraken |
 
 Un plan « ouvert » affiche son résultat provisoire à la dernière clôture. Résultats hors financement quand celui de Kraken n'est pas encore publié pour la période.
