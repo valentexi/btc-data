@@ -1,3 +1,4 @@
 id,cree_utc,source,horizon_j,seuil_bas,seuil_haut,p_baissier,p_neutre,p_haussier,note
 SC015,2026-11-15T16:00,journal (signal 15),7,62000,67850,45,35,20,Analyse du 15 nov. à 17 h (Paris) ; inscrit le soir même à la mise en place du suivi
 SC016,2026-11-16T12:39,claude (signal 16),7,62000,66500,42,35,23,Analyse BTC short du 16 nov. à 13 h 39 (Paris) ; inscrit à 13 h 34 UTC
+SC017,2026-11-17T14:28,claude (signal 17),7,62000,67000,33,42,25,Analyse BTC short du 17 nov. à 15 h 26 (Paris) ; inscrit à 14:33 UTC après autorisation d'écriture
