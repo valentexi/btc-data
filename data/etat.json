@@ -1,5 +1,5 @@
 {
-  "execution_utc": "2026-11-17T00:46:50+00:00",
+  "execution_utc": "2026-11-17T09:08:36+00:00",
   "sources": {
     "prix": {
       "ok": true,
@@ -65,30 +65,30 @@
       "fraicheur": "à jour"
     },
     "onchain": {
-      "ok": false,
-      "lignes": 3606,
-      "derniere_date": "2026-11-15",
-      "note": "échec : HTTP 526 sur https://community-api.coinmetrics.io/v4/timeseries/asset-metrics",
+      "ok": true,
+      "lignes": 3607,
+      "derniere_date": "2026-11-16",
+      "note": "(Coin Metrics, non disponibles : cap_realisee_usd)",
       "nature": "différée",
-      "age_jours": 2,
-      "fraicheur": "à jour (lancement en échec, donnée précédente)"
+      "age_jours": 1,
+      "fraicheur": "à jour"
     },
     "h4": {
       "ok": true,
-      "lignes": 21637,
-      "derniere_date": "2026-11-16 20:00",
+      "lignes": 21639,
+      "derniere_date": "2026-11-17 04:00",
       "note": "(Coinbase, heures agrégées)",
       "nature": "historique",
-      "age_jours": 0.03,
+      "age_jours": 0.05,
       "fraicheur": "à jour"
     },
     "h1_kraken": {
       "ok": true,
-      "lignes": 1469,
-      "derniere_date": "2026-11-16 23:00",
+      "lignes": 1478,
+      "derniere_date": "2026-11-17 08:00",
       "note": "(Kraken Futures, contrat PF_XBTUSD)",
       "nature": "historique",
-      "age_jours": 0.03,
+      "age_jours": 0.01,
       "fraicheur": "à jour"
     },
     "financement_deribit": {
