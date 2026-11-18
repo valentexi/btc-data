@@ -1,4 +1,4 @@
-# Backtest BTC, version 2 (17/11/2026 14:34 UTC)
+# Backtest BTC, version 2 (18/11/2026 13:30 UTC)
 
 ## En bref
 - 31 règles ou configurations testées, dont 26 avec assez de trades pour conclure (au moins 30 trades et 10 épisodes).
@@ -6,11 +6,11 @@
 - 2 nettement perdante(s) : B-S-mm200 Short sur rejet sous la moyenne 200 jours ; D-L Long sur retour au-dessus d'une résistance cassée.
 - Avec 26 tests, le hasard seul ferait ressortir environ 0,7 faux « positif ». Un résultat isolé ne prouve rien.
 - Hors échantillon (règle choisie chaque année sur le passé, puis suivie) : 55 trades, -0,12 R par trade, intervalle -0,38 R à +0,13 R.
-- Biais mécanique (cinq familles sur sept) et variation du prix à 7 jours : aucun lien mesurable (corrélation de rang 0,04, intervalle -0,03 à 0,12).
+- Biais mécanique (cinq familles sur sept) et variation du prix à 7 jours : aucun lien mesurable (corrélation de rang 0,05, intervalle -0,03 à 0,13).
 - Le biais complet de la méthode (avec les flux des ETF et les événements) ne peut pas être rejoué sur le passé : seul le mode papier (`rapport/papier.md`) peut le juger.
 
 ## Comment lire
-- Données : bougies de 4 heures du 2017-01-01 au 2026-11-17 (21 640 bougies).
+- Données : bougies de 4 heures du 2017-01-01 au 2026-11-18 (21 646 bougies).
 - 1 R = la perte prévue quand le stop saute, frais (0,05 % par ordre) et glissement (0,10 % au stop) compris. −0,10 R par trade : on perd 10 % de la mise risquée à chaque trade.
 - Épisodes : les trades séparés de moins de 10 jours comptent comme un seul épisode de marché (30 jours au plus par épisode). L'intervalle à 95 % est calculé en tirant au sort des épisodes entiers (bootstrap par blocs).
 - Référence : le même plan, avec des entrées toutes les 20 heures sans aucun signal. Une règle doit faire mieux pour avoir un intérêt.
@@ -27,7 +27,7 @@ Stop 4 %, objectif 6,5 %, 7 jours au plus, sortie unique.
 | L1 Long en peur extrême (Fear & Greed ≤ 20) | 225 | 42 | 36 % | -0,12 R | -0,28 R à +0,04 R | +0,02 R | -0,14 R sur 174 (contre -0,14 R sans) | -0,06 R | -0,20 R | -0,18 R | pas d'avantage démontré |
 | L2 Long en peur extrême, sous la moyenne 200 jours | 206 | 39 | 37 % | -0,09 R | -0,26 R à +0,09 R | +0,02 R | -0,11 R sur 156 (contre -0,11 R sans) | +0,01 R | -0,19 R | -0,14 R | pas d'avantage démontré |
 | L3 Long en peur extrême, au-dessus de la moyenne 200 jours | 19 | 7 | 21 % | -0,47 R | -0,86 R à -0,19 R | +0,02 R | -0,44 R sur 18 (contre -0,44 R sans) | -0,50 R | -0,37 R | -0,53 R | échantillon insuffisant |
-| L4 Long après une purge (−10 % en 7 jours) | 228 | 64 | 34 % | -0,16 R | -0,31 R à +0,02 R | +0,02 R | -0,14 R sur 132 (contre -0,14 R sans) | -0,17 R | -0,15 R | -0,22 R | pas d'avantage démontré |
+| L4 Long après une purge (−10 % en 7 jours) | 228 | 64 | 34 % | -0,16 R | -0,31 R à +0,02 R | +0,02 R | -0,14 R sur 132 (contre -0,14 R sans) | -0,16 R | -0,18 R | -0,22 R | pas d'avantage démontré |
 | L5 Long après une purge, sous la moyenne 200 jours | 128 | 38 | 32 % | -0,20 R | -0,37 R à +0,00 R | +0,02 R | -0,19 R sur 83 (contre -0,19 R sans) | -0,16 R | -0,27 R | -0,26 R | pas d'avantage démontré |
 | L6 Long quand le financement est négatif (3 jours) | 273 | 64 | 43 % | +0,03 R | -0,11 R à +0,18 R | +0,02 R | +0,03 R sur 273 (contre +0,03 R sans) | +0,05 R | +0,01 R | -0,02 R | pas d'avantage démontré |
 | L7 Long quand le biais mécanique est ≥ +5 | 89 | 37 | 52 % | +0,11 R | -0,11 R à +0,29 R | +0,02 R | +0,08 R sur 86 (contre +0,10 R sans) | +0,21 R | +0,08 R | +0,06 R | pas d'avantage démontré |
@@ -52,8 +52,8 @@ Entrée à l'ouverture de la bougie qui suit le signal. Stop derrière l'extrêm
 | B-S-mm200 Short sur rejet sous la moyenne 200 jours | 35 | 15 | 43 % | -0,27 R | -0,49 R à -0,05 R | -0,10 R | -0,26 R sur 35 (contre -0,27 R sans) | -0,30 R | -0,25 R | -0,38 R | négatif |
 | B-L-mm200s Long sur rebond sur la moyenne 200 semaines | 29 | 11 | 52 % | +0,17 R | -0,02 R à +0,36 R | -0,04 R | +0,16 R sur 29 (contre +0,17 R sans) | n.d. | +0,17 R | +0,08 R | échantillon insuffisant |
 | B-S-mm200s Short sur rejet sous la moyenne 200 semaines | 24 | 8 | 21 % | -0,48 R | -0,83 R à +0,02 R | -0,10 R | -0,47 R sur 24 (contre -0,48 R sans) | n.d. | -0,48 R | -0,60 R | échantillon insuffisant |
-| C-S Short sur cassure d'un support en clôture journalière | 66 | 51 | 39 % | -0,13 R | -0,40 R à +0,12 R | -0,06 R | -0,15 R sur 51 (contre -0,16 R sans) | -0,28 R | -0,04 R | -0,21 R | pas d'avantage démontré |
-| C-S+ Short sur cassure d'un support en clôture journalière, dans le sens de la moyenne 200 jours | 43 | 33 | 47 % | -0,03 R | -0,34 R à +0,26 R | -0,06 R | +0,09 R sur 30 (contre +0,09 R sans) | -0,32 R | +0,21 R | -0,10 R | pas d'avantage démontré |
+| C-S Short sur cassure d'un support en clôture journalière | 66 | 51 | 39 % | -0,13 R | -0,40 R à +0,12 R | -0,05 R | -0,15 R sur 51 (contre -0,16 R sans) | -0,28 R | -0,04 R | -0,21 R | pas d'avantage démontré |
+| C-S+ Short sur cassure d'un support en clôture journalière, dans le sens de la moyenne 200 jours | 43 | 33 | 47 % | -0,03 R | -0,34 R à +0,26 R | -0,05 R | +0,09 R sur 30 (contre +0,09 R sans) | -0,32 R | +0,21 R | -0,10 R | pas d'avantage démontré |
 | D-S Short sur rebond raté (retour sous un support cassé) | 44 | 39 | 41 % | -0,15 R | -0,48 R à +0,16 R | -0,09 R | -0,15 R sur 33 (contre -0,16 R sans) | -0,20 R | -0,12 R | -0,25 R | pas d'avantage démontré |
 | D-S+ Short sur rebond raté (retour sous un support cassé), dans le sens de la moyenne 200 jours | 28 | 25 | 43 % | -0,10 R | -0,55 R à +0,31 R | -0,09 R | -0,04 R sur 19 (contre -0,04 R sans) | -0,27 R | +0,05 R | -0,19 R | échantillon insuffisant |
 | C-L Long sur cassure d'une résistance en clôture journalière | 131 | 74 | 48 % | +0,10 R | -0,11 R à +0,31 R | -0,02 R | +0,00 R sur 101 (contre +0,03 R sans) | +0,15 R | +0,03 R | +0,02 R | pas d'avantage démontré |
@@ -70,15 +70,15 @@ Définitions : support et résistance = plus bas et plus haut des 20 derniers jo
 | Short | -0,07 R sur 383 | -0,31 R sur 101 |
 
 ## Le biais mécanique prédit-il la suite ?
-Approximation du biais de la méthode sur cinq familles (structure, positionnement, blockchain, macro, actifs risqués), de −10 à +10, du 2018-02-01 au 2026-11-09. Variation moyenne d'un jour quelconque à 7 jours : +0,8 %.
+Approximation du biais de la méthode sur cinq familles (structure, positionnement, blockchain, macro, actifs risqués), de −10 à +10, du 2018-02-01 au 2026-11-10. Variation moyenne d'un jour quelconque à 7 jours : +0,8 %.
 
 | Biais | Jours | Épisodes | Variation à 7 jours | Médiane | Hausse | À 14 jours | Écart à la moyenne | Intervalle à 95 % de l'écart |
 |---|---|---|---|---|---|---|---|---|
-| ≤ −5 (baissier) | 103 | 21 | -2,1 % | -1,0 % | 37 % | -5,9 % | -2,9 % | -6,5 % à +0,9 % |
-| −4 à −2 | 669 | 54 | +0,4 % | +0,4 % | 53 % | +1,1 % | -0,4 % | -1,9 % à +0,7 % |
+| ≤ −5 (baissier) | 103 | 21 | -2,1 % | -1,0 % | 37 % | -5,9 % | -2,9 % | -6,5 % à +0,8 % |
+| −4 à −2 | 670 | 54 | +0,4 % | +0,4 % | 53 % | +1,1 % | -0,4 % | -1,9 % à +0,7 % |
 | −1 à +1 (neutre) | 1208 | 74 | +0,9 % | +0,1 % | 51 % | +2,1 % | +0,0 % | -0,7 % à +0,9 % |
 | +2 à +4 | 965 | 57 | +1,3 % | +0,4 % | 53 % | +2,4 % | +0,5 % | -0,4 % à +1,4 % |
-| ≥ +5 (haussier) | 255 | 32 | +1,2 % | +0,9 % | 56 % | +2,0 % | +0,4 % | -1,0 % à +1,8 % |
+| ≥ +5 (haussier) | 255 | 32 | +1,2 % | +0,9 % | 56 % | +2,0 % | +0,4 % | -0,9 % à +1,7 % |
 
 Si l'intervalle de l'écart contient zéro, la classe ne se distingue pas d'un jour quelconque. Blocs de 30 jours pour le bootstrap.
 
@@ -100,9 +100,9 @@ R moyen quand on change le stop et la durée (objectif = 1,6 fois le stop). Nomb
 
 | Stop | 3 jours | 7 jours | 14 jours |
 |---|---|---|---|
-| 3 % | -0,09 R (281) | -0,10 R (254) | -0,11 R (252) |
-| 4 % | -0,08 R (250) | -0,09 R (206) | -0,09 R (199) |
-| 6 % | -0,04 R (215) | -0,03 R (155) | -0,01 R (139) |
+| 3 % | -0,10 R (282) | -0,11 R (255) | -0,12 R (253) |
+| 4 % | -0,08 R (251) | -0,09 R (206) | -0,09 R (199) |
+| 6 % | -0,03 R (216) | -0,03 R (155) | -0,01 R (139) |
 
 **S1 Short sur rebond (+8 % en 7 jours) sous la moyenne 200 jours**
 
@@ -115,10 +115,10 @@ R moyen quand on change le stop et la durée (objectif = 1,6 fois le stop). Nomb
 ## Suivi de tendance sans stop, sans levier
 | Stratégie | Période | Rendement annuel | Pire baisse | Temps en position | Détenir sur la même période |
 |---|---|---|---|---|---|
-| Long au-dessus de la moyenne 200 jours, sans financement | 2017-07-19 au 2026-11-16 | +41,4 % | -70,7 % | 56 % | +43,3 % |
-| Long au-dessus de la moyenne 200 jours, avec financement réel | 2019-05-01 au 2026-11-16 | +23,8 % | -65,5 % | 60 % | +39,3 % |
-| Short sous la moyenne 200 jours, sans financement | 2017-07-19 au 2026-11-16 | -19,0 % | -92,1 % | 44 % | +43,3 % |
-| Short sous la moyenne 200 jours, avec financement réel | 2019-05-01 au 2026-11-16 | -19,4 % | -87,3 % | 40 % | +39,3 % |
+| Long au-dessus de la moyenne 200 jours, sans financement | 2017-07-19 au 2026-11-17 | +41,4 % | -70,7 % | 56 % | +43,3 % |
+| Long au-dessus de la moyenne 200 jours, avec financement réel | 2019-05-01 au 2026-11-17 | +23,8 % | -65,5 % | 59 % | +39,3 % |
+| Short sous la moyenne 200 jours, sans financement | 2017-07-19 au 2026-11-17 | -19,0 % | -92,1 % | 44 % | +43,3 % |
+| Short sous la moyenne 200 jours, avec financement réel | 2019-05-01 au 2026-11-17 | -19,4 % | -87,3 % | 40 % | +39,3 % |
 
 ## Limites
 - Les définitions mécaniques approchent les configurations de la méthode ; elles ne reproduisent pas le jugement d'une analyse (choix des niveaux, lecture des flux, actualité).
