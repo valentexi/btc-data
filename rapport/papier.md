@@ -1,8 +1,8 @@
-# Mode papier (19/11/2026 08:42 UTC)
+# Mode papier (19/11/2026 13:57 UTC)
 
-Suivi automatique, sans argent réel. Déclencheurs, stops et objectifs suivis heure par heure ; clôtures jugées sur les bougies de 4 heures ; entrée théorique à l'ouverture de la bougie qui suit le déclencheur. Résultats nets de frais et de glissement. Dernière bougie connue : 2026-11-19 07:00 UTC.
+Suivi automatique, sans argent réel. Déclencheurs, stops et objectifs suivis heure par heure ; clôtures jugées sur les bougies de 4 heures ; entrée théorique à l'ouverture de la bougie qui suit le déclencheur. Résultats nets de frais et de glissement. Dernière bougie connue : 2026-11-19 12:00 UTC.
 
-Bougies utilisées : les plans créés depuis le 2026-11-15 à 19:00 UTC sont rejoués sur le **contrat perpétuel Kraken PF_XBTUSD** (le prix auquel un ordre serait exécuté) ; les plans antérieurs restent sur le prix au comptant de Coinbase, comme à leur enregistrement. Dernière bougie du contrat Kraken : 2026-11-19 07:00 UTC.
+Bougies utilisées : les plans créés depuis le 2026-11-15 à 19:00 UTC sont rejoués sur le **contrat perpétuel Kraken PF_XBTUSD** (le prix auquel un ordre serait exécuté) ; les plans antérieurs restent sur le prix au comptant de Coinbase, comme à leur enregistrement. Dernière bougie du contrat Kraken : 2026-11-19 12:00 UTC.
 
 ## Plans de Claude
 - Enregistrés : 10. Entrés : 2 (clos 2, ouverts 0). En attente : 1. Expirés ou annulés sans entrée : 7. Abandonnés (condition non remplie) : 0.
@@ -44,10 +44,10 @@ Chaque analyse donne trois probabilités (baissier, neutre, haussier) séparées
 
 | Prévision | Créée (UTC) | Échéance (UTC) | Seuils | Baissier / neutre / haussier | État | Prix | Issue | Probabilité donnée | Comptée |
 |---|---|---|---|---|---|---|---|---|---|
-| SC018 | 2026-11-18 14:51 | 2026-11-25 14:51 | 55 616 € (61 000 $) et 60 175 € (66 000 $) | 33 % / 45 % / 22 % | en cours | 58 050 € (63 669 $) | neutre (provisoire) |  | oui |
-| SC017 | 2026-11-17 14:28 | 2026-11-24 14:28 | 56 528 € (62 000 $) et 61 087 € (67 000 $) | 33 % / 42 % / 25 % | en cours | 58 050 € (63 669 $) | neutre (provisoire) |  | oui |
-| SC016 | 2026-11-16 12:39 | 2026-11-23 12:39 | 56 528 € (62 000 $) et 60 631 € (66 500 $) | 42 % / 35 % / 23 % | en cours | 58 050 € (63 669 $) | neutre (provisoire) |  | oui |
-| SC015 | 2026-11-15 16:00 | 2026-11-22 16:00 | 56 528 € (62 000 $) et 61 862 € (67 850 $) | 45 % / 35 % / 20 % | en cours | 58 050 € (63 669 $) | neutre (provisoire) |  | oui |
+| SC018 | 2026-11-18 14:51 | 2026-11-25 14:51 | 55 616 € (61 000 $) et 60 175 € (66 000 $) | 33 % / 45 % / 22 % | en cours | 58 243 € (63 881 $) | neutre (provisoire) |  | oui |
+| SC017 | 2026-11-17 14:28 | 2026-11-24 14:28 | 56 528 € (62 000 $) et 61 087 € (67 000 $) | 33 % / 42 % / 25 % | en cours | 58 243 € (63 881 $) | neutre (provisoire) |  | oui |
+| SC016 | 2026-11-16 12:39 | 2026-11-23 12:39 | 56 528 € (62 000 $) et 60 631 € (66 500 $) | 42 % / 35 % / 23 % | en cours | 58 243 € (63 881 $) | neutre (provisoire) |  | oui |
+| SC015 | 2026-11-15 16:00 | 2026-11-22 16:00 | 56 528 € (62 000 $) et 61 862 € (67 850 $) | 45 % / 35 % / 20 % | en cours | 58 243 € (63 881 $) | neutre (provisoire) |  | oui |
 
 ## Intégrité du registre
 Aucune modification détectée sur les 16 lignes enregistrées (`papier/registre.csv`).
@@ -72,6 +72,6 @@ Aucune modification détectée sur les 16 lignes enregistrées (`papier/registre
 ## Détail des plans des règles
 | Plan | Créé (UTC) | Enregistré (UTC) | Sens | État | Entrée | Sortie | Motif | Résultat | En euros | Configuration | Bougies |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| S4-2026-11-15 | 2026-11-16T00:00 | 2026-11-16 06:16 | short | ouvert | 2026-11-16 00:00 à 59 550 € (65 314 $) |  | en cours | +0,57 R | 1,43 € | S4 | contrat Kraken |
+| S4-2026-11-15 | 2026-11-16T00:00 | 2026-11-16 06:16 | short | ouvert | 2026-11-16 00:00 à 59 550 € (65 314 $) |  | en cours | +0,52 R | 1,31 € | S4 | contrat Kraken |
 
 Un plan « ouvert » affiche son résultat provisoire à la dernière clôture. Résultats hors financement quand celui de Kraken n'est pas encore publié pour la période.
