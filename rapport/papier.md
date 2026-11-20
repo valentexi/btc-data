@@ -1,8 +1,8 @@
-# Mode papier (19/11/2026 18:12 UTC)
+# Mode papier (20/11/2026 01:14 UTC)
 
-Suivi automatique, sans argent réel. Déclencheurs, stops et objectifs suivis heure par heure ; clôtures jugées sur les bougies de 4 heures ; entrée théorique à l'ouverture de la bougie qui suit le déclencheur. Résultats nets de frais et de glissement. Dernière bougie connue : 2026-11-19 17:00 UTC.
+Suivi automatique, sans argent réel. Déclencheurs, stops et objectifs suivis heure par heure ; clôtures jugées sur les bougies de 4 heures ; entrée théorique à l'ouverture de la bougie qui suit le déclencheur. Résultats nets de frais et de glissement. Dernière bougie connue : 2026-11-20 00:00 UTC.
 
-Bougies utilisées : les plans créés depuis le 2026-11-15 à 19:00 UTC sont rejoués sur le **contrat perpétuel Kraken PF_XBTUSD** (le prix auquel un ordre serait exécuté) ; les plans antérieurs restent sur le prix au comptant de Coinbase, comme à leur enregistrement. Dernière bougie du contrat Kraken : 2026-11-19 17:00 UTC.
+Bougies utilisées : les plans créés depuis le 2026-11-15 à 19:00 UTC sont rejoués sur le **contrat perpétuel Kraken PF_XBTUSD** (le prix auquel un ordre serait exécuté) ; les plans antérieurs restent sur le prix au comptant de Coinbase, comme à leur enregistrement. Dernière bougie du contrat Kraken : 2026-11-20 00:00 UTC.
 
 ## Plans de Claude
 - Enregistrés : 11. Entrés : 2 (clos 2, ouverts 0). En attente : 1. Expirés ou annulés sans entrée : 8. Abandonnés (condition non remplie) : 0.
@@ -21,7 +21,7 @@ S4 : short quand le biais mécanique est ≤ −5. L7 : long quand il est ≥ +5
 
 - S4 : aucun plan clos ; ouverts 1.
 - L7 : aucun plan clos ; ouverts 0.
-- Comparaison, plans clos : Claude (comptés) -0,16 R sur 1 ; règles n.d. sur 0. Pour mémoire, long systématique à chaque plan de Claude -1,00 R, short systématique +0,26 R.
+- Comparaison, plans clos : Claude (comptés) -0,16 R sur 1 ; règles n.d. sur 0. Pour mémoire, long systématique à chaque plan de Claude -1,00 R, short systématique +0,68 R.
 
 ## Par configuration et par jour d'entrée
 Plans clos seulement ; pour Claude, plans comptés au critère. À lire au premier bilan (30 plans) : avec quelques plans par ligne, ces moyennes ne veulent rien dire.
@@ -44,11 +44,11 @@ Chaque analyse donne trois probabilités (baissier, neutre, haussier) séparées
 
 | Prévision | Créée (UTC) | Échéance (UTC) | Seuils | Baissier / neutre / haussier | État | Prix | Issue | Probabilité donnée | Comptée |
 |---|---|---|---|---|---|---|---|---|---|
-| SC019 | 2026-11-19 15:08 | 2026-11-26 15:08 | 55 616 € (61 000 $) et 60 175 € (66 000 $) | 30 % / 45 % / 25 % | en cours | 57 470 € (63 033 $) | neutre (provisoire) |  | oui |
-| SC018 | 2026-11-18 14:51 | 2026-11-25 14:51 | 55 616 € (61 000 $) et 60 175 € (66 000 $) | 33 % / 45 % / 22 % | en cours | 57 470 € (63 033 $) | neutre (provisoire) |  | oui |
-| SC017 | 2026-11-17 14:28 | 2026-11-24 14:28 | 56 528 € (62 000 $) et 61 087 € (67 000 $) | 33 % / 42 % / 25 % | en cours | 57 470 € (63 033 $) | neutre (provisoire) |  | oui |
-| SC016 | 2026-11-16 12:39 | 2026-11-23 12:39 | 56 528 € (62 000 $) et 60 631 € (66 500 $) | 42 % / 35 % / 23 % | en cours | 57 470 € (63 033 $) | neutre (provisoire) |  | oui |
-| SC015 | 2026-11-15 16:00 | 2026-11-22 16:00 | 56 528 € (62 000 $) et 61 862 € (67 850 $) | 45 % / 35 % / 20 % | en cours | 57 470 € (63 033 $) | neutre (provisoire) |  | oui |
+| SC019 | 2026-11-19 15:08 | 2026-11-26 15:08 | 55 495 € (61 000 $) et 60 044 € (66 000 $) | 30 % / 45 % / 25 % | en cours | 56 326 € (61 913 $) | neutre (provisoire) |  | oui |
+| SC018 | 2026-11-18 14:51 | 2026-11-25 14:51 | 55 495 € (61 000 $) et 60 044 € (66 000 $) | 33 % / 45 % / 22 % | en cours | 56 326 € (61 913 $) | neutre (provisoire) |  | oui |
+| SC017 | 2026-11-17 14:28 | 2026-11-24 14:28 | 56 405 € (62 000 $) et 60 953 € (67 000 $) | 33 % / 42 % / 25 % | en cours | 56 326 € (61 913 $) | baissier (provisoire) |  | oui |
+| SC016 | 2026-11-16 12:39 | 2026-11-23 12:39 | 56 405 € (62 000 $) et 60 499 € (66 500 $) | 42 % / 35 % / 23 % | en cours | 56 326 € (61 913 $) | baissier (provisoire) |  | oui |
+| SC015 | 2026-11-15 16:00 | 2026-11-22 16:00 | 56 405 € (62 000 $) et 61 727 € (67 850 $) | 45 % / 35 % / 20 % | en cours | 56 326 € (61 913 $) | baissier (provisoire) |  | oui |
 
 ## Intégrité du registre
 Aucune modification détectée sur les 19 lignes enregistrées (`papier/registre.csv`).
@@ -64,17 +64,17 @@ Aucune modification détectée sur les 19 lignes enregistrées (`papier/registre
 | P010 | 2026-11-18T14:51 | 2026-11-18 18:49 | short | annulé avant entrée |  |  |  | n.d. |  | – | D-S | contrat Kraken |
 | P009 | 2026-11-18T14:51 | 2026-11-18 14:52 | short | annulé avant entrée |  |  |  | n.d. |  | – | D-S | contrat Kraken |
 | P008 | 2026-11-15T00:08 | 2026-11-15 00:50 | short | expiré sans entrée |  |  |  | n.d. |  | – | C-S | Coinbase |
-| P007 | 2026-11-15T00:08 | 2026-11-15 00:50 | short | clos | 2026-11-15 04:00 à 59 066 € (64 783 $) | 2026-11-17 12:00 | durée | -0,16 R | -0,40 € | oui | D-S | Coinbase |
+| P007 | 2026-11-15T00:08 | 2026-11-15 00:50 | short | clos | 2026-11-15 04:00 à 58 937 € (64 783 $) | 2026-11-17 12:00 | durée | -0,16 R | -0,40 € | oui | D-S | Coinbase |
 | P006 | 2026-11-14T19:20 | 2026-11-15 00:44 | short | expiré sans entrée |  |  |  | n.d. |  | – | – | Coinbase |
 | P005 | 2026-11-14T16:53 | 2026-11-15 00:44 | short | expiré sans entrée |  |  |  | n.d. |  | – | – | Coinbase |
 | P004 | 2026-11-14T16:53 | 2026-11-15 00:44 | short | expiré sans entrée |  |  |  | n.d. |  | – | – | Coinbase |
 | P003 | 2026-11-14T14:25 | 2026-11-15 00:44 | short | expiré sans entrée |  |  |  | n.d. |  | – | – | Coinbase |
 | P002 | 2026-11-13T18:00 | 2026-11-15 00:44 | long | expiré sans entrée |  |  |  | n.d. |  | – | – | Coinbase |
-| P001 | 2026-11-13T11:15 | 2026-11-15 00:44 | long | clos | 2026-11-13 15:00 à 62 454 € (68 500 $) | 2026-11-14 14:00 | stop | -1,00 R | -2,50 € | non (enregistré après l'entrée) | – | Coinbase |
+| P001 | 2026-11-13T11:15 | 2026-11-15 00:44 | long | clos | 2026-11-13 15:00 à 62 318 € (68 500 $) | 2026-11-14 14:00 | stop | -1,00 R | -2,50 € | non (enregistré après l'entrée) | – | Coinbase |
 
 ## Détail des plans des règles
 | Plan | Créé (UTC) | Enregistré (UTC) | Sens | État | Entrée | Sortie | Motif | Résultat | En euros | Configuration | Bougies |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| S4-2026-11-15 | 2026-11-16T00:00 | 2026-11-16 06:16 | short | ouvert | 2026-11-16 00:00 à 59 550 € (65 314 $) |  | en cours | +0,94 R | 2,34 € | S4 | contrat Kraken |
+| S4-2026-11-15 | 2026-11-16T00:00 | 2026-11-16 06:16 | short | ouvert | 2026-11-16 00:00 à 59 420 € (65 314 $) |  | en cours | +1,16 R | 2,89 € | S4 | contrat Kraken |
 
 Un plan « ouvert » affiche son résultat provisoire à la dernière clôture. Résultats hors financement quand celui de Kraken n'est pas encore publié pour la période.
