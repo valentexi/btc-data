@@ -9,7 +9,7 @@ GitHub Actions lance les scripts tout seul :
 | Quand (UTC) | Quoi |
 |---|---|
 | 4 h 47 chaque jour | Relevé complet (`collecte.py`), suivi papier (`papier.py`), backtest (`backtest.py`) |
-| Toutes les heures, à la minute 12 | Relevé, suivi papier et alertes. GitHub ne garantit pas ses horaires (retards, passages sautés) : un passage par heure rend l'outil insensible à un passage manqué ; le backtest est rattrapé s'il a plus de 26 heures |
+| Toutes les heures, à la minute 12 | Relevé, suivi papier et alertes. GitHub ne garantit pas ses horaires : en pratique un passage toutes les 3 à 9 heures (mesuré du 16 au 20 nov. 2026). Sans conséquence sur les résultats papier : bougies et financement horaires sont rattrapés à chaque passage ; le backtest est rattrapé s'il a plus de 26 heures |
 | À la main, case « test_alerte » | Envoie une alerte de test (issue ouverte puis fermée) pour vérifier la notification sur le téléphone |
 | À chaque modification du code ou de `papier/plans.csv` | Tests, puis tout le reste |
 
@@ -58,7 +58,7 @@ Deux registres de plans, rejoués heure par heure par `papier.py` (résultat net
 | `papier/plans.csv` | Plans des analyses de Claude (format en tête de `papier.py`) |
 | `papier/plans_regles.csv` | Plans des règles mécaniques S4 (short si biais ≤ −5) et L7 (long si biais ≥ +5), inscrits d'office par le robot : l'étalon que le jugement de Claude doit battre |
 | `papier/annulations.csv` | Annulations (`id,annule_utc,motif`), jamais rétroactives |
-| `papier/registre.csv` | Heure de première apparition et empreinte de chaque ligne (tenu par le robot) |
+| `papier/registre.csv` | Heure de première apparition et empreinte de chaque ligne (tenu par le robot ; fusionné ligne à ligne si deux passages se croisent, la vue la plus ancienne fait foi) |
 | `papier/alertes.csv` | Alertes déjà envoyées |
 | `papier/scenarios.csv` | Prévisions à 7 jours de chaque analyse (trois probabilités, deux seuils de prix), confrontées au prix à l'échéance : justesse des probabilités dans `rapport/papier.md` |
 | `papier/configurations.csv` | Facultatif : code de configuration du backtest d'un plan (`id,configuration`), pour le tableau par configuration |
@@ -69,6 +69,7 @@ Règles d'intégrité :
 - une ligne enregistrée ne change plus ; une modification est signalée (rapport et alerte) et le plan sort du critère ;
 - un plan de Claude ne compte au critère que s'il a été enregistré avant son entrée ;
 - pour remplacer un plan : une annulation, puis un nouveau plan.
+- depuis le 20 nov. 2026 à 13 h UTC, au déclenchement d'un short de Claude, le robot refait le test « condition éliminatoire du short » du relevé (prix posé sur un support majeur, financement Kraken négatif, Fear & Greed ≤ 20) ; active ou indéterminée : plan abandonné (alerte). Les règles S4 et L7 n'y sont pas soumises.
 
 Critère de passage en réel (`rapport/papier.md`) : bilans à 30, 60 et 100 plans comptés clos, puis tous les 50 ;
 un bilan est favorable si l'intervalle à 95 % (tirage par épisodes) est entièrement au-dessus de 0 R, avec au moins

@@ -31,6 +31,10 @@ de 0,5 % moins bonne que `entree`, le plan est annulé (on ne court pas après l
 obj1 vide : sortie unique à obj2. Sinon : moitié à obj1, stop ramené à l'entrée, reste à obj2.
 condition_financement (facultatif) : positif_ou_nul ou negatif_ou_nul, vérifiée sur le financement Kraken de
 l'heure du déclenchement ; non remplie ou inconnue : le plan est abandonné.
+Condition éliminatoire du short (depuis DEBUT_CONTROLE_SHORT) : au déclenchement d'un short de Claude, le robot refait
+le test du relevé (prix posé sur un support majeur, financement Kraken négatif, Fear & Greed ≤ 20) avec la dernière
+clôture journalière, le Fear & Greed du jour et le financement de l'heure. Active ou indéterminée : plan abandonné.
+Les règles mécaniques S4 et L7 n'y sont pas soumises (elles reproduisent le backtest).
 Plans des règles : stop_pct, obj_pct et duree_h remplacent stop, obj2 et sortie_utc (calculés sur l'entrée réelle).
 
 Bougies : les plans créés depuis DEBUT_KRAKEN sont rejoués sur les bougies d'une heure du contrat perpétuel Kraken
@@ -77,6 +81,9 @@ ENTRES = ("clos", "ouvert")
 
 # Depuis cette heure (UTC), les nouveaux plans sont rejoués sur les bougies du contrat perpétuel Kraken.
 DEBUT_KRAKEN = "2026-11-15T19:00"
+# Contrôle de la condition éliminatoire du short au déclenchement (décision de Valentin, 20 nov. 2026) : ne s'applique
+# qu'aux déclenchements postérieurs, pour ne jamais rejuger un plan déjà entré.
+DEBUT_CONTROLE_SHORT = "2026-11-20T13:00"
 CONFIGURATIONS = os.path.join(DOSSIER, "configurations.csv")     # id, configuration (code du backtest)
 NOMS_CONFIG = {"A-L": "long sur rejet d'un support", "A-S": "short sur rejet d'une résistance",
                "B-L": "long sur rebond sur une moyenne", "B-S": "short sur rejet sous une moyenne",
@@ -127,7 +134,10 @@ def tenir_registre(entrees: list[tuple[str, dict]], quand: pd.Timestamp) -> tupl
     """Enregistre les nouvelles lignes, ne modifie jamais les anciennes. Renvoie le registre et les anomalies."""
     reg = pd.read_csv(REGISTRE, dtype=str).fillna("") if os.path.exists(REGISTRE) else \
         pd.DataFrame(columns=["cle", "premiere_vue_utc", "empreinte"])
-    connus = {r["cle"]: r for _, r in reg.iterrows()}
+    connus = {}
+    for _, r in reg.iterrows():                      # doublon possible après fusion de deux passages : la plus ancienne
+        if r["cle"] not in connus or r["premiere_vue_utc"] < connus[r["cle"]]["premiere_vue_utc"]:
+            connus[r["cle"]] = r
     anomalies, nouveaux = [], []
     presents = set()
     for cle, ligne in entrees:
@@ -159,7 +169,57 @@ def _financement(fin_h: pd.Series | None, t: np.datetime64) -> float | None:
     return float(avant.iloc[-1]) if len(avant) else None
 
 
-def evaluer(plan: dict, B: dict, annule: pd.Timestamp | None = None, fin_h: pd.Series | None = None) -> dict:
+def controle_short(J: pd.DataFrame | None, peur: pd.DataFrame | None, fin_h: pd.Series | None):
+    """Condition éliminatoire du short à l'instant t, avec le calcul du relevé (regles.py).
+
+    Renvoie une fonction t -> (actif, détail, en_attente). `actif` vaut None si une donnée manque ; `en_attente` est
+    vrai si la donnée n'est simplement pas encore collectée (le plan reste alors en suspens jusqu'au passage suivant).
+    Seules des données publiées avant t sont utilisées : dernière clôture journalière terminée, Fear & Greed du jour
+    (publié à 0 h UTC, trois jours d'ancienneté au plus, comme le relevé), financement Kraken de l'heure.
+    """
+    import regles
+    dates_j = J["date"].astype(str).to_numpy() if J is not None and len(J) else np.array([], dtype=str)
+    if peur is not None and len(peur):
+        pz = peur.dropna(subset=["valeur"]).copy()
+        pz["date"] = pz["date"].astype(str)
+        pz = pz.sort_values("date")
+    else:
+        pz = None
+    cache: dict[str, dict] = {}
+
+    def f(t: np.datetime64):
+        ts = pd.Timestamp(t)
+        veille = (ts.normalize() - pd.Timedelta(days=1)).strftime("%Y-%m-%d")   # dernière clôture terminée
+        jour = ts.strftime("%Y-%m-%d")
+        if not len(dates_j) or dates_j[-1] < veille:
+            return None, "clôture journalière pas encore collectée", True
+        k = int(np.searchsorted(dates_j, veille, side="right")) - 1
+        if k < 0 or dates_j[k] != veille:
+            return None, f"clôture du {veille} absente", False
+        if veille not in cache:
+            cache[veille] = regles.supports_majeurs(J.iloc[:k + 1])
+        sup = cache[veille]
+        v_peur = None
+        if pz is not None:
+            dispo = pz[pz["date"] <= jour]
+            if len(dispo) and (ts.normalize() - pd.Timestamp(dispo["date"].iloc[-1])).days <= 3:
+                v_peur = float(dispo["valeur"].iloc[-1])
+            elif not len(pz) or pz["date"].iloc[-1] < jour:
+                return None, "Fear & Greed pas encore collecté", True
+        fin = _financement(fin_h, t)
+        if fin is None and fin_h is not None and len(fin_h) and fin_h.index[-1] < t:
+            return None, "financement pas encore collecté", True
+        actif, detail = regles.condition_short(sup, fin, v_peur)
+        if actif is not None:
+            detail = (f"clôture du {veille} ; {detail} (financement {fin:+.4f} % par 8 h, "
+                      f"Fear & Greed {v_peur:.0f})").replace(".", ",")
+        return actif, detail, False
+
+    return f
+
+
+def evaluer(plan: dict, B: dict, annule: pd.Timestamp | None = None, fin_h: pd.Series | None = None,
+            controle=None, debut_controle: str = DEBUT_CONTROLE_SHORT) -> dict:
     """Rejoue un plan. Aucune information postérieure n'est utilisée pour décider."""
     sens = 1 if str(plan["sens"]).strip().lower() == "long" else -1
     cree, expire, sortie = _t(plan["cree_utc"]), _t(plan.get("expire_utc")), _t(plan.get("sortie_utc"))
@@ -236,6 +296,20 @@ def evaluer(plan: dict, B: dict, annule: pd.Timestamp | None = None, fin_h: pd.S
         return res
     t_decl = debut[i] if i <= derniere else fin[derniere]   # heure de la clôture qui déclenche (ou de l'entrée)
     res["t_declenche"] = str(pd.Timestamp(t_decl))[:16]
+    if controle is not None and sens == -1 and t_decl >= _np(_t(debut_controle)):
+        actif, detail_c, attente = controle(t_decl)
+        if attente:
+            res["etat"] = "déclenché, contrôle du short en attente de donnée"
+            res["detail"] = detail_c
+            return res
+        res["detail"] = f"condition éliminatoire du short au déclenchement : {detail_c}"
+        if actif is None:
+            res["etat"] = "abandonné : condition éliminatoire du short indéterminée"
+            return res
+        if actif:
+            res["etat"] = "abandonné : condition éliminatoire du short active"
+            return res
+        res["detail"] = "condition éliminatoire du short inactive au déclenchement"
     if cond:
         v = _financement(fin_h, t_decl)
         if v is None:
@@ -246,7 +320,8 @@ def evaluer(plan: dict, B: dict, annule: pd.Timestamp | None = None, fin_h: pd.S
                 res["etat"] = "abandonné : financement inconnu au déclenchement"
             return res
         ok = v >= 0 if cond == "positif_ou_nul" else (v <= 0 if cond == "negatif_ou_nul" else False)
-        res["detail"] = f"financement au déclenchement {v:+.4f} % par 8 h".replace(".", ",")
+        d_fin = f"financement au déclenchement {v:+.4f} % par 8 h".replace(".", ",")
+        res["detail"] = (res["detail"] + " ; " if res["detail"] else "") + d_fin
         if not ok:
             res["etat"] = "abandonné : condition de financement non remplie"
             return res
@@ -571,6 +646,14 @@ def main() -> int:
     hk = lire("h1_kraken.csv")
     BK = barres(hk.sort_values("date").reset_index(drop=True), fin, pas_h=1) if hk is not None and len(hk) > 48 else None
     scenarios = _lire(SCENARIOS, COLONNES_SCENARIOS)
+    controle = None
+    try:
+        import backtest
+        donnees = backtest.charger()
+        controle = controle_short(donnees[0] if donnees is not None else None, lire("peur_avidite.csv"), fin_h)
+    except Exception as e:  # noqa: BLE001 - sans contrôle, les shorts déclenchés sont abandonnés (donnée absente)
+        print(f"Contrôle du short : données indisponibles ({e})")
+        controle = lambda t: (None, "données du contrôle indisponibles", False)  # noqa: E731
     configs = {x["id"]: x["configuration"].strip() for x in _lire(CONFIGURATIONS, ["id", "configuration"]).to_dict("records")}
 
     def bougies_pour(pl):
@@ -580,9 +663,9 @@ def main() -> int:
     fx = float(p["eurusd"].dropna().iloc[-1]) if p is not None and "eurusd" in p.columns else float("nan")
 
     # 1. Règles mécaniques : état des plans existants, puis inscription d'un nouveau plan si une règle est active
-    def evaluer_sur(pl, annule=None):
+    def evaluer_sur(pl, annule=None, ctrl=None):
         try:
-            return evaluer(pl, bougies_pour(pl), annule, fin_h)
+            return evaluer(pl, bougies_pour(pl), annule, fin_h, controle=ctrl)
         except Exception as e:  # noqa: BLE001 - une ligne mal saisie ne doit pas bloquer les autres
             return {"id": pl.get("id", "?"), "sens": pl.get("sens", ""), "etat": f"ligne illisible : {e}",
                     "t_entree": "", "prix_entree": np.nan, "t_sortie": "", "motif": "", "R": np.nan, "R_fin": np.nan,
@@ -616,7 +699,8 @@ def main() -> int:
     lignes = []
     for registre_nom, df in (("claude", plans), ("regle", regles_df)):
         for pl in df.to_dict("records"):
-            r = evaluer_sur(pl, effets.get(pl["id"]) if registre_nom == "claude" else None)
+            r = evaluer_sur(pl, effets.get(pl["id"]) if registre_nom == "claude" else None,
+                            controle if registre_nom == "claude" else None)
             if registre_nom == "claude" and not str(r["etat"]).startswith("ligne illisible"):
                 Bp = bougies_pour(pl)
                 r["ref_long"], r["ref_short"] = reference(pl, Bp, 1), reference(pl, Bp, -1)

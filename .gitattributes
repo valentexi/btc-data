@@ -1,0 +1,3 @@
+# Fichiers d'état du robot : en cas de passages simultanés, garder les lignes des deux côtés (aucune ne se perd).
+papier/registre.csv merge=union
+papier/alertes.csv merge=union

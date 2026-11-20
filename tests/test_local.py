@@ -790,11 +790,81 @@ def test_backtest():
     return texte, txt
 
 
+def test_controle_short():
+    """Condition éliminatoire du short vérifiée par le robot au déclenchement (20 nov. 2026)."""
+    # Journalier : clôture à 100, plus bas des 90 jours précédents à 98,5 (le prix est 1,5 % au-dessus : « posé »)
+    n = 120
+    dates = [(pd.Timestamp("2023-09-03") + pd.Timedelta(days=i)).strftime("%Y-%m-%d") for i in range(n)]
+    J = pd.DataFrame({"date": dates, "cloture": 100.0, "bas": 99.5, "haut": 100.5, "mm200": np.nan})
+    J.loc[n - 30, "bas"] = 98.5
+    peur = pd.DataFrame({"date": dates + ["2023-12-31", "2024-01-01"], "valeur": [15.0] * (n + 2)})
+    t_decl = np.datetime64("2024-01-01T12:00")          # veille : 2023-12-31, dernière ligne de J
+    neg = pd.Series([-0.01], index=[t_decl])
+    pos = pd.Series([0.01], index=[t_decl])
+    actif, det, att = papier.controle_short(J, peur, neg)(t_decl)
+    verifier("contrôle du short : posé + financement négatif + peur extrême = active", actif is True and not att, det)
+    actif, det, att = papier.controle_short(J, peur, pos)(t_decl)
+    verifier("contrôle du short : financement positif = inactive", actif is False and not att, det)
+    actif, det, att = papier.controle_short(J, peur.assign(valeur=40.0), neg)(t_decl)
+    verifier("contrôle du short : pas de peur extrême = inactive", actif is False, det)
+    actif, det, att = papier.controle_short(J.assign(bas=90.0), peur, neg)(t_decl)
+    verifier("contrôle du short : loin du support = inactive", actif is False, det)
+    actif, det, att = papier.controle_short(J, peur, neg)(np.datetime64("2024-01-03T12:00"))
+    verifier("contrôle du short : clôture pas encore collectée = en attente", actif is None and att, det)
+    actif, det, att = papier.controle_short(J, peur, None)(t_decl)
+    verifier("contrôle du short : financement absent = indéterminée", actif is None and not att, det)
+    # Dans evaluer : même plan short qu'au test v3 (déclenché, entrée à 12 h le 1er janvier 2024)
+    B = bougies([(100, 101, 99, 100), (100, 103, 100, 102), (102, 102.5, 98, 98.5), (98.5, 99, 93, 94),
+                 (94, 95, 93.5, 94), (94, 94, 94, 94), (94, 94, 94, 94)])
+    pl = {"id": "T", "source": "test", "risque_eur": "2.5", "cree_utc": "2024-01-01T03:00", "sens": "short",
+          "declencheur": "zone_cloture_4h", "zone_bas": "101.5", "zone_haut": "103", "niveau": "99", "entree": "",
+          "stop": "103.5", "obj1": "", "obj2": "93.5", "expire_utc": "2024-01-03T00:00", "sortie_utc": "2024-01-04T00:00"}
+    def actif_(t):
+        return True, "test", False
+    def inactif(t):
+        return False, "test", False
+    def attente(t):
+        return None, "test", True
+    def inconnu(t):
+        return None, "test", False
+    r = papier.evaluer(pl, B, controle=actif_, debut_controle="2000-01-01T00:00")
+    verifier("short déclenché avec la condition active : abandonné", r["etat"] == "abandonné : condition éliminatoire du short active", r["etat"])
+    r = papier.evaluer(pl, B, controle=inactif, debut_controle="2000-01-01T00:00")
+    verifier("short déclenché avec la condition inactive : pris", r["etat"] == "clos" and "inactive" in r["detail"], f"{r['etat']} {r['detail']}")
+    r = papier.evaluer(pl, B, controle=attente, debut_controle="2000-01-01T00:00")
+    verifier("contrôle en attente de donnée : plan en suspens", r["etat"].startswith("déclenché, contrôle"), r["etat"])
+    r = papier.evaluer(pl, B, controle=inconnu, debut_controle="2000-01-01T00:00")
+    verifier("contrôle indéterminé : abandonné", r["etat"].startswith("abandonné : condition éliminatoire du short indéterminée"), r["etat"])
+    r = papier.evaluer(pl, B, controle=actif_)
+    verifier("déclenchement antérieur au contrôle : jamais rejugé", r["etat"] == "clos", r["etat"])
+    r = papier.evaluer({**pl, "sens": "long", "zone_bas": "93", "zone_haut": "95", "niveau": "94.5", "stop": "90",
+                        "obj2": "120"}, B, controle=actif_, debut_controle="2000-01-01T00:00")
+    verifier("contrôle du short : sans effet sur un long", not r["etat"].startswith("abandonné"), r["etat"])
+    r = papier.evaluer({**pl, "condition_financement": "positif_ou_nul"}, B, fin_h=pd.Series([0.01], index=[np.datetime64("2024-01-01T12:00")]),
+                       controle=inactif, debut_controle="2000-01-01T00:00")
+    verifier("contrôle du short puis condition de financement : les deux détails gardés",
+             r["etat"] == "clos" and "inactive" in r["detail"] and "financement au déclenchement" in r["detail"], r["detail"])
+    # Registre : en cas de doublon après fusion de deux passages, la première vue la plus ancienne fait foi
+    with tempfile.TemporaryDirectory() as d:
+        ancien = papier.REGISTRE
+        papier.REGISTRE = os.path.join(d, "registre.csv")
+        e = papier.empreinte({"id": "P9"})
+        pd.DataFrame([{"cle": "P9", "premiere_vue_utc": "2026-11-18T18:49:13Z", "empreinte": e},
+                      {"cle": "P9", "premiere_vue_utc": "2026-11-18T14:52:02Z", "empreinte": e}]).to_csv(papier.REGISTRE, index=False)
+        try:
+            reg, anom = papier.tenir_registre([("P9", {"id": "P9"})], pd.Timestamp("2026-11-20", tz="UTC"))
+        finally:
+            papier.REGISTRE = ancien
+        verifier("registre : doublon fusionné, la plus ancienne vue fait foi",
+                 reg["P9"]["premiere_vue_utc"] == "2026-11-18T14:52:02Z" and not anom, str(reg["P9"]))
+
+
 if __name__ == "__main__":
     test_simulation()
     test_stats()
     test_papier()
     test_papier_v3()
+    test_controle_short()
     test_scenarios_et_bougies()
     test_collecte()
     rapport, pap = test_backtest()
