@@ -1,8 +1,8 @@
-# Mode papier (20/11/2026 13:39 UTC)
+# Mode papier (20/11/2026 18:34 UTC)
 
-Suivi automatique, sans argent réel. Déclencheurs, stops et objectifs suivis heure par heure ; clôtures jugées sur les bougies de 4 heures ; entrée théorique à l'ouverture de la bougie qui suit le déclencheur. Résultats nets de frais et de glissement. Dernière bougie connue : 2026-11-20 12:00 UTC.
+Suivi automatique, sans argent réel. Déclencheurs, stops et objectifs suivis heure par heure ; clôtures jugées sur les bougies de 4 heures ; entrée théorique à l'ouverture de la bougie qui suit le déclencheur. Résultats nets de frais et de glissement. Dernière bougie connue : 2026-11-20 17:00 UTC.
 
-Bougies utilisées : les plans créés depuis le 2026-11-15 à 19:00 UTC sont rejoués sur le **contrat perpétuel Kraken PF_XBTUSD** (le prix auquel un ordre serait exécuté) ; les plans antérieurs restent sur le prix au comptant de Coinbase, comme à leur enregistrement. Dernière bougie du contrat Kraken : 2026-11-20 12:00 UTC.
+Bougies utilisées : les plans créés depuis le 2026-11-15 à 19:00 UTC sont rejoués sur le **contrat perpétuel Kraken PF_XBTUSD** (le prix auquel un ordre serait exécuté) ; les plans antérieurs restent sur le prix au comptant de Coinbase, comme à leur enregistrement. Dernière bougie du contrat Kraken : 2026-11-20 17:00 UTC.
 
 ## Plans de Claude
 - Enregistrés : 11. Entrés : 2 (clos 2, ouverts 0). En attente : 0. Expirés ou annulés sans entrée : 9. Abandonnés (condition non remplie) : 0.
@@ -19,9 +19,9 @@ Bilans à dates fixes : à 30, 60, 100 plans comptés clos, puis tous les 50. Un
 ## Règles mécaniques inscrites d'office (sans jugement)
 S4 : short quand le biais mécanique est ≤ −5. L7 : long quand il est ≥ +5. Plan identique au backtest (stop 4 %, objectif 6,5 %, 7 jours au plus), entrée à 0 h UTC, à l'ouverture qui suit la clôture du signal (même si le robot passe en retard, 24 h au plus), une position à la fois par règle. Elles servent d'étalon : le jugement de Claude n'a d'intérêt que s'il fait mieux qu'elles.
 
-- S4 : aucun plan clos ; ouverts 1.
+- S4 : 1 clos, 100 % gagnants, +1,52 R par trade, +1,52 R au total (3,81 €) ; ouverts 0.
 - L7 : aucun plan clos ; ouverts 0.
-- Comparaison, plans clos : Claude (comptés) -0,16 R sur 1 ; règles n.d. sur 0. Pour mémoire, long systématique à chaque plan de Claude -1,00 R, short systématique +0,68 R.
+- Comparaison, plans clos : Claude (comptés) -0,16 R sur 1 ; règles +1,52 R sur 1. Pour mémoire, long systématique à chaque plan de Claude -1,00 R, short systématique +1,06 R.
 
 ## Par configuration et par jour d'entrée
 Plans clos seulement ; pour Claude, plans comptés au critère. À lire au premier bilan (30 plans) : avec quelques plans par ligne, ces moyennes ne veulent rien dire.
@@ -32,8 +32,8 @@ Plans clos seulement ; pour Claude, plans comptés au critère. À lire au premi
 | Claude · D-S : short sur rebond raté | 1 | -0,16 R | -0,16 R | 0 |
 | Claude · entrées en semaine | 0 | n.d. | n.d. | 0 |
 | Claude · entrées le week-end | 1 | -0,16 R | -0,16 R | 0 |
-| Règle S4 | 0 | n.d. | n.d. | 1 |
-| Règle S4 · entrées en semaine | 0 | n.d. | n.d. | 1 |
+| Règle S4 | 1 | +1,52 R | +1,52 R | 0 |
+| Règle S4 · entrées en semaine | 1 | +1,52 R | +1,52 R | 0 |
 | Règle L7 | 0 | n.d. | n.d. | 0 |
 
 ## Scénarios à 7 jours : justesse des probabilités
@@ -44,11 +44,11 @@ Chaque analyse donne trois probabilités (baissier, neutre, haussier) séparées
 
 | Prévision | Créée (UTC) | Échéance (UTC) | Seuils | Baissier / neutre / haussier | État | Prix | Issue | Probabilité donnée | Comptée |
 |---|---|---|---|---|---|---|---|---|---|
-| SC019 | 2026-11-19 15:08 | 2026-11-26 15:08 | 55 495 € (61 000 $) et 60 044 € (66 000 $) | 30 % / 45 % / 25 % | en cours | 56 169 € (61 741 $) | neutre (provisoire) |  | oui |
-| SC018 | 2026-11-18 14:51 | 2026-11-25 14:51 | 55 495 € (61 000 $) et 60 044 € (66 000 $) | 33 % / 45 % / 22 % | en cours | 56 169 € (61 741 $) | neutre (provisoire) |  | oui |
-| SC017 | 2026-11-17 14:28 | 2026-11-24 14:28 | 56 405 € (62 000 $) et 60 953 € (67 000 $) | 33 % / 42 % / 25 % | en cours | 56 169 € (61 741 $) | baissier (provisoire) |  | oui |
-| SC016 | 2026-11-16 12:39 | 2026-11-23 12:39 | 56 405 € (62 000 $) et 60 499 € (66 500 $) | 42 % / 35 % / 23 % | en cours | 56 169 € (61 741 $) | baissier (provisoire) |  | oui |
-| SC015 | 2026-11-15 16:00 | 2026-11-22 16:00 | 56 405 € (62 000 $) et 61 727 € (67 850 $) | 45 % / 35 % / 20 % | en cours | 56 169 € (61 741 $) | baissier (provisoire) |  | oui |
+| SC019 | 2026-11-19 15:08 | 2026-11-26 15:08 | 55 495 € (61 000 $) et 60 044 € (66 000 $) | 30 % / 45 % / 25 % | en cours | 54 035 € (59 396 $) | baissier (provisoire) |  | oui |
+| SC018 | 2026-11-18 14:51 | 2026-11-25 14:51 | 55 495 € (61 000 $) et 60 044 € (66 000 $) | 33 % / 45 % / 22 % | en cours | 54 035 € (59 396 $) | baissier (provisoire) |  | oui |
+| SC017 | 2026-11-17 14:28 | 2026-11-24 14:28 | 56 405 € (62 000 $) et 60 953 € (67 000 $) | 33 % / 42 % / 25 % | en cours | 54 035 € (59 396 $) | baissier (provisoire) |  | oui |
+| SC016 | 2026-11-16 12:39 | 2026-11-23 12:39 | 56 405 € (62 000 $) et 60 499 € (66 500 $) | 42 % / 35 % / 23 % | en cours | 54 035 € (59 396 $) | baissier (provisoire) |  | oui |
+| SC015 | 2026-11-15 16:00 | 2026-11-22 16:00 | 56 405 € (62 000 $) et 61 727 € (67 850 $) | 45 % / 35 % / 20 % | en cours | 54 035 € (59 396 $) | baissier (provisoire) |  | oui |
 
 ## Intégrité du registre
 Aucune modification détectée sur les 19 lignes enregistrées (`papier/registre.csv`).
@@ -75,6 +75,6 @@ Aucune modification détectée sur les 19 lignes enregistrées (`papier/registre
 ## Détail des plans des règles
 | Plan | Créé (UTC) | Enregistré (UTC) | Sens | État | Entrée | Sortie | Motif | Résultat | En euros | Configuration | Bougies |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| S4-2026-11-15 | 2026-11-16T00:00 | 2026-11-16 06:16 | short | ouvert | 2026-11-16 00:00 à 59 420 € (65 314 $) |  | en cours | +1,37 R | 3,42 € | S4 | contrat Kraken |
+| S4-2026-11-15 | 2026-11-16T00:00 | 2026-11-16 06:16 | short | clos | 2026-11-16 00:00 à 59 420 € (65 314 $) | 2026-11-20 15:00 | objectif | +1,52 R | 3,81 € | S4 | contrat Kraken |
 
 Un plan « ouvert » affiche son résultat provisoire à la dernière clôture. Résultats hors financement quand celui de Kraken n'est pas encore publié pour la période.
