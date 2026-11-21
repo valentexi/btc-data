@@ -1,4 +1,4 @@
-# Backtest BTC, version 2 (21/11/2026 06:51 UTC)
+# Backtest BTC, version 2 (21/11/2026 13:04 UTC)
 
 ## En bref
 - 31 règles ou configurations testées, dont 26 avec assez de trades pour conclure (au moins 30 trades et 10 épisodes).
@@ -10,12 +10,12 @@
 - Le biais complet de la méthode (avec les flux des ETF et les événements) ne peut pas être rejoué sur le passé : seul le mode papier (`rapport/papier.md`) peut le juger.
 
 ## Comment lire
-- Données : bougies de 4 heures du 2017-01-01 au 2026-11-21 (21 662 bougies).
+- Données : bougies de 4 heures du 2017-01-01 au 2026-11-21 (21 664 bougies).
 - 1 R = la perte prévue quand le stop saute, frais (0,05 % par ordre) et glissement (0,10 % au stop) compris. −0,10 R par trade : on perd 10 % de la mise risquée à chaque trade.
 - Épisodes : les trades séparés de moins de 10 jours comptent comme un seul épisode de marché (30 jours au plus par épisode). L'intervalle à 95 % est calculé en tirant au sort des épisodes entiers (bootstrap par blocs).
 - Référence : le même plan, avec des entrées toutes les 20 heures sans aucun signal. Une règle doit faire mieux pour avoir un intérêt.
 - Avec financement réel : résultat sur les seuls trades dont le financement est connu (Kraken depuis un an, Deribit depuis 2019), comparé au même échantillon sans financement. Aucun financement n'est supposé quand il manque.
-- Moitiés : avant et après le 2021-12-11. Coûts dégradés : frais doublés, glissement triplé.
+- Moitiés : avant et après le 2021-12-12. Coûts dégradés : frais doublés, glissement triplé.
 - Verdicts : « candidat » exige un intervalle entièrement positif, deux moitiés positives, mieux que la référence et un résultat encore positif avec des coûts dégradés.
 
 ## Règles journalières
@@ -102,7 +102,7 @@ R moyen quand on change le stop et la durée (objectif = 1,6 fois le stop). Nomb
 |---|---|---|---|
 | 3 % | -0,11 R (285) | -0,12 R (258) | -0,13 R (256) |
 | 4 % | -0,09 R (254) | -0,11 R (209) | -0,10 R (202) |
-| 6 % | -0,04 R (217) | -0,03 R (156) | -0,02 R (140) |
+| 6 % | -0,04 R (218) | -0,04 R (157) | -0,02 R (141) |
 
 **S1 Short sur rebond (+8 % en 7 jours) sous la moyenne 200 jours**
 
