@@ -1,4 +1,4 @@
-# Dernier relevé BTC (21/11/2026 06:40 UTC)
+# Dernier relevé BTC (21/11/2026 06:51 UTC)
 
 Produit automatiquement par `collecte.py`. Clôtures quotidiennes à minuit UTC (1 h à Paris en hiver).
 
@@ -16,12 +16,12 @@ Produit automatiquement par `collecte.py`. Clôtures quotidiennes à minuit UTC 
 | 200 semaines | 61 938 € (68 070 $) | -13,6 % |
 
 ## Dérivés et sentiment
-- **Financement Kraken en direct** (relevé le 2026-11-21 à 06:39 UTC) : -0,0063 % par 8 h, **négatif : les shorts paient les longs** ; prévision pour l'heure suivante : 0,0077 % (positif : les longs paient les shorts) ; Deribit : -0,0294 %. C'est ce chiffre qui compte pour les conditions éliminatoires.
+- **Financement Kraken en direct** (relevé le 2026-11-21 à 06:51 UTC) : -0,0063 % par 8 h, **négatif : les shorts paient les longs** ; prévision pour l'heure suivante : -0,0030 % (négatif : les shorts paient les longs) ; Deribit : -0,0302 %. C'est ce chiffre qui compte pour les conditions éliminatoires.
 - Financement Kraken, moyenne de la journée du 2026-11-20 : 0,0078 % par 8 h (positif : les longs paient les shorts) ; moyenne sur 7 jours : 0,0047 % (positif : les longs paient les shorts)
-- Intérêt ouvert sur le contrat Kraken : 1 996 BTC (relevé du 2026-11-21)
+- Intérêt ouvert sur le contrat Kraken : 1 938 BTC (relevé du 2026-11-21)
 - Volatilité implicite (DVOL) : 52,5 le 2026-11-20
-- Options Deribit, rapport puts/calls : 0,84 en positions ouvertes, 2,32 en volume sur 24 h (relevé du 2026-11-21)
-- Échéance d'options la plus chargée : 2026-12-25, 156 231 BTC en positions ouvertes, « max pain » à 65 514 € (72 000 $)
+- Options Deribit, rapport puts/calls : 0,84 en positions ouvertes, 2,35 en volume sur 24 h (relevé du 2026-11-21)
+- Échéance d'options la plus chargée : 2026-12-25, 156 243 BTC en positions ouvertes, « max pain » à 65 514 € (72 000 $)
 - Fear & Greed : 12 le 2026-11-21, 13 sept jours plus tôt
 - MVRV (prix divisé par le prix de revient moyen du réseau) : 1,10 le 2026-11-20
 
@@ -96,8 +96,8 @@ Lecture : 100 € d'un actif de bêta 1,5 pèsent comme 150 € de Bitcoin. Un E
 | peur_avidite | historique | ok | 2026-11-21 | 0 j | à jour | (alternative.me) |
 | macro | différée | ok | 2026-11-20 | 1 j | à jour | (Trésor américain, CBOE, Yahoo Finance) |
 | onchain | différée | ok | 2026-11-20 | 1 j | à jour | (Coin Metrics, non disponibles : cap_realisee_usd) |
-| h4 | historique | ok | 2026-11-21 00:00 | 0.11 j | à jour | (Coinbase, heures agrégées) |
-| h1_kraken | historique | ok | 2026-11-21 05:00 | 0.03 j | à jour | (Kraken Futures, contrat PF_XBTUSD) |
+| h4 | historique | ok | 2026-11-21 00:00 | 0.12 j | à jour | (Coinbase, heures agrégées) |
+| h1_kraken | historique | ok | 2026-11-21 05:00 | 0.04 j | à jour | (Kraken Futures, contrat PF_XBTUSD) |
 | financement_deribit | historique | ok | 2026-11-20 | 1 j | à jour | (Deribit) |
 | options | instantanée | ok | 2026-11-21 | 0 j | à jour | (Deribit) |
 | contrat_kraken | instantanée | ok | 2026-11-21 | 0 j | à jour | (Kraken Futures, barème Europe, particuliers) |

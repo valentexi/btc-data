@@ -1,11 +1,11 @@
-# Mode papier (21/11/2026 06:40 UTC)
+# Mode papier (21/11/2026 06:51 UTC)
 
 Suivi automatique, sans argent réel. Déclencheurs, stops et objectifs suivis heure par heure ; clôtures jugées sur les bougies de 4 heures ; entrée théorique à l'ouverture de la bougie qui suit le déclencheur. Résultats nets de frais et de glissement. Dernière bougie connue : 2026-11-21 05:00 UTC.
 
 Bougies utilisées : les plans créés depuis le 2026-11-15 à 19:00 UTC sont rejoués sur le **contrat perpétuel Kraken PF_XBTUSD** (le prix auquel un ordre serait exécuté) ; les plans antérieurs restent sur le prix au comptant de Coinbase, comme à leur enregistrement. Dernière bougie du contrat Kraken : 2026-11-21 05:00 UTC.
 
 ## Plans de Claude
-- Enregistrés : 11. Entrés : 2 (clos 2, ouverts 0). En attente : 0. Expirés ou annulés sans entrée : 9. Abandonnés (condition non remplie) : 0.
+- Enregistrés : 13. Entrés : 2 (clos 2, ouverts 0). En attente : 2. Expirés ou annulés sans entrée : 9. Abandonnés (condition non remplie) : 0.
 - **Comptés au critère** (enregistrés avant leur entrée, jamais modifiés) : 1 clos, 0 % gagnants, -0,16 R par trade, -0,16 R au total (-0,40 €). Ouverts et comptés : 0.
 - Hors critère : P001 (enregistré après l'entrée).
 - Tous les plans entrés, pour mémoire : 2 clos, 0 % gagnants, -0,58 R par trade, -1,16 R au total (-2,90 €).
@@ -51,7 +51,7 @@ Chaque analyse donne trois probabilités (baissier, neutre, haussier) séparées
 | SC015 | 2026-11-15 16:00 | 2026-11-22 16:00 | 56 415 € (62 000 $) et 61 738 € (67 850 $) | 45 % / 35 % / 20 % | en cours | 51 539 € (56 642 $) | baissier (provisoire) |  | oui |
 
 ## Intégrité du registre
-Aucune modification détectée sur les 19 lignes enregistrées (`papier/registre.csv`).
+Aucune modification détectée sur les 21 lignes enregistrées (`papier/registre.csv`).
 
 ## Annulations
 - P009 : demandée pour 2026-11-18T14:51, effective le 2026-11-18 18:49 UTC (Gain/risque au dernier objectif 1,49 frais compris (sous 1,5) : remplacé par P010 (objectif 2 à 61 800 $)).
@@ -60,6 +60,8 @@ Aucune modification détectée sur les 19 lignes enregistrées (`papier/registre
 ## Détail des plans de Claude
 | Plan | Créé (UTC) | Enregistré (UTC) | Sens | État | Entrée | Sortie | Motif | Résultat | En euros | Compté | Configuration | Bougies |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
+| P014 | 2026-11-21T06:50 | 2026-11-21 06:51 | short | en attente du déclencheur |  |  |  | n.d. |  | – | C-S | contrat Kraken |
+| P013 | 2026-11-21T06:50 | 2026-11-21 06:51 | short | en attente du déclencheur |  |  |  | n.d. |  | – | D-S | contrat Kraken |
 | P011 | 2026-11-19T15:08 | 2026-11-19 15:09 | short | expiré sans entrée |  |  |  | n.d. |  | – | D-S | contrat Kraken |
 | P010 | 2026-11-18T14:51 | 2026-11-18 18:49 | short | annulé avant entrée |  |  |  | n.d. |  | – | D-S | contrat Kraken |
 | P009 | 2026-11-18T14:51 | 2026-11-18 14:52 | short | annulé avant entrée |  |  |  | n.d. |  | – | D-S | contrat Kraken |
