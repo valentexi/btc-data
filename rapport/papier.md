@@ -1,8 +1,8 @@
-# Mode papier (22/11/2026 06:45 UTC)
+# Mode papier (22/11/2026 09:44 UTC)
 
-Suivi automatique, sans argent réel. Déclencheurs, stops et objectifs suivis heure par heure ; clôtures jugées sur les bougies de 4 heures ; entrée théorique à l'ouverture de la bougie qui suit le déclencheur. Résultats nets de frais et de glissement. Dernière bougie connue : 2026-11-22 05:00 UTC.
+Suivi automatique, sans argent réel. Déclencheurs, stops et objectifs suivis heure par heure ; clôtures jugées sur les bougies de 4 heures ; entrée théorique à l'ouverture de la bougie qui suit le déclencheur. Résultats nets de frais et de glissement. Dernière bougie connue : 2026-11-22 08:00 UTC.
 
-Bougies utilisées : les plans créés depuis le 2026-11-15 à 19:00 UTC sont rejoués sur le **contrat perpétuel Kraken PF_XBTUSD** (le prix auquel un ordre serait exécuté) ; les plans antérieurs restent sur le prix au comptant de Coinbase, comme à leur enregistrement. Dernière bougie du contrat Kraken : 2026-11-22 05:00 UTC.
+Bougies utilisées : les plans créés depuis le 2026-11-15 à 19:00 UTC sont rejoués sur le **contrat perpétuel Kraken PF_XBTUSD** (le prix auquel un ordre serait exécuté) ; les plans antérieurs restent sur le prix au comptant de Coinbase, comme à leur enregistrement. Dernière bougie du contrat Kraken : 2026-11-22 08:00 UTC.
 
 ## Plans de Claude
 - Enregistrés : 14. Entrés : 2 (clos 2, ouverts 0). En attente : 2. Expirés ou annulés sans entrée : 10. Abandonnés (condition non remplie) : 0.
@@ -44,12 +44,12 @@ Chaque analyse donne trois probabilités (baissier, neutre, haussier) séparées
 
 | Prévision | Créée (UTC) | Échéance (UTC) | Seuils | Baissier / neutre / haussier | État | Prix | Issue | Probabilité donnée | Comptée |
 |---|---|---|---|---|---|---|---|---|---|
-| SC023 | 2026-11-21 16:49 | 2026-11-28 16:49 | 51 410 € (56 500 $) et 57 780 € (63 500 $) | 30 % / 47 % / 23 % | en cours | 53 891 € (59 226 $) | neutre (provisoire) |  | oui |
-| SC019 | 2026-11-19 15:08 | 2026-11-26 15:08 | 55 505 € (61 000 $) et 60 055 € (66 000 $) | 30 % / 45 % / 25 % | en cours | 53 891 € (59 226 $) | baissier (provisoire) |  | oui |
-| SC018 | 2026-11-18 14:51 | 2026-11-25 14:51 | 55 505 € (61 000 $) et 60 055 € (66 000 $) | 33 % / 45 % / 22 % | en cours | 53 891 € (59 226 $) | baissier (provisoire) |  | oui |
-| SC017 | 2026-11-17 14:28 | 2026-11-24 14:28 | 56 415 € (62 000 $) et 60 965 € (67 000 $) | 33 % / 42 % / 25 % | en cours | 53 891 € (59 226 $) | baissier (provisoire) |  | oui |
-| SC016 | 2026-11-16 12:39 | 2026-11-23 12:39 | 56 415 € (62 000 $) et 60 510 € (66 500 $) | 42 % / 35 % / 23 % | en cours | 53 891 € (59 226 $) | baissier (provisoire) |  | oui |
-| SC015 | 2026-11-15 16:00 | 2026-11-22 16:00 | 56 415 € (62 000 $) et 61 738 € (67 850 $) | 45 % / 35 % / 20 % | en cours | 53 891 € (59 226 $) | baissier (provisoire) |  | oui |
+| SC023 | 2026-11-21 16:49 | 2026-11-28 16:49 | 51 410 € (56 500 $) et 57 780 € (63 500 $) | 30 % / 47 % / 23 % | en cours | 53 733 € (59 053 $) | neutre (provisoire) |  | oui |
+| SC019 | 2026-11-19 15:08 | 2026-11-26 15:08 | 55 505 € (61 000 $) et 60 055 € (66 000 $) | 30 % / 45 % / 25 % | en cours | 53 733 € (59 053 $) | baissier (provisoire) |  | oui |
+| SC018 | 2026-11-18 14:51 | 2026-11-25 14:51 | 55 505 € (61 000 $) et 60 055 € (66 000 $) | 33 % / 45 % / 22 % | en cours | 53 733 € (59 053 $) | baissier (provisoire) |  | oui |
+| SC017 | 2026-11-17 14:28 | 2026-11-24 14:28 | 56 415 € (62 000 $) et 60 965 € (67 000 $) | 33 % / 42 % / 25 % | en cours | 53 733 € (59 053 $) | baissier (provisoire) |  | oui |
+| SC016 | 2026-11-16 12:39 | 2026-11-23 12:39 | 56 415 € (62 000 $) et 60 510 € (66 500 $) | 42 % / 35 % / 23 % | en cours | 53 733 € (59 053 $) | baissier (provisoire) |  | oui |
+| SC015 | 2026-11-15 16:00 | 2026-11-22 16:00 | 56 415 € (62 000 $) et 61 738 € (67 850 $) | 45 % / 35 % / 20 % | en cours | 53 733 € (59 053 $) | baissier (provisoire) |  | oui |
 
 ## Intégrité du registre
 Aucune modification détectée sur les 23 lignes enregistrées (`papier/registre.csv`).
