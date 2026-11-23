@@ -16,7 +16,7 @@ Produit automatiquement par `collecte.py`. Clôtures quotidiennes à minuit UTC 
 | 200 semaines | 62 027 € (68 168 $) | -10,3 % |
 
 ## Dérivés et sentiment
-- **Financement Kraken en direct** (relevé le 2026-11-23 à 15:20 UTC) : 0,0177 % par 8 h, **positif : les longs paient les shorts** ; prévision pour l'heure suivante : 0,0092 % (positif : les longs paient les shorts) ; Deribit : 0,0001 %. C'est ce chiffre qui compte pour les conditions éliminatoires.
+- **Financement Kraken en direct** (relevé le 2026-11-23 à 15:21 UTC) : 0,0177 % par 8 h, **positif : les longs paient les shorts** ; prévision pour l'heure suivante : 0,0092 % (positif : les longs paient les shorts) ; Deribit : 0,0001 %. C'est ce chiffre qui compte pour les conditions éliminatoires.
 - Financement Kraken, moyenne de la journée du 2026-11-22 : 0,0064 % par 8 h (positif : les longs paient les shorts) ; moyenne sur 7 jours : 0,0063 % (positif : les longs paient les shorts)
 - Intérêt ouvert sur le contrat Kraken : 2 287 BTC (relevé du 2026-11-23)
 - Volatilité implicite (DVOL) : 55,4 le 2026-11-22
@@ -97,7 +97,7 @@ Lecture : 100 € d'un actif de bêta 1,5 pèsent comme 150 € de Bitcoin. Un E
 | macro | différée | ok | 2026-11-20 | 3 j | à jour | (Trésor américain, CBOE, Yahoo Finance) |
 | onchain | différée | ok | 2026-11-22 | 1 j | à jour | (Coin Metrics, non disponibles : cap_realisee_usd) |
 | h4 | historique | ok | 2026-11-23 08:00 | 0.14 j | à jour | (Coinbase, heures agrégées) |
-| h1_kraken | historique | ok | 2026-11-23 14:00 | 0.01 j | à jour | (Kraken Futures, contrat PF_XBTUSD) |
+| h1_kraken | historique | ok | 2026-11-23 14:00 | 0.02 j | à jour | (Kraken Futures, contrat PF_XBTUSD) |
 | financement_deribit | historique | ok | 2026-11-22 | 1 j | à jour | (Deribit) |
 | options | instantanée | ok | 2026-11-23 | 0 j | à jour | (Deribit) |
 | contrat_kraken | instantanée | ok | 2026-11-23 | 0 j | à jour | (Kraken Futures, barème Europe, particuliers) |
