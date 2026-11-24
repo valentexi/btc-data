@@ -1,4 +1,4 @@
-# Dernier relevé BTC (24/11/2026 10:16 UTC)
+# Dernier relevé BTC (24/11/2026 10:17 UTC)
 
 Produit automatiquement par `collecte.py`. Clôtures quotidiennes à minuit UTC (1 h à Paris en hiver).
 
@@ -16,7 +16,7 @@ Produit automatiquement par `collecte.py`. Clôtures quotidiennes à minuit UTC 
 | 200 semaines | 62 516 € (68 386 $) | -10,5 % |
 
 ## Dérivés et sentiment
-- **Financement Kraken en direct** (relevé le 2026-11-24 à 10:16 UTC) : 0,0003 % par 8 h, **positif : les longs paient les shorts** ; prévision pour l'heure suivante : 0,0019 % (positif : les longs paient les shorts) ; Deribit : -0,0001 %. C'est ce chiffre qui compte pour les conditions éliminatoires.
+- **Financement Kraken en direct** (relevé le 2026-11-24 à 10:16 UTC) : 0,0003 % par 8 h, **positif : les longs paient les shorts** ; prévision pour l'heure suivante : 0,0068 % (positif : les longs paient les shorts) ; Deribit : -0,0001 %. C'est ce chiffre qui compte pour les conditions éliminatoires.
 - Financement Kraken, moyenne de la journée du 2026-11-23 : 0,0069 % par 8 h (positif : les longs paient les shorts) ; moyenne sur 7 jours : 0,0059 % (positif : les longs paient les shorts)
 - Intérêt ouvert sur le contrat Kraken : 2 123 BTC (relevé du 2026-11-24)
 - Volatilité implicite (DVOL) : 52,3 le 2026-11-23
@@ -96,7 +96,7 @@ Lecture : 100 € d'un actif de bêta 1,5 pèsent comme 150 € de Bitcoin. Un E
 | peur_avidite | historique | ok | 2026-11-24 | 0 j | à jour | (alternative.me) |
 | macro | différée | ok | 2026-11-23 | 1 j | à jour | (Trésor américain, CBOE, Yahoo Finance) |
 | onchain | différée | ok | 2026-11-23 | 1 j | à jour | (Coin Metrics, non disponibles : cap_realisee_usd) |
-| h4 | historique | ok | 2026-11-24 04:00 | 0.09 j | à jour | (Coinbase, heures agrégées) |
+| h4 | historique | ok | 2026-11-24 04:00 | 0.1 j | à jour | (Coinbase, heures agrégées) |
 | h1_kraken | historique | ok | 2026-11-24 09:00 | 0.01 j | à jour | (Kraken Futures, contrat PF_XBTUSD) |
 | financement_deribit | historique | ok | 2026-11-23 | 1 j | à jour | (Deribit) |
 | options | instantanée | ok | 2026-11-24 | 0 j | à jour | (Deribit) |

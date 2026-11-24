@@ -1,5 +1,5 @@
 {
-  "execution_utc": "2026-11-24T10:16:26+00:00",
+  "execution_utc": "2026-11-24T10:17:04+00:00",
   "sources": {
     "prix": {
       "ok": true,
@@ -79,7 +79,7 @@
       "derniere_date": "2026-11-24 04:00",
       "note": "(Coinbase, heures agrégées)",
       "nature": "historique",
-      "age_jours": 0.09,
+      "age_jours": 0.1,
       "fraicheur": "à jour"
     },
     "h1_kraken": {
