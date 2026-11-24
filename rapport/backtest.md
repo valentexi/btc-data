@@ -1,4 +1,4 @@
-# Backtest BTC, version 2 (24/11/2026 10:17 UTC)
+# Backtest BTC, version 2 (24/11/2026 15:21 UTC)
 
 ## En bref
 - 31 règles ou configurations testées, dont 26 avec assez de trades pour conclure (au moins 30 trades et 10 épisodes).
@@ -10,7 +10,7 @@
 - Le biais complet de la méthode (avec les flux des ETF et les événements) ne peut pas être rejoué sur le passé : seul le mode papier (`rapport/papier.md`) peut le juger.
 
 ## Comment lire
-- Données : bougies de 4 heures du 2017-01-01 au 2026-11-24 (21 681 bougies).
+- Données : bougies de 4 heures du 2017-01-01 au 2026-11-24 (21 682 bougies).
 - 1 R = la perte prévue quand le stop saute, frais (0,05 % par ordre) et glissement (0,10 % au stop) compris. −0,10 R par trade : on perd 10 % de la mise risquée à chaque trade.
 - Épisodes : les trades séparés de moins de 10 jours comptent comme un seul épisode de marché (30 jours au plus par épisode). L'intervalle à 95 % est calculé en tirant au sort des épisodes entiers (bootstrap par blocs).
 - Référence : le même plan, avec des entrées toutes les 20 heures sans aucun signal. Une règle doit faire mieux pour avoir un intérêt.
@@ -100,7 +100,7 @@ R moyen quand on change le stop et la durée (objectif = 1,6 fois le stop). Nomb
 
 | Stop | 3 jours | 7 jours | 14 jours |
 |---|---|---|---|
-| 3 % | -0,10 R (286) | -0,11 R (259) | -0,12 R (257) |
+| 3 % | -0,11 R (287) | -0,12 R (260) | -0,13 R (258) |
 | 4 % | -0,08 R (255) | -0,10 R (210) | -0,09 R (203) |
 | 6 % | -0,04 R (218) | -0,04 R (157) | -0,02 R (141) |
 
