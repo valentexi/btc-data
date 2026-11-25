@@ -1,4 +1,4 @@
-# Dernier relevé BTC (25/11/2026 17:24 UTC)
+# Dernier relevé BTC (25/11/2026 17:25 UTC)
 
 Produit automatiquement par `collecte.py`. Clôtures quotidiennes à minuit UTC (1 h à Paris en hiver).
 
@@ -16,9 +16,9 @@ Produit automatiquement par `collecte.py`. Clôtures quotidiennes à minuit UTC 
 | 200 semaines | 62 268 € (68 264 $) | -12,5 % |
 
 ## Dérivés et sentiment
-- **Financement Kraken en direct** (relevé le 2026-11-25 à 17:24 UTC) : 0,0028 % par 8 h, **positif : les longs paient les shorts** ; prévision pour l'heure suivante : 0,0096 % (positif : les longs paient les shorts) ; Deribit : 0,0000 %. C'est ce chiffre qui compte pour les conditions éliminatoires.
+- **Financement Kraken en direct** (relevé le 2026-11-25 à 17:25 UTC) : 0,0028 % par 8 h, **positif : les longs paient les shorts** ; prévision pour l'heure suivante : 0,0096 % (positif : les longs paient les shorts) ; Deribit : 0,0000 %. C'est ce chiffre qui compte pour les conditions éliminatoires.
 - Financement Kraken, moyenne de la journée du 2026-11-24 : 0,0014 % par 8 h (positif : les longs paient les shorts) ; moyenne sur 7 jours : 0,0052 % (positif : les longs paient les shorts)
-- Intérêt ouvert sur le contrat Kraken : 1 971 BTC (relevé du 2026-11-25)
+- Intérêt ouvert sur le contrat Kraken : 1 980 BTC (relevé du 2026-11-25)
 - Volatilité implicite (DVOL) : 53,1 le 2026-11-24
 - Options Deribit, rapport puts/calls : 0,81 en positions ouvertes, 1,31 en volume sur 24 h (relevé du 2026-11-25)
 - Échéance d'options la plus chargée : 2026-12-25, 163 470 BTC en positions ouvertes, « max pain » à 63 851 € (70 000 $)
