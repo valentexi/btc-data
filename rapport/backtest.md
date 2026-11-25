@@ -1,4 +1,4 @@
-# Backtest BTC, version 2 (25/11/2026 06:40 UTC)
+# Backtest BTC, version 2 (25/11/2026 15:02 UTC)
 
 ## En bref
 - 31 règles ou configurations testées, dont 26 avec assez de trades pour conclure (au moins 30 trades et 10 épisodes).
@@ -10,12 +10,12 @@
 - Le biais complet de la méthode (avec les flux des ETF et les événements) ne peut pas être rejoué sur le passé : seul le mode papier (`rapport/papier.md`) peut le juger.
 
 ## Comment lire
-- Données : bougies de 4 heures du 2017-01-01 au 2026-11-25 (21 686 bougies).
+- Données : bougies de 4 heures du 2017-01-01 au 2026-11-25 (21 688 bougies).
 - 1 R = la perte prévue quand le stop saute, frais (0,05 % par ordre) et glissement (0,10 % au stop) compris. −0,10 R par trade : on perd 10 % de la mise risquée à chaque trade.
 - Épisodes : les trades séparés de moins de 10 jours comptent comme un seul épisode de marché (30 jours au plus par épisode). L'intervalle à 95 % est calculé en tirant au sort des épisodes entiers (bootstrap par blocs).
 - Référence : le même plan, avec des entrées toutes les 20 heures sans aucun signal. Une règle doit faire mieux pour avoir un intérêt.
 - Avec financement réel : résultat sur les seuls trades dont le financement est connu (Kraken depuis un an, Deribit depuis 2019), comparé au même échantillon sans financement. Aucun financement n'est supposé quand il manque.
-- Moitiés : avant et après le 2021-12-13. Coûts dégradés : frais doublés, glissement triplé.
+- Moitiés : avant et après le 2021-12-14. Coûts dégradés : frais doublés, glissement triplé.
 - Verdicts : « candidat » exige un intervalle entièrement positif, deux moitiés positives, mieux que la référence et un résultat encore positif avec des coûts dégradés.
 
 ## Règles journalières
@@ -23,9 +23,9 @@ Stop 4 %, objectif 6,5 %, 7 jours au plus, sortie unique.
 
 | Règle | Trades | Épisodes | Gagnants | R moyen | Intervalle à 95 % | Référence | Avec financement réel | 1re moitié | 2e moitié | Coûts dégradés | Verdict |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| L0 Référence : long chaque lundi | 515 | 103 | 41 % | +0,01 R | -0,08 R à +0,11 R | +0,01 R | -0,04 R sur 393 (contre -0,03 R sans) | +0,03 R | -0,01 R | -0,04 R | pas d'avantage démontré |
-| L1 Long en peur extrême (Fear & Greed ≤ 20) | 229 | 42 | 35 % | -0,13 R | -0,28 R à +0,03 R | +0,01 R | -0,15 R sur 178 (contre -0,15 R sans) | -0,06 R | -0,20 R | -0,18 R | pas d'avantage démontré |
-| L2 Long en peur extrême, sous la moyenne 200 jours | 210 | 39 | 37 % | -0,10 R | -0,27 R à +0,08 R | +0,01 R | -0,11 R sur 160 (contre -0,11 R sans) | +0,01 R | -0,20 R | -0,15 R | pas d'avantage démontré |
+| L0 Référence : long chaque lundi | 516 | 104 | 41 % | +0,01 R | -0,08 R à +0,11 R | +0,01 R | -0,04 R sur 393 (contre -0,03 R sans) | +0,03 R | -0,01 R | -0,04 R | pas d'avantage démontré |
+| L1 Long en peur extrême (Fear & Greed ≤ 20) | 230 | 42 | 35 % | -0,13 R | -0,29 R à +0,03 R | +0,01 R | -0,15 R sur 178 (contre -0,15 R sans) | -0,06 R | -0,21 R | -0,19 R | pas d'avantage démontré |
+| L2 Long en peur extrême, sous la moyenne 200 jours | 211 | 39 | 36 % | -0,10 R | -0,27 R à +0,07 R | +0,01 R | -0,11 R sur 160 (contre -0,11 R sans) | +0,01 R | -0,21 R | -0,15 R | pas d'avantage démontré |
 | L3 Long en peur extrême, au-dessus de la moyenne 200 jours | 19 | 7 | 21 % | -0,47 R | -0,86 R à -0,19 R | +0,01 R | -0,44 R sur 18 (contre -0,44 R sans) | -0,53 R | -0,16 R | -0,53 R | échantillon insuffisant |
 | L4 Long après une purge (−10 % en 7 jours) | 231 | 65 | 33 % | -0,17 R | -0,32 R à -0,00 R | +0,01 R | -0,16 R sur 135 (contre -0,16 R sans) | -0,16 R | -0,21 R | -0,23 R | négatif |
 | L5 Long après une purge, sous la moyenne 200 jours | 131 | 39 | 31 % | -0,22 R | -0,39 R à -0,02 R | +0,01 R | -0,21 R sur 86 (contre -0,22 R sans) | -0,16 R | -0,30 R | -0,28 R | négatif |
@@ -101,7 +101,7 @@ R moyen quand on change le stop et la durée (objectif = 1,6 fois le stop). Nomb
 | Stop | 3 jours | 7 jours | 14 jours |
 |---|---|---|---|
 | 3 % | -0,11 R (287) | -0,12 R (260) | -0,13 R (258) |
-| 4 % | -0,08 R (255) | -0,10 R (210) | -0,09 R (203) |
+| 4 % | -0,08 R (256) | -0,10 R (211) | -0,10 R (204) |
 | 6 % | -0,04 R (219) | -0,04 R (157) | -0,02 R (141) |
 
 **S1 Short sur rebond (+8 % en 7 jours) sous la moyenne 200 jours**
