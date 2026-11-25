@@ -1,4 +1,4 @@
-# Backtest BTC, version 2 (24/11/2026 15:21 UTC)
+# Backtest BTC, version 2 (25/11/2026 06:40 UTC)
 
 ## En bref
 - 31 règles ou configurations testées, dont 26 avec assez de trades pour conclure (au moins 30 trades et 10 épisodes).
@@ -10,7 +10,7 @@
 - Le biais complet de la méthode (avec les flux des ETF et les événements) ne peut pas être rejoué sur le passé : seul le mode papier (`rapport/papier.md`) peut le juger.
 
 ## Comment lire
-- Données : bougies de 4 heures du 2017-01-01 au 2026-11-24 (21 682 bougies).
+- Données : bougies de 4 heures du 2017-01-01 au 2026-11-25 (21 686 bougies).
 - 1 R = la perte prévue quand le stop saute, frais (0,05 % par ordre) et glissement (0,10 % au stop) compris. −0,10 R par trade : on perd 10 % de la mise risquée à chaque trade.
 - Épisodes : les trades séparés de moins de 10 jours comptent comme un seul épisode de marché (30 jours au plus par épisode). L'intervalle à 95 % est calculé en tirant au sort des épisodes entiers (bootstrap par blocs).
 - Référence : le même plan, avec des entrées toutes les 20 heures sans aucun signal. Une règle doit faire mieux pour avoir un intérêt.
@@ -70,12 +70,12 @@ Définitions : support et résistance = plus bas et plus haut des 20 derniers jo
 | Short | -0,06 R sur 385 | -0,31 R sur 101 |
 
 ## Le biais mécanique prédit-il la suite ?
-Approximation du biais de la méthode sur cinq familles (structure, positionnement, blockchain, macro, actifs risqués), de −10 à +10, du 2018-02-01 au 2026-11-16. Variation moyenne d'un jour quelconque à 7 jours : +0,8 %.
+Approximation du biais de la méthode sur cinq familles (structure, positionnement, blockchain, macro, actifs risqués), de −10 à +10, du 2018-02-01 au 2026-11-17. Variation moyenne d'un jour quelconque à 7 jours : +0,8 %.
 
 | Biais | Jours | Épisodes | Variation à 7 jours | Médiane | Hausse | À 14 jours | Écart à la moyenne | Intervalle à 95 % de l'écart |
 |---|---|---|---|---|---|---|---|---|
-| ≤ −5 (baissier) | 108 | 22 | -2,4 % | -1,1 % | 35 % | -5,9 % | -3,2 % | -6,6 % à +0,8 % |
-| −4 à −2 | 671 | 54 | +0,4 % | +0,4 % | 53 % | +1,0 % | -0,4 % | -1,9 % à +0,7 % |
+| ≤ −5 (baissier) | 109 | 22 | -2,5 % | -1,2 % | 35 % | -5,9 % | -3,3 % | -6,6 % à +0,8 % |
+| −4 à −2 | 671 | 54 | +0,4 % | +0,4 % | 53 % | +0,9 % | -0,4 % | -1,9 % à +0,7 % |
 | −1 à +1 (neutre) | 1208 | 74 | +0,9 % | +0,1 % | 51 % | +2,1 % | +0,1 % | -0,7 % à +0,9 % |
 | +2 à +4 | 965 | 57 | +1,3 % | +0,4 % | 53 % | +2,4 % | +0,5 % | -0,4 % à +1,4 % |
 | ≥ +5 (haussier) | 255 | 32 | +1,2 % | +0,9 % | 56 % | +2,0 % | +0,4 % | -0,9 % à +1,8 % |
@@ -102,7 +102,7 @@ R moyen quand on change le stop et la durée (objectif = 1,6 fois le stop). Nomb
 |---|---|---|---|
 | 3 % | -0,11 R (287) | -0,12 R (260) | -0,13 R (258) |
 | 4 % | -0,08 R (255) | -0,10 R (210) | -0,09 R (203) |
-| 6 % | -0,04 R (218) | -0,04 R (157) | -0,02 R (141) |
+| 6 % | -0,04 R (219) | -0,04 R (157) | -0,02 R (141) |
 
 **S1 Short sur rebond (+8 % en 7 jours) sous la moyenne 200 jours**
 
@@ -115,10 +115,10 @@ R moyen quand on change le stop et la durée (objectif = 1,6 fois le stop). Nomb
 ## Suivi de tendance sans stop, sans levier
 | Stratégie | Période | Rendement annuel | Pire baisse | Temps en position | Détenir sur la même période |
 |---|---|---|---|---|---|
-| Long au-dessus de la moyenne 200 jours, sans financement | 2017-07-19 au 2026-11-23 | +41,3 % | -70,7 % | 56 % | +42,3 % |
-| Long au-dessus de la moyenne 200 jours, avec financement réel | 2019-05-01 au 2026-11-23 | +23,7 % | -65,5 % | 59 % | +38,1 % |
-| Short sous la moyenne 200 jours, sans financement | 2017-07-19 au 2026-11-23 | -18,5 % | -92,1 % | 44 % | +42,3 % |
-| Short sous la moyenne 200 jours, avec financement réel | 2019-05-01 au 2026-11-23 | -18,8 % | -87,3 % | 41 % | +38,1 % |
+| Long au-dessus de la moyenne 200 jours, sans financement | 2017-07-19 au 2026-11-24 | +41,3 % | -70,7 % | 56 % | +41,9 % |
+| Long au-dessus de la moyenne 200 jours, avec financement réel | 2019-05-01 au 2026-11-24 | +23,7 % | -65,5 % | 59 % | +37,6 % |
+| Short sous la moyenne 200 jours, sans financement | 2017-07-19 au 2026-11-24 | -18,3 % | -92,1 % | 44 % | +41,9 % |
+| Short sous la moyenne 200 jours, avec financement réel | 2019-05-01 au 2026-11-24 | -18,5 % | -87,3 % | 41 % | +37,6 % |
 
 ## Limites
 - Les définitions mécaniques approchent les configurations de la méthode ; elles ne reproduisent pas le jugement d'une analyse (choix des niveaux, lecture des flux, actualité).
