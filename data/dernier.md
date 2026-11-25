@@ -1,11 +1,11 @@
-# Dernier relevé BTC (25/11/2026 17:22 UTC)
+# Dernier relevé BTC (25/11/2026 17:24 UTC)
 
 Produit automatiquement par `collecte.py`. Clôtures quotidiennes à minuit UTC (1 h à Paris en hiver).
 
 ## Prix (clôture du 2026-11-24)
 - **Bitcoin : 54 493 € (59 741 $)**, EUR/USD 1,0963 (BCE)
 - Variation : -2,4 % sur 1 jour, -7,9 % sur 7 jours, -25,4 % sur 30 jours
-- 30 derniers jours : plus haut 74 697 € (81 890 $), plus bas 50 270 € (55 111 $)
+- 30 derniers jours : plus haut 74 697 € (81 890 $), plus bas 50 265 € (55 106 $)
 - Volatilité réalisée sur 30 jours : 47 % par an
 
 ## Moyennes mobiles
@@ -16,9 +16,9 @@ Produit automatiquement par `collecte.py`. Clôtures quotidiennes à minuit UTC 
 | 200 semaines | 62 268 € (68 264 $) | -12,5 % |
 
 ## Dérivés et sentiment
-- **Financement Kraken en direct** (relevé le 2026-11-25 à 17:22 UTC) : 0,0028 % par 8 h, **positif : les longs paient les shorts** ; prévision pour l'heure suivante : -0,0013 % (négatif : les shorts paient les longs) ; Deribit : 0,0000 %. C'est ce chiffre qui compte pour les conditions éliminatoires.
+- **Financement Kraken en direct** (relevé le 2026-11-25 à 17:24 UTC) : 0,0028 % par 8 h, **positif : les longs paient les shorts** ; prévision pour l'heure suivante : 0,0096 % (positif : les longs paient les shorts) ; Deribit : 0,0000 %. C'est ce chiffre qui compte pour les conditions éliminatoires.
 - Financement Kraken, moyenne de la journée du 2026-11-24 : 0,0014 % par 8 h (positif : les longs paient les shorts) ; moyenne sur 7 jours : 0,0052 % (positif : les longs paient les shorts)
-- Intérêt ouvert sur le contrat Kraken : 1 967 BTC (relevé du 2026-11-25)
+- Intérêt ouvert sur le contrat Kraken : 1 971 BTC (relevé du 2026-11-25)
 - Volatilité implicite (DVOL) : 53,1 le 2026-11-24
 - Options Deribit, rapport puts/calls : 0,81 en positions ouvertes, 1,31 en volume sur 24 h (relevé du 2026-11-25)
 - Échéance d'options la plus chargée : 2026-12-25, 163 470 BTC en positions ouvertes, « max pain » à 63 851 € (70 000 $)
@@ -36,7 +36,7 @@ Supports majeurs (définition de la méthode), clôture du 2026-11-24 à 54 493
 |---|---|---|---|
 | Moyenne 200 semaines | 62 268 € (68 264 $) | -12,5 % | cassé le 2026-11-14 (11 j), pas repris |
 | Moyenne 200 jours | 65 792 € (72 128 $) | -17,2 % | cassé le 2026-11-12 (13 j), pas repris |
-| Plus bas des 90 jours précédents | 50 270 € (55 111 $) | +8,4 % | repris le 2026-11-21 |
+| Plus bas des 90 jours précédents | 50 265 € (55 106 $) | +8,4 % | repris le 2026-11-21 |
 
 - **Long de retournement : exclu** (aucun support majeur qui tient à moins de 3 % sous le prix).
 - **Condition éliminatoire du short (support, financement, peur) : inactive** (posé sur un support majeur : non ; financement en direct négatif : non ; peur extrême (≤ 20) : oui).
