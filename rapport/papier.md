@@ -1,4 +1,4 @@
-# Mode papier (26/11/2026 22:04 UTC)
+# Mode papier (26/11/2026 22:06 UTC)
 
 Suivi automatique, sans argent réel. Déclencheurs, stops et objectifs suivis heure par heure ; clôtures jugées sur les bougies de 4 heures ; entrée théorique à l'ouverture de la bougie qui suit le déclencheur. Résultats nets de frais et de glissement. Dernière bougie connue : 2026-11-26 21:00 UTC.
 
@@ -39,7 +39,7 @@ Plans clos seulement ; pour Claude, plans comptés au critère. À lire au premi
 ## Scénarios à 7 jours : justesse des probabilités
 Chaque analyse donne trois probabilités (baissier, neutre, haussier) séparées par deux seuils de prix. À l'échéance, le robot regarde où le prix a fini. Une prévision ne compte que si elle a été enregistrée dans les 6 heures suivant l'analyse.
 
-- Enregistrées : 10. Résolues : 5 (comptées : 5). En cours : 5.
+- Enregistrées : 11. Résolues : 5 (comptées : 5). En cours : 6.
 - Probabilité moyenne donnée à l'issue qui s'est réalisée : 37 % (au hasard : 33 %).
 - Score de Brier moyen : 0,62 (0 = parfait ; 0,67 = trois issues à 33 % ; au-dessus de 0,67 : pire que de ne rien savoir).
 - L'issue jugée la plus probable s'est réalisée dans 40 % des cas.
@@ -54,6 +54,7 @@ Chaque analyse donne trois probabilités (baissier, neutre, haussier) séparées
 
 | Prévision | Créée (UTC) | Échéance (UTC) | Seuils | Baissier / neutre / haussier | État | Prix | Issue | Probabilité donnée | Comptée |
 |---|---|---|---|---|---|---|---|---|---|
+| SC032 | 2026-11-26 22:05 | 2026-12-03 22:05 | 51 669 € (56 500 $) et 58 070 € (63 500 $) | 35 % / 43 % / 22 % | en cours | 55 457 € (60 642 $) | neutre (provisoire) |  | oui |
 | SC030 | 2026-11-26 06:39 | 2026-12-03 06:39 | 51 212 € (56 000 $) et 58 985 € (64 500 $) | 32 % / 46 % / 22 % | en cours | 55 457 € (60 642 $) | neutre (provisoire) |  | oui |
 | SC028 | 2026-11-25 17:23 | 2026-12-02 17:23 | 50 297 € (55 000 $) et 56 699 € (62 000 $) | 33 % / 47 % / 20 % | en cours | 55 457 € (60 642 $) | neutre (provisoire) |  | oui |
 | SC026 | 2026-11-24 10:16 | 2026-12-01 10:16 | 51 212 € (56 000 $) et 58 528 € (64 000 $) | 30 % / 50 % / 20 % | en cours | 55 457 € (60 642 $) | neutre (provisoire) |  | oui |
@@ -66,7 +67,7 @@ Chaque analyse donne trois probabilités (baissier, neutre, haussier) séparées
 | SC015 | 2026-11-15 16:00 | 2026-11-22 16:00 | 56 699 € (62 000 $) et 62 048 € (67 850 $) | 45 % / 35 % / 20 % | résolu | 55 601 € (60 799 $) | baissier | 45 % | oui |
 
 ## Intégrité du registre
-Aucune modification détectée sur les 31 lignes enregistrées (`papier/registre.csv`).
+Aucune modification détectée sur les 32 lignes enregistrées (`papier/registre.csv`).
 
 ## Annulations
 - P009 : demandée pour 2026-11-18T14:51, effective le 2026-11-18 18:49 UTC (Gain/risque au dernier objectif 1,49 frais compris (sous 1,5) : remplacé par P010 (objectif 2 à 61 800 $)).
