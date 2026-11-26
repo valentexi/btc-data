@@ -1,11 +1,11 @@
-# Dernier relevé BTC (26/11/2026 22:06 UTC)
+# Dernier relevé BTC (26/11/2026 22:16 UTC)
 
 Produit automatiquement par `collecte.py`. Clôtures quotidiennes à minuit UTC (1 h à Paris en hiver).
 
 ## Prix (clôture du 2026-11-25)
 - **Bitcoin : 55 220 € (60 384 $)**, EUR/USD 1,0935 (BCE)
 - Variation : +1,1 % sur 1 jour, -4,1 % sur 7 jours, -24,5 % sur 30 jours
-- 30 derniers jours : plus haut 74 888 € (81 890 $), plus bas 50 394 € (55 106 $)
+- 30 derniers jours : plus haut 74 888 € (81 890 $), plus bas 50 399 € (55 111 $)
 - Volatilité réalisée sur 30 jours : 47 % par an
 
 ## Moyennes mobiles
@@ -16,12 +16,12 @@ Produit automatiquement par `collecte.py`. Clôtures quotidiennes à minuit UTC 
 | 200 semaines | 62 684 € (68 545 $) | -11,9 % |
 
 ## Dérivés et sentiment
-- **Financement Kraken en direct** (relevé le 2026-11-26 à 22:06 UTC) : 0,0070 % par 8 h, **positif : les longs paient les shorts** ; prévision pour l'heure suivante : 0,0038 % (positif : les longs paient les shorts) ; Deribit : 0,0000 %. C'est ce chiffre qui compte pour les conditions éliminatoires.
+- **Financement Kraken en direct** (relevé le 2026-11-26 à 22:16 UTC) : 0,0070 % par 8 h, **positif : les longs paient les shorts** ; prévision pour l'heure suivante : 0,0114 % (positif : les longs paient les shorts) ; Deribit : 0,0000 %. C'est ce chiffre qui compte pour les conditions éliminatoires.
 - Financement Kraken, moyenne de la journée du 2026-11-25 : 0,0069 % par 8 h (positif : les longs paient les shorts) ; moyenne sur 7 jours : 0,0056 % (positif : les longs paient les shorts)
-- Intérêt ouvert sur le contrat Kraken : 2 097 BTC (relevé du 2026-11-26)
+- Intérêt ouvert sur le contrat Kraken : 2 099 BTC (relevé du 2026-11-26)
 - Volatilité implicite (DVOL) : 52,3 le 2026-11-25
-- Options Deribit, rapport puts/calls : 0,80 en positions ouvertes, 2,00 en volume sur 24 h (relevé du 2026-11-26)
-- Échéance d'options la plus chargée : 2026-12-25, 164 849 BTC en positions ouvertes, « max pain » à 64 015 € (70 000 $)
+- Options Deribit, rapport puts/calls : 0,80 en positions ouvertes, 2,05 en volume sur 24 h (relevé du 2026-11-26)
+- Échéance d'options la plus chargée : 2026-12-25, 164 850 BTC en positions ouvertes, « max pain » à 64 015 € (70 000 $)
 - Fear & Greed : 11 le 2026-11-26, 10 sept jours plus tôt
 - MVRV (prix divisé par le prix de revient moyen du réseau) : 1,14 le 2026-11-25
 
@@ -36,7 +36,7 @@ Supports majeurs (définition de la méthode), clôture du 2026-11-25 à 55 220
 |---|---|---|---|
 | Moyenne 200 semaines | 62 684 € (68 545 $) | -11,9 % | cassé le 2026-11-14 (12 j), pas repris |
 | Moyenne 200 jours | 65 868 € (72 027 $) | -16,2 % | cassé le 2026-11-12 (14 j), pas repris |
-| Plus bas des 90 jours précédents | 50 394 € (55 106 $) | +9,6 % | repris le 2026-11-21 |
+| Plus bas des 90 jours précédents | 50 399 € (55 111 $) | +9,6 % | repris le 2026-11-21 |
 
 - **Long de retournement : exclu** (aucun support majeur qui tient à moins de 3 % sous le prix).
 - **Condition éliminatoire du short (support, financement, peur) : inactive** (posé sur un support majeur : non ; financement en direct négatif : non ; peur extrême (≤ 20) : oui).
@@ -97,7 +97,7 @@ Lecture : 100 € d'un actif de bêta 1,5 pèsent comme 150 € de Bitcoin. Un E
 | macro | différée | ok | 2026-11-25 | 1 j | à jour | (Trésor américain, CBOE, Yahoo Finance) |
 | onchain | différée | ok | 2026-11-25 | 1 j | à jour | (Coin Metrics, non disponibles : cap_realisee_usd) |
 | h4 | historique | ok | 2026-11-26 16:00 | 0.09 j | à jour | (Coinbase, heures agrégées) |
-| h1_kraken | historique | ok | 2026-11-26 21:00 | 0.0 j | à jour | (Kraken Futures, contrat PF_XBTUSD) |
+| h1_kraken | historique | ok | 2026-11-26 21:00 | 0.01 j | à jour | (Kraken Futures, contrat PF_XBTUSD) |
 | financement_deribit | historique | ok | 2026-11-25 | 1 j | à jour | (Deribit) |
 | options | instantanée | ok | 2026-11-26 | 0 j | à jour | (Deribit) |
 | contrat_kraken | instantanée | ok | 2026-11-26 | 0 j | à jour | (Kraken Futures, barème Europe, particuliers) |
