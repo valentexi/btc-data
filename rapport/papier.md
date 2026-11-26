@@ -1,11 +1,11 @@
-# Mode papier (26/11/2026 02:47 UTC)
+# Mode papier (26/11/2026 06:44 UTC)
 
-Suivi automatique, sans argent réel. Déclencheurs, stops et objectifs suivis heure par heure ; clôtures jugées sur les bougies de 4 heures ; entrée théorique à l'ouverture de la bougie qui suit le déclencheur. Résultats nets de frais et de glissement. Dernière bougie connue : 2026-11-26 01:00 UTC.
+Suivi automatique, sans argent réel. Déclencheurs, stops et objectifs suivis heure par heure ; clôtures jugées sur les bougies de 4 heures ; entrée théorique à l'ouverture de la bougie qui suit le déclencheur. Résultats nets de frais et de glissement. Dernière bougie connue : 2026-11-26 05:00 UTC.
 
-Bougies utilisées : les plans créés depuis le 2026-11-15 à 19:00 UTC sont rejoués sur le **contrat perpétuel Kraken PF_XBTUSD** (le prix auquel un ordre serait exécuté) ; les plans antérieurs restent sur le prix au comptant de Coinbase, comme à leur enregistrement. Dernière bougie du contrat Kraken : 2026-11-26 01:00 UTC.
+Bougies utilisées : les plans créés depuis le 2026-11-15 à 19:00 UTC sont rejoués sur le **contrat perpétuel Kraken PF_XBTUSD** (le prix auquel un ordre serait exécuté) ; les plans antérieurs restent sur le prix au comptant de Coinbase, comme à leur enregistrement. Dernière bougie du contrat Kraken : 2026-11-26 05:00 UTC.
 
 ## Plans de Claude
-- Enregistrés : 17. Entrés : 4 (clos 4, ouverts 0). En attente : 0. Expirés ou annulés sans entrée : 13. Abandonnés (condition non remplie) : 0.
+- Enregistrés : 18. Entrés : 4 (clos 4, ouverts 0). En attente : 1. Expirés ou annulés sans entrée : 13. Abandonnés (condition non remplie) : 0.
 - **Comptés au critère** (enregistrés avant leur entrée, jamais modifiés) : 3 clos, 0 % gagnants, -0,72 R par trade, -2,16 R au total (-5,40 €). Ouverts et comptés : 0.
 - Hors critère : P001 (enregistré après l'entrée).
 - Tous les plans entrés, pour mémoire : 4 clos, 0 % gagnants, -0,79 R par trade, -3,16 R au total (-7,90 €).
@@ -39,7 +39,7 @@ Plans clos seulement ; pour Claude, plans comptés au critère. À lire au premi
 ## Scénarios à 7 jours : justesse des probabilités
 Chaque analyse donne trois probabilités (baissier, neutre, haussier) séparées par deux seuils de prix. À l'échéance, le robot regarde où le prix a fini. Une prévision ne compte que si elle a été enregistrée dans les 6 heures suivant l'analyse.
 
-- Enregistrées : 9. Résolues : 4 (comptées : 4). En cours : 5.
+- Enregistrées : 10. Résolues : 4 (comptées : 4). En cours : 6.
 - Probabilité moyenne donnée à l'issue qui s'est réalisée : 38 % (au hasard : 33 %).
 - Score de Brier moyen : 0,59 (0 = parfait ; 0,67 = trois issues à 33 % ; au-dessus de 0,67 : pire que de ne rien savoir).
 - L'issue jugée la plus probable s'est réalisée dans 50 % des cas.
@@ -54,18 +54,19 @@ Chaque analyse donne trois probabilités (baissier, neutre, haussier) séparées
 
 | Prévision | Créée (UTC) | Échéance (UTC) | Seuils | Baissier / neutre / haussier | État | Prix | Issue | Probabilité donnée | Comptée |
 |---|---|---|---|---|---|---|---|---|---|
-| SC028 | 2026-11-25 17:23 | 2026-12-02 17:23 | 50 297 € (55 000 $) et 56 699 € (62 000 $) | 33 % / 47 % / 20 % | en cours | 55 220 € (60 384 $) | neutre (provisoire) |  | oui |
-| SC026 | 2026-11-24 10:16 | 2026-12-01 10:16 | 51 212 € (56 000 $) et 58 528 € (64 000 $) | 30 % / 50 % / 20 % | en cours | 55 220 € (60 384 $) | neutre (provisoire) |  | oui |
-| SC025 | 2026-11-23 15:20 | 2026-11-30 15:20 | 53 955 € (59 000 $) et 61 271 € (67 000 $) | 28 % / 50 % / 22 % | en cours | 55 220 € (60 384 $) | neutre (provisoire) |  | oui |
-| SC023 | 2026-11-21 16:49 | 2026-11-28 16:49 | 51 669 € (56 500 $) et 58 070 € (63 500 $) | 30 % / 47 % / 23 % | en cours | 55 220 € (60 384 $) | neutre (provisoire) |  | oui |
-| SC019 | 2026-11-19 15:08 | 2026-11-26 15:08 | 55 784 € (61 000 $) et 60 357 € (66 000 $) | 30 % / 45 % / 25 % | en cours | 55 220 € (60 384 $) | baissier (provisoire) |  | oui |
+| SC030 | 2026-11-26 06:39 | 2026-12-03 06:39 | 51 212 € (56 000 $) et 58 985 € (64 500 $) | 32 % / 46 % / 22 % | en cours | 55 502 € (60 692 $) | neutre (provisoire) |  | oui |
+| SC028 | 2026-11-25 17:23 | 2026-12-02 17:23 | 50 297 € (55 000 $) et 56 699 € (62 000 $) | 33 % / 47 % / 20 % | en cours | 55 502 € (60 692 $) | neutre (provisoire) |  | oui |
+| SC026 | 2026-11-24 10:16 | 2026-12-01 10:16 | 51 212 € (56 000 $) et 58 528 € (64 000 $) | 30 % / 50 % / 20 % | en cours | 55 502 € (60 692 $) | neutre (provisoire) |  | oui |
+| SC025 | 2026-11-23 15:20 | 2026-11-30 15:20 | 53 955 € (59 000 $) et 61 271 € (67 000 $) | 28 % / 50 % / 22 % | en cours | 55 502 € (60 692 $) | neutre (provisoire) |  | oui |
+| SC023 | 2026-11-21 16:49 | 2026-11-28 16:49 | 51 669 € (56 500 $) et 58 070 € (63 500 $) | 30 % / 47 % / 23 % | en cours | 55 502 € (60 692 $) | neutre (provisoire) |  | oui |
+| SC019 | 2026-11-19 15:08 | 2026-11-26 15:08 | 55 784 € (61 000 $) et 60 357 € (66 000 $) | 30 % / 45 % / 25 % | en cours | 55 502 € (60 692 $) | baissier (provisoire) |  | oui |
 | SC018 | 2026-11-18 14:51 | 2026-11-25 14:51 | 55 784 € (61 000 $) et 60 357 € (66 000 $) | 33 % / 45 % / 22 % | résolu | 53 546 € (58 553 $) | baissier | 33 % | oui |
 | SC017 | 2026-11-17 14:28 | 2026-11-24 14:28 | 56 699 € (62 000 $) et 61 271 € (67 000 $) | 33 % / 42 % / 25 % | résolu | 55 187 € (60 347 $) | baissier | 33 % | oui |
 | SC016 | 2026-11-16 12:39 | 2026-11-23 12:39 | 56 699 € (62 000 $) et 60 814 € (66 500 $) | 42 % / 35 % / 23 % | résolu | 56 102 € (61 347 $) | baissier | 42 % | oui |
 | SC015 | 2026-11-15 16:00 | 2026-11-22 16:00 | 56 699 € (62 000 $) et 62 048 € (67 850 $) | 45 % / 35 % / 20 % | résolu | 55 601 € (60 799 $) | baissier | 45 % | oui |
 
 ## Intégrité du registre
-Aucune modification détectée sur les 29 lignes enregistrées (`papier/registre.csv`).
+Aucune modification détectée sur les 31 lignes enregistrées (`papier/registre.csv`).
 
 ## Annulations
 - P009 : demandée pour 2026-11-18T14:51, effective le 2026-11-18 18:49 UTC (Gain/risque au dernier objectif 1,49 frais compris (sous 1,5) : remplacé par P010 (objectif 2 à 61 800 $)).
@@ -74,6 +75,7 @@ Aucune modification détectée sur les 29 lignes enregistrées (`papier/registre
 ## Détail des plans de Claude
 | Plan | Créé (UTC) | Enregistré (UTC) | Sens | État | Entrée | Sortie | Motif | Résultat | En euros | Compté | Configuration | Bougies |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
+| P019 | 2026-11-26T06:39 | 2026-11-26 06:44 | short | en attente du déclencheur |  |  |  | n.d. |  | – | D-S | contrat Kraken |
 | P018 | 2026-11-25T17:23 | 2026-11-25 17:24 | short | clos | 2026-11-25 18:00 à 54 504 € (59 600 $) | 2026-11-26 00:00 | stop | -1,00 R | -2,50 € | oui | D-S | contrat Kraken |
 | P017 | 2026-11-24T10:16 | 2026-11-24 10:16 | short | expiré sans entrée |  |  |  | n.d. |  | – | D-S | contrat Kraken |
 | P016 | 2026-11-23T15:20 | 2026-11-23 15:21 | short | expiré sans entrée |  |  |  | n.d. |  | – | D-S | contrat Kraken |
