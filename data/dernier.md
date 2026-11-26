@@ -1,4 +1,4 @@
-# Dernier relevé BTC (26/11/2026 06:44 UTC)
+# Dernier relevé BTC (26/11/2026 06:45 UTC)
 
 Produit automatiquement par `collecte.py`. Clôtures quotidiennes à minuit UTC (1 h à Paris en hiver).
 
@@ -16,11 +16,11 @@ Produit automatiquement par `collecte.py`. Clôtures quotidiennes à minuit UTC 
 | 200 semaines | 62 684 € (68 545 $) | -11,9 % |
 
 ## Dérivés et sentiment
-- **Financement Kraken en direct** (relevé le 2026-11-26 à 06:44 UTC) : 0,0110 % par 8 h, **positif : les longs paient les shorts** ; prévision pour l'heure suivante : 0,0064 % (positif : les longs paient les shorts) ; Deribit : 0,0113 %. C'est ce chiffre qui compte pour les conditions éliminatoires.
+- **Financement Kraken en direct** (relevé le 2026-11-26 à 06:45 UTC) : 0,0110 % par 8 h, **positif : les longs paient les shorts** ; prévision pour l'heure suivante : 0,0064 % (positif : les longs paient les shorts) ; Deribit : 0,0113 %. C'est ce chiffre qui compte pour les conditions éliminatoires.
 - Financement Kraken, moyenne de la journée du 2026-11-25 : 0,0069 % par 8 h (positif : les longs paient les shorts) ; moyenne sur 7 jours : 0,0056 % (positif : les longs paient les shorts)
 - Intérêt ouvert sur le contrat Kraken : 2 173 BTC (relevé du 2026-11-26)
 - Volatilité implicite (DVOL) : 52,3 le 2026-11-25
-- Options Deribit, rapport puts/calls : 0,81 en positions ouvertes, 1,24 en volume sur 24 h (relevé du 2026-11-26)
+- Options Deribit, rapport puts/calls : 0,81 en positions ouvertes, 1,25 en volume sur 24 h (relevé du 2026-11-26)
 - Échéance d'options la plus chargée : 2026-12-25, 164 599 BTC en positions ouvertes, « max pain » à 64 015 € (70 000 $)
 - Fear & Greed : 11 le 2026-11-26, 10 sept jours plus tôt
 - MVRV (prix divisé par le prix de revient moyen du réseau) : 1,14 le 2026-11-25
