@@ -8,3 +8,4 @@ SC023,2026-11-21T16:49,claude (signal 23),7,56500,63500,30,47,23,Analyse BTC sho
 SC025,2026-11-23T15:20,claude (signal 25),7,59000,67000,28,50,22,Analyse BTC du 23 nov. à 16 h 20 (Paris)
 SC026,2026-11-24T10:16,claude (signal 26),7,56000,64000,30,50,20,Analyse BTC short du 24 nov. à 11 h 16 (Paris)
 SC028,2026-11-25T17:23,claude (signal 28),7,55000,62000,33,47,20,Analyse BTC du 25 nov. à 17 h 08 (Paris) ; inscrite à 18 h 24 après la panne de GitHub
+SC030,2026-11-26T06:39:06,claude,7,56000,64500,32,46,22,Signal 30 : Analyse BTC short ; biais -9
