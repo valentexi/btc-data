@@ -16,7 +16,7 @@ Produit automatiquement par `collecte.py`. Clôtures quotidiennes à minuit UTC 
 | 200 semaines | 62 684 € (68 545 $) | -11,9 % |
 
 ## Dérivés et sentiment
-- **Financement Kraken en direct** (relevé le 2026-11-26 à 22:06 UTC) : 0,0070 % par 8 h, **positif : les longs paient les shorts** ; prévision pour l'heure suivante : 0,0022 % (positif : les longs paient les shorts) ; Deribit : 0,0000 %. C'est ce chiffre qui compte pour les conditions éliminatoires.
+- **Financement Kraken en direct** (relevé le 2026-11-26 à 22:06 UTC) : 0,0070 % par 8 h, **positif : les longs paient les shorts** ; prévision pour l'heure suivante : 0,0038 % (positif : les longs paient les shorts) ; Deribit : 0,0000 %. C'est ce chiffre qui compte pour les conditions éliminatoires.
 - Financement Kraken, moyenne de la journée du 2026-11-25 : 0,0069 % par 8 h (positif : les longs paient les shorts) ; moyenne sur 7 jours : 0,0056 % (positif : les longs paient les shorts)
 - Intérêt ouvert sur le contrat Kraken : 2 097 BTC (relevé du 2026-11-26)
 - Volatilité implicite (DVOL) : 52,3 le 2026-11-25

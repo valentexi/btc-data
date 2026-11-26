@@ -1,4 +1,4 @@
-# Backtest BTC, version 2 (26/11/2026 22:06 UTC)
+# Backtest BTC, version 2 (26/11/2026 22:07 UTC)
 
 ## En bref
 - 31 règles ou configurations testées, dont 26 avec assez de trades pour conclure (au moins 30 trades et 10 épisodes).
