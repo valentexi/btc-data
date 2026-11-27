@@ -1,4 +1,4 @@
-# Backtest BTC, version 2 (27/11/2026 06:41 UTC)
+# Backtest BTC, version 2 (27/11/2026 14:26 UTC)
 
 ## En bref
 - 31 règles ou configurations testées, dont 26 avec assez de trades pour conclure (au moins 30 trades et 10 épisodes).
@@ -6,16 +6,16 @@
 - 4 nettement perdante(s) : L4 Long après une purge (−10 % en 7 jours) ; L5 Long après une purge, sous la moyenne 200 jours ; B-S-mm200 Short sur rejet sous la moyenne 200 jours ; D-L Long sur retour au-dessus d'une résistance cassée.
 - Avec 26 tests, le hasard seul ferait ressortir environ 0,7 faux « positif ». Un résultat isolé ne prouve rien.
 - Hors échantillon (règle choisie chaque année sur le passé, puis suivie) : 56 trades, -0,09 R par trade, intervalle -0,36 R à +0,17 R.
-- Biais mécanique (cinq familles sur sept) et variation du prix à 7 jours : aucun lien mesurable (corrélation de rang 0,06, intervalle -0,03 à 0,13).
+- Biais mécanique (cinq familles sur sept) et variation du prix à 7 jours : aucun lien mesurable (corrélation de rang 0,05, intervalle -0,03 à 0,13).
 - Le biais complet de la méthode (avec les flux des ETF et les événements) ne peut pas être rejoué sur le passé : seul le mode papier (`rapport/papier.md`) peut le juger.
 
 ## Comment lire
-- Données : bougies de 4 heures du 2017-01-01 au 2026-11-27 (21 698 bougies).
+- Données : bougies de 4 heures du 2017-01-01 au 2026-11-27 (21 700 bougies).
 - 1 R = la perte prévue quand le stop saute, frais (0,05 % par ordre) et glissement (0,10 % au stop) compris. −0,10 R par trade : on perd 10 % de la mise risquée à chaque trade.
 - Épisodes : les trades séparés de moins de 10 jours comptent comme un seul épisode de marché (30 jours au plus par épisode). L'intervalle à 95 % est calculé en tirant au sort des épisodes entiers (bootstrap par blocs).
 - Référence : le même plan, avec des entrées toutes les 20 heures sans aucun signal. Une règle doit faire mieux pour avoir un intérêt.
 - Avec financement réel : résultat sur les seuls trades dont le financement est connu (Kraken depuis un an, Deribit depuis 2019), comparé au même échantillon sans financement. Aucun financement n'est supposé quand il manque.
-- Moitiés : avant et après le 2021-12-14. Coûts dégradés : frais doublés, glissement triplé.
+- Moitiés : avant et après le 2021-12-15. Coûts dégradés : frais doublés, glissement triplé.
 - Verdicts : « candidat » exige un intervalle entièrement positif, deux moitiés positives, mieux que la référence et un résultat encore positif avec des coûts dégradés.
 
 ## Règles journalières

@@ -1,8 +1,8 @@
-# Mode papier (27/11/2026 06:41 UTC)
+# Mode papier (27/11/2026 14:26 UTC)
 
-Suivi automatique, sans argent réel. Déclencheurs, stops et objectifs suivis heure par heure ; clôtures jugées sur les bougies de 4 heures ; entrée théorique à l'ouverture de la bougie qui suit le déclencheur. Résultats nets de frais et de glissement. Dernière bougie connue : 2026-11-27 05:00 UTC.
+Suivi automatique, sans argent réel. Déclencheurs, stops et objectifs suivis heure par heure ; clôtures jugées sur les bougies de 4 heures ; entrée théorique à l'ouverture de la bougie qui suit le déclencheur. Résultats nets de frais et de glissement. Dernière bougie connue : 2026-11-27 13:00 UTC.
 
-Bougies utilisées : les plans créés depuis le 2026-11-15 à 19:00 UTC sont rejoués sur le **contrat perpétuel Kraken PF_XBTUSD** (le prix auquel un ordre serait exécuté) ; les plans antérieurs restent sur le prix au comptant de Coinbase, comme à leur enregistrement. Dernière bougie du contrat Kraken : 2026-11-27 05:00 UTC.
+Bougies utilisées : les plans créés depuis le 2026-11-15 à 19:00 UTC sont rejoués sur le **contrat perpétuel Kraken PF_XBTUSD** (le prix auquel un ordre serait exécuté) ; les plans antérieurs restent sur le prix au comptant de Coinbase, comme à leur enregistrement. Dernière bougie du contrat Kraken : 2026-11-27 13:00 UTC.
 
 ## Plans de Claude
 - Enregistrés : 18. Entrés : 5 (clos 4, ouverts 1). En attente : 0. Expirés ou annulés sans entrée : 13. Abandonnés (condition non remplie) : 0.
@@ -21,7 +21,7 @@ S4 : short quand le biais mécanique est ≤ −5. L7 : long quand il est ≥ +5
 
 - S4 : 1 clos, 100 % gagnants, +1,52 R par trade, +1,52 R au total (3,81 €) ; ouverts 0.
 - L7 : aucun plan clos ; ouverts 0.
-- Comparaison, plans clos : Claude (comptés) -0,72 R sur 3 ; règles +1,52 R sur 1. Pour mémoire, long systématique à chaque plan de Claude -0,53 R, short systématique +0,58 R.
+- Comparaison, plans clos : Claude (comptés) -0,72 R sur 3 ; règles +1,52 R sur 1. Pour mémoire, long systématique à chaque plan de Claude -0,53 R, short systématique +0,48 R.
 
 ## Par configuration et par jour d'entrée
 Plans clos seulement ; pour Claude, plans comptés au critère. À lire au premier bilan (30 plans) : avec quelques plans par ligne, ces moyennes ne veulent rien dire.
@@ -54,12 +54,12 @@ Chaque analyse donne trois probabilités (baissier, neutre, haussier) séparées
 
 | Prévision | Créée (UTC) | Échéance (UTC) | Seuils | Baissier / neutre / haussier | État | Prix | Issue | Probabilité donnée | Comptée |
 |---|---|---|---|---|---|---|---|---|---|
-| SC032 | 2026-11-26 22:05 | 2026-12-03 22:05 | 51 481 € (56 500 $) et 57 859 € (63 500 $) | 35 % / 43 % / 22 % | en cours | 55 883 € (61 332 $) | neutre (provisoire) |  | oui |
-| SC030 | 2026-11-26 06:39 | 2026-12-03 06:39 | 51 025 € (56 000 $) et 58 770 € (64 500 $) | 32 % / 46 % / 22 % | en cours | 55 883 € (61 332 $) | neutre (provisoire) |  | oui |
-| SC028 | 2026-11-25 17:23 | 2026-12-02 17:23 | 50 114 € (55 000 $) et 56 492 € (62 000 $) | 33 % / 47 % / 20 % | en cours | 55 883 € (61 332 $) | neutre (provisoire) |  | oui |
-| SC026 | 2026-11-24 10:16 | 2026-12-01 10:16 | 51 025 € (56 000 $) et 58 314 € (64 000 $) | 30 % / 50 % / 20 % | en cours | 55 883 € (61 332 $) | neutre (provisoire) |  | oui |
-| SC025 | 2026-11-23 15:20 | 2026-11-30 15:20 | 53 759 € (59 000 $) et 61 048 € (67 000 $) | 28 % / 50 % / 22 % | en cours | 55 883 € (61 332 $) | neutre (provisoire) |  | oui |
-| SC023 | 2026-11-21 16:49 | 2026-11-28 16:49 | 51 481 € (56 500 $) et 57 859 € (63 500 $) | 30 % / 47 % / 23 % | en cours | 55 883 € (61 332 $) | neutre (provisoire) |  | oui |
+| SC032 | 2026-11-26 22:05 | 2026-12-03 22:05 | 51 481 € (56 500 $) et 57 859 € (63 500 $) | 35 % / 43 % / 22 % | en cours | 56 104 € (61 574 $) | neutre (provisoire) |  | oui |
+| SC030 | 2026-11-26 06:39 | 2026-12-03 06:39 | 51 025 € (56 000 $) et 58 770 € (64 500 $) | 32 % / 46 % / 22 % | en cours | 56 104 € (61 574 $) | neutre (provisoire) |  | oui |
+| SC028 | 2026-11-25 17:23 | 2026-12-02 17:23 | 50 114 € (55 000 $) et 56 492 € (62 000 $) | 33 % / 47 % / 20 % | en cours | 56 104 € (61 574 $) | neutre (provisoire) |  | oui |
+| SC026 | 2026-11-24 10:16 | 2026-12-01 10:16 | 51 025 € (56 000 $) et 58 314 € (64 000 $) | 30 % / 50 % / 20 % | en cours | 56 104 € (61 574 $) | neutre (provisoire) |  | oui |
+| SC025 | 2026-11-23 15:20 | 2026-11-30 15:20 | 53 759 € (59 000 $) et 61 048 € (67 000 $) | 28 % / 50 % / 22 % | en cours | 56 104 € (61 574 $) | neutre (provisoire) |  | oui |
+| SC023 | 2026-11-21 16:49 | 2026-11-28 16:49 | 51 481 € (56 500 $) et 57 859 € (63 500 $) | 30 % / 47 % / 23 % | en cours | 56 104 € (61 574 $) | neutre (provisoire) |  | oui |
 | SC019 | 2026-11-19 15:08 | 2026-11-26 15:08 | 55 581 € (61 000 $) et 60 137 € (66 000 $) | 30 % / 45 % / 25 % | résolu | 55 249 € (60 636 $) | baissier | 30 % | oui |
 | SC018 | 2026-11-18 14:51 | 2026-11-25 14:51 | 55 581 € (61 000 $) et 60 137 € (66 000 $) | 33 % / 45 % / 22 % | résolu | 53 351 € (58 553 $) | baissier | 33 % | oui |
 | SC017 | 2026-11-17 14:28 | 2026-11-24 14:28 | 56 492 € (62 000 $) et 61 048 € (67 000 $) | 33 % / 42 % / 25 % | résolu | 54 986 € (60 347 $) | baissier | 33 % | oui |
@@ -76,7 +76,7 @@ Aucune modification détectée sur les 32 lignes enregistrées (`papier/registre
 ## Détail des plans de Claude
 | Plan | Créé (UTC) | Enregistré (UTC) | Sens | État | Entrée | Sortie | Motif | Résultat | En euros | Compté | Configuration | Bougies |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
-| P019 | 2026-11-26T06:39 | 2026-11-26 06:44 | short | ouvert | 2026-11-27 04:00 à 55 892 € (61 341 $) |  | en cours | -0,25 R | -0,62 € | oui | D-S | contrat Kraken |
+| P019 | 2026-11-26T06:39 | 2026-11-26 06:44 | short | ouvert | 2026-11-27 04:00 à 55 892 € (61 341 $) |  | en cours | -0,07 R | -0,17 € | oui | D-S | contrat Kraken |
 | P018 | 2026-11-25T17:23 | 2026-11-25 17:24 | short | clos | 2026-11-25 18:00 à 54 305 € (59 600 $) | 2026-11-26 00:00 | stop | -1,00 R | -2,50 € | oui | D-S | contrat Kraken |
 | P017 | 2026-11-24T10:16 | 2026-11-24 10:16 | short | expiré sans entrée |  |  |  | n.d. |  | – | D-S | contrat Kraken |
 | P016 | 2026-11-23T15:20 | 2026-11-23 15:21 | short | expiré sans entrée |  |  |  | n.d. |  | – | D-S | contrat Kraken |
