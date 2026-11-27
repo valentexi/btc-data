@@ -1,4 +1,4 @@
-# Backtest BTC, version 2 (26/11/2026 22:07 UTC)
+# Backtest BTC, version 2 (27/11/2026 06:41 UTC)
 
 ## En bref
 - 31 règles ou configurations testées, dont 26 avec assez de trades pour conclure (au moins 30 trades et 10 épisodes).
@@ -6,11 +6,11 @@
 - 4 nettement perdante(s) : L4 Long après une purge (−10 % en 7 jours) ; L5 Long après une purge, sous la moyenne 200 jours ; B-S-mm200 Short sur rejet sous la moyenne 200 jours ; D-L Long sur retour au-dessus d'une résistance cassée.
 - Avec 26 tests, le hasard seul ferait ressortir environ 0,7 faux « positif ». Un résultat isolé ne prouve rien.
 - Hors échantillon (règle choisie chaque année sur le passé, puis suivie) : 56 trades, -0,09 R par trade, intervalle -0,36 R à +0,17 R.
-- Biais mécanique (cinq familles sur sept) et variation du prix à 7 jours : aucun lien mesurable (corrélation de rang 0,05, intervalle -0,03 à 0,13).
+- Biais mécanique (cinq familles sur sept) et variation du prix à 7 jours : aucun lien mesurable (corrélation de rang 0,06, intervalle -0,03 à 0,13).
 - Le biais complet de la méthode (avec les flux des ETF et les événements) ne peut pas être rejoué sur le passé : seul le mode papier (`rapport/papier.md`) peut le juger.
 
 ## Comment lire
-- Données : bougies de 4 heures du 2017-01-01 au 2026-11-26 (21 696 bougies).
+- Données : bougies de 4 heures du 2017-01-01 au 2026-11-27 (21 698 bougies).
 - 1 R = la perte prévue quand le stop saute, frais (0,05 % par ordre) et glissement (0,10 % au stop) compris. −0,10 R par trade : on perd 10 % de la mise risquée à chaque trade.
 - Épisodes : les trades séparés de moins de 10 jours comptent comme un seul épisode de marché (30 jours au plus par épisode). L'intervalle à 95 % est calculé en tirant au sort des épisodes entiers (bootstrap par blocs).
 - Référence : le même plan, avec des entrées toutes les 20 heures sans aucun signal. Une règle doit faire mieux pour avoir un intérêt.
@@ -70,15 +70,15 @@ Définitions : support et résistance = plus bas et plus haut des 20 derniers jo
 | Short | -0,06 R sur 385 | -0,31 R sur 101 |
 
 ## Le biais mécanique prédit-il la suite ?
-Approximation du biais de la méthode sur cinq familles (structure, positionnement, blockchain, macro, actifs risqués), de −10 à +10, du 2018-02-01 au 2026-11-18. Variation moyenne d'un jour quelconque à 7 jours : +0,8 %.
+Approximation du biais de la méthode sur cinq familles (structure, positionnement, blockchain, macro, actifs risqués), de −10 à +10, du 2018-02-01 au 2026-11-19. Variation moyenne d'un jour quelconque à 7 jours : +0,8 %.
 
 | Biais | Jours | Épisodes | Variation à 7 jours | Médiane | Hausse | À 14 jours | Écart à la moyenne | Intervalle à 95 % de l'écart |
 |---|---|---|---|---|---|---|---|---|
-| ≤ −5 (baissier) | 109 | 22 | -2,5 % | -1,2 % | 35 % | -5,9 % | -3,3 % | -6,6 % à +0,8 % |
-| −4 à −2 | 672 | 54 | +0,4 % | +0,4 % | 53 % | +0,9 % | -0,4 % | -1,9 % à +0,7 % |
+| ≤ −5 (baissier) | 109 | 22 | -2,5 % | -1,2 % | 35 % | -6,0 % | -3,3 % | -6,6 % à +0,7 % |
+| −4 à −2 | 673 | 54 | +0,4 % | +0,4 % | 53 % | +0,9 % | -0,5 % | -1,9 % à +0,7 % |
 | −1 à +1 (neutre) | 1208 | 74 | +0,9 % | +0,1 % | 51 % | +2,1 % | +0,1 % | -0,7 % à +0,9 % |
 | +2 à +4 | 965 | 57 | +1,3 % | +0,4 % | 53 % | +2,4 % | +0,5 % | -0,4 % à +1,4 % |
-| ≥ +5 (haussier) | 255 | 32 | +1,2 % | +0,9 % | 56 % | +2,0 % | +0,4 % | -0,9 % à +1,8 % |
+| ≥ +5 (haussier) | 255 | 32 | +1,2 % | +0,9 % | 56 % | +2,0 % | +0,4 % | -0,9 % à +1,7 % |
 
 Si l'intervalle de l'écart contient zéro, la classe ne se distingue pas d'un jour quelconque. Blocs de 30 jours pour le bootstrap.
 
@@ -115,10 +115,10 @@ R moyen quand on change le stop et la durée (objectif = 1,6 fois le stop). Nomb
 ## Suivi de tendance sans stop, sans levier
 | Stratégie | Période | Rendement annuel | Pire baisse | Temps en position | Détenir sur la même période |
 |---|---|---|---|---|---|
-| Long au-dessus de la moyenne 200 jours, sans financement | 2017-07-19 au 2026-11-25 | +41,3 % | -70,7 % | 56 % | +42,1 % |
-| Long au-dessus de la moyenne 200 jours, avec financement réel | 2019-05-01 au 2026-11-25 | +23,7 % | -65,5 % | 59 % | +37,8 % |
-| Short sous la moyenne 200 jours, sans financement | 2017-07-19 au 2026-11-25 | -18,4 % | -92,1 % | 44 % | +42,1 % |
-| Short sous la moyenne 200 jours, avec financement réel | 2019-05-01 au 2026-11-25 | -18,6 % | -87,3 % | 41 % | +37,8 % |
+| Long au-dessus de la moyenne 200 jours, sans financement | 2017-07-19 au 2026-11-26 | +41,3 % | -70,7 % | 56 % | +42,1 % |
+| Long au-dessus de la moyenne 200 jours, avec financement réel | 2019-05-01 au 2026-11-26 | +23,7 % | -65,5 % | 59 % | +37,8 % |
+| Short sous la moyenne 200 jours, sans financement | 2017-07-19 au 2026-11-26 | -18,4 % | -92,1 % | 44 % | +42,1 % |
+| Short sous la moyenne 200 jours, avec financement réel | 2019-05-01 au 2026-11-26 | -18,7 % | -87,3 % | 41 % | +37,8 % |
 
 ## Limites
 - Les définitions mécaniques approchent les configurations de la méthode ; elles ne reproduisent pas le jugement d'une analyse (choix des niveaux, lecture des flux, actualité).

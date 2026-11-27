@@ -1,12 +1,12 @@
-# Mode papier (27/11/2026 04:57 UTC)
+# Mode papier (27/11/2026 06:41 UTC)
 
-Suivi automatique, sans argent réel. Déclencheurs, stops et objectifs suivis heure par heure ; clôtures jugées sur les bougies de 4 heures ; entrée théorique à l'ouverture de la bougie qui suit le déclencheur. Résultats nets de frais et de glissement. Dernière bougie connue : 2026-11-27 03:00 UTC.
+Suivi automatique, sans argent réel. Déclencheurs, stops et objectifs suivis heure par heure ; clôtures jugées sur les bougies de 4 heures ; entrée théorique à l'ouverture de la bougie qui suit le déclencheur. Résultats nets de frais et de glissement. Dernière bougie connue : 2026-11-27 05:00 UTC.
 
-Bougies utilisées : les plans créés depuis le 2026-11-15 à 19:00 UTC sont rejoués sur le **contrat perpétuel Kraken PF_XBTUSD** (le prix auquel un ordre serait exécuté) ; les plans antérieurs restent sur le prix au comptant de Coinbase, comme à leur enregistrement. Dernière bougie du contrat Kraken : 2026-11-27 03:00 UTC.
+Bougies utilisées : les plans créés depuis le 2026-11-15 à 19:00 UTC sont rejoués sur le **contrat perpétuel Kraken PF_XBTUSD** (le prix auquel un ordre serait exécuté) ; les plans antérieurs restent sur le prix au comptant de Coinbase, comme à leur enregistrement. Dernière bougie du contrat Kraken : 2026-11-27 05:00 UTC.
 
 ## Plans de Claude
-- Enregistrés : 18. Entrés : 4 (clos 4, ouverts 0). En attente : 1. Expirés ou annulés sans entrée : 13. Abandonnés (condition non remplie) : 0.
-- **Comptés au critère** (enregistrés avant leur entrée, jamais modifiés) : 3 clos, 0 % gagnants, -0,72 R par trade, -2,16 R au total (-5,40 €). Ouverts et comptés : 0.
+- Enregistrés : 18. Entrés : 5 (clos 4, ouverts 1). En attente : 0. Expirés ou annulés sans entrée : 13. Abandonnés (condition non remplie) : 0.
+- **Comptés au critère** (enregistrés avant leur entrée, jamais modifiés) : 3 clos, 0 % gagnants, -0,72 R par trade, -2,16 R au total (-5,40 €). Ouverts et comptés : 1.
 - Hors critère : P001 (enregistré après l'entrée).
 - Tous les plans entrés, pour mémoire : 4 clos, 0 % gagnants, -0,79 R par trade, -3,16 R au total (-7,90 €).
 
@@ -28,9 +28,9 @@ Plans clos seulement ; pour Claude, plans comptés au critère. À lire au premi
 
 | Groupe | Plans clos | R moyen | Total | Ouverts |
 |---|---|---|---|---|
-| Claude, tous les plans comptés | 3 | -0,72 R | -2,16 R | 0 |
-| Claude · D-S : short sur rebond raté | 3 | -0,72 R | -2,16 R | 0 |
-| Claude · entrées en semaine | 1 | -1,00 R | -1,00 R | 0 |
+| Claude, tous les plans comptés | 3 | -0,72 R | -2,16 R | 1 |
+| Claude · D-S : short sur rebond raté | 3 | -0,72 R | -2,16 R | 1 |
+| Claude · entrées en semaine | 1 | -1,00 R | -1,00 R | 1 |
 | Claude · entrées le week-end | 2 | -0,58 R | -1,16 R | 0 |
 | Règle S4 | 1 | +1,52 R | +1,52 R | 0 |
 | Règle S4 · entrées en semaine | 1 | +1,52 R | +1,52 R | 0 |
@@ -76,7 +76,7 @@ Aucune modification détectée sur les 32 lignes enregistrées (`papier/registre
 ## Détail des plans de Claude
 | Plan | Créé (UTC) | Enregistré (UTC) | Sens | État | Entrée | Sortie | Motif | Résultat | En euros | Compté | Configuration | Bougies |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
-| P019 | 2026-11-26T06:39 | 2026-11-26 06:44 | short | déclenché, entrée à la prochaine bougie |  |  |  | n.d. |  | – | D-S | contrat Kraken |
+| P019 | 2026-11-26T06:39 | 2026-11-26 06:44 | short | ouvert | 2026-11-27 04:00 à 55 892 € (61 341 $) |  | en cours | -0,25 R | -0,62 € | oui | D-S | contrat Kraken |
 | P018 | 2026-11-25T17:23 | 2026-11-25 17:24 | short | clos | 2026-11-25 18:00 à 54 305 € (59 600 $) | 2026-11-26 00:00 | stop | -1,00 R | -2,50 € | oui | D-S | contrat Kraken |
 | P017 | 2026-11-24T10:16 | 2026-11-24 10:16 | short | expiré sans entrée |  |  |  | n.d. |  | – | D-S | contrat Kraken |
 | P016 | 2026-11-23T15:20 | 2026-11-23 15:21 | short | expiré sans entrée |  |  |  | n.d. |  | – | D-S | contrat Kraken |
