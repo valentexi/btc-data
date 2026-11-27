@@ -1,4 +1,4 @@
-# Mode papier (27/11/2026 14:26 UTC)
+# Mode papier (27/11/2026 14:57 UTC)
 
 Suivi automatique, sans argent réel. Déclencheurs, stops et objectifs suivis heure par heure ; clôtures jugées sur les bougies de 4 heures ; entrée théorique à l'ouverture de la bougie qui suit le déclencheur. Résultats nets de frais et de glissement. Dernière bougie connue : 2026-11-27 13:00 UTC.
 
