@@ -1,4 +1,4 @@
-# Dernier relevé BTC (28/11/2026 07:38 UTC)
+# Dernier relevé BTC (28/11/2026 13:42 UTC)
 
 Produit automatiquement par `collecte.py`. Clôtures quotidiennes à minuit UTC (1 h à Paris en hiver).
 
@@ -16,12 +16,12 @@ Produit automatiquement par `collecte.py`. Clôtures quotidiennes à minuit UTC 
 | 200 semaines | 62 293 € (68 254 $) | -12,3 % |
 
 ## Dérivés et sentiment
-- **Financement Kraken en direct** (relevé le 2026-11-28 à 07:38 UTC) : 0,0011 % par 8 h, **positif : les longs paient les shorts** ; prévision pour l'heure suivante : -0,0061 % (négatif : les shorts paient les longs) ; Deribit : 0,0000 %. C'est ce chiffre qui compte pour les conditions éliminatoires.
+- **Financement Kraken en direct** (relevé le 2026-11-28 à 13:41 UTC) : -0,0025 % par 8 h, **négatif : les shorts paient les longs** ; prévision pour l'heure suivante : -0,0057 % (négatif : les shorts paient les longs) ; Deribit : 0,0000 %. C'est ce chiffre qui compte pour les conditions éliminatoires.
 - Financement Kraken, moyenne de la journée du 2026-11-27 : 0,0018 % par 8 h (positif : les longs paient les shorts) ; moyenne sur 7 jours : 0,0053 % (positif : les longs paient les shorts)
-- Intérêt ouvert sur le contrat Kraken : 2 078 BTC (relevé du 2026-11-28)
+- Intérêt ouvert sur le contrat Kraken : 2 115 BTC (relevé du 2026-11-28)
 - Volatilité implicite (DVOL) : 51,6 le 2026-11-27
 - Options Deribit, rapport puts/calls : 0,81 en positions ouvertes, 1,20 en volume sur 24 h (relevé du 2026-11-28)
-- Échéance d'options la plus chargée : 2026-12-25, 167 834 BTC en positions ouvertes, « max pain » à 63 886 € (70 000 $)
+- Échéance d'options la plus chargée : 2026-12-25, 167 856 BTC en positions ouvertes, « max pain » à 63 886 € (70 000 $)
 - Fear & Greed : 10 le 2026-11-28, 12 sept jours plus tôt
 - MVRV (prix divisé par le prix de revient moyen du réseau) : 1,13 le 2026-11-27
 
@@ -39,7 +39,7 @@ Supports majeurs (définition de la méthode), clôture du 2026-11-27 à 54 630
 | Plus bas des 90 jours précédents | 50 293 € (55 106 $) | +8,6 % | repris le 2026-11-21 |
 
 - **Long de retournement : exclu** (aucun support majeur qui tient à moins de 3 % sous le prix).
-- **Condition éliminatoire du short (support, financement, peur) : inactive** (posé sur un support majeur : non ; financement en direct négatif : non ; peur extrême (≤ 20) : oui).
+- **Condition éliminatoire du short (support, financement, peur) : inactive** (posé sur un support majeur : non ; financement en direct négatif : oui ; peur extrême (≤ 20) : oui).
 
 ## Macro (dernières clôtures connues)
 - Taux américain à 10 ans : 4,94 % (2026-11-27)
@@ -54,12 +54,12 @@ Supports majeurs (définition de la méthode), clôture du 2026-11-27 à 54 630
 ## Six dernières bougies de 4 heures terminées (heure de début, UTC ; Paris = UTC + 1 h en hiver)
 | Début (UTC) | Ouverture | Plus haut | Plus bas | Clôture |
 |---|---|---|---|---|
-| 2026-11-27 04:00 | 61 331 $ | 61 935 $ | 61 260 $ | 56 200 € (61 579 $) |
-| 2026-11-27 08:00 | 61 579 $ | 62 140 $ | 61 362 $ | 56 196 € (61 574 $) |
 | 2026-11-27 12:00 | 61 574 $ | 61 630 $ | 58 700 $ | 54 810 € (60 055 $) |
 | 2026-11-27 16:00 | 60 054 $ | 60 471 $ | 59 432 $ | 54 607 € (59 833 $) |
 | 2026-11-27 20:00 | 59 834 $ | 59 862 $ | 59 511 $ | 54 630 € (59 858 $) |
 | 2026-11-28 00:00 | 59 858 $ | 60 200 $ | 59 768 $ | 54 719 € (59 956 $) |
+| 2026-11-28 04:00 | 59 956 $ | 60 012 $ | 59 124 $ | 54 550 € (59 771 $) |
+| 2026-11-28 08:00 | 59 771 $ | 59 797 $ | 58 996 $ | 54 008 € (59 176 $) |
 
 ## Contrat perpétuel Kraken PF_XBTUSD (barème lu le 2026-11-28)
 - Marge initiale 10,0 %, marge de maintenance 5,0 %, levier maximum x10.
@@ -96,8 +96,8 @@ Lecture : 100 € d'un actif de bêta 1,5 pèsent comme 150 € de Bitcoin. Un E
 | peur_avidite | historique | ok | 2026-11-28 | 0 j | à jour | (alternative.me) |
 | macro | différée | ok | 2026-11-27 | 1 j | à jour | (Trésor américain, CBOE, Yahoo Finance) |
 | onchain | différée | ok | 2026-11-27 | 1 j | à jour | (Coin Metrics, non disponibles : cap_realisee_usd) |
-| h4 | historique | ok | 2026-11-28 00:00 | 0.15 j | à jour | (Coinbase, heures agrégées) |
-| h1_kraken | historique | ok | 2026-11-28 06:00 | 0.03 j | à jour | (Kraken Futures, contrat PF_XBTUSD) |
+| h4 | historique | ok | 2026-11-28 08:00 | 0.07 j | à jour | (Coinbase, heures agrégées) |
+| h1_kraken | historique | ok | 2026-11-28 12:00 | 0.03 j | à jour | (Kraken Futures, contrat PF_XBTUSD) |
 | financement_deribit | historique | ok | 2026-11-27 | 1 j | à jour | (Deribit) |
 | options | instantanée | ok | 2026-11-28 | 0 j | à jour | (Deribit) |
 | contrat_kraken | instantanée | ok | 2026-11-28 | 0 j | à jour | (Kraken Futures, barème Europe, particuliers) |

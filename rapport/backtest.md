@@ -1,4 +1,4 @@
-# Backtest BTC, version 2 (28/11/2026 06:41 UTC)
+# Backtest BTC, version 2 (28/11/2026 13:42 UTC)
 
 ## En bref
 - 31 règles ou configurations testées, dont 26 avec assez de trades pour conclure (au moins 30 trades et 10 épisodes).
@@ -10,7 +10,7 @@
 - Le biais complet de la méthode (avec les flux des ETF et les événements) ne peut pas être rejoué sur le passé : seul le mode papier (`rapport/papier.md`) peut le juger.
 
 ## Comment lire
-- Données : bougies de 4 heures du 2017-01-01 au 2026-11-28 (21 704 bougies).
+- Données : bougies de 4 heures du 2017-01-01 au 2026-11-28 (21 706 bougies).
 - 1 R = la perte prévue quand le stop saute, frais (0,05 % par ordre) et glissement (0,10 % au stop) compris. −0,10 R par trade : on perd 10 % de la mise risquée à chaque trade.
 - Épisodes : les trades séparés de moins de 10 jours comptent comme un seul épisode de marché (30 jours au plus par épisode). L'intervalle à 95 % est calculé en tirant au sort des épisodes entiers (bootstrap par blocs).
 - Référence : le même plan, avec des entrées toutes les 20 heures sans aucun signal. Une règle doit faire mieux pour avoir un intérêt.
@@ -56,8 +56,8 @@ Entrée à l'ouverture de la bougie qui suit le signal. Stop derrière l'extrêm
 | C-S+ Short sur cassure d'un support en clôture journalière, dans le sens de la moyenne 200 jours | 44 | 33 | 48 % | +0,01 R | -0,32 R à +0,30 R | -0,05 R | +0,14 R sur 31 (contre +0,14 R sans) | -0,32 R | +0,26 R | -0,06 R | pas d'avantage démontré |
 | D-S Short sur rebond raté (retour sous un support cassé) | 45 | 40 | 42 % | -0,11 R | -0,43 R à +0,21 R | -0,10 R | -0,10 R sur 34 (contre -0,11 R sans) | -0,20 R | -0,06 R | -0,21 R | pas d'avantage démontré |
 | D-S+ Short sur rebond raté (retour sous un support cassé), dans le sens de la moyenne 200 jours | 29 | 26 | 45 % | -0,04 R | -0,47 R à +0,36 R | -0,10 R | +0,04 R sur 20 (contre +0,04 R sans) | -0,27 R | +0,14 R | -0,13 R | échantillon insuffisant |
-| C-L Long sur cassure d'une résistance en clôture journalière | 131 | 74 | 48 % | +0,10 R | -0,11 R à +0,31 R | -0,03 R | +0,00 R sur 101 (contre +0,03 R sans) | +0,15 R | +0,03 R | +0,02 R | pas d'avantage démontré |
-| C-L+ Long sur cassure d'une résistance en clôture journalière, dans le sens de la moyenne 200 jours | 83 | 47 | 45 % | +0,04 R | -0,24 R à +0,31 R | -0,03 R | +0,00 R sur 75 (contre +0,04 R sans) | -0,01 R | +0,09 R | -0,04 R | pas d'avantage démontré |
+| C-L Long sur cassure d'une résistance en clôture journalière | 131 | 74 | 48 % | +0,10 R | -0,11 R à +0,31 R | -0,02 R | +0,00 R sur 101 (contre +0,03 R sans) | +0,15 R | +0,03 R | +0,02 R | pas d'avantage démontré |
+| C-L+ Long sur cassure d'une résistance en clôture journalière, dans le sens de la moyenne 200 jours | 83 | 47 | 45 % | +0,04 R | -0,24 R à +0,31 R | -0,02 R | +0,00 R sur 75 (contre +0,04 R sans) | -0,01 R | +0,09 R | -0,04 R | pas d'avantage démontré |
 | D-L Long sur retour au-dessus d'une résistance cassée | 97 | 66 | 40 % | -0,21 R | -0,40 R à -0,00 R | -0,03 R | -0,32 R sur 79 (contre -0,30 R sans) | -0,05 R | -0,38 R | -0,30 R | négatif |
 | D-L+ Long sur retour au-dessus d'une résistance cassée, dans le sens de la moyenne 200 jours | 63 | 40 | 41 % | -0,24 R | -0,48 R à +0,00 R | -0,03 R | -0,29 R sur 56 (contre -0,27 R sans) | -0,22 R | -0,27 R | -0,33 R | pas d'avantage démontré |
 

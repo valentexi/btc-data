@@ -1,5 +1,5 @@
 {
-  "execution_utc": "2026-11-28T07:38:24+00:00",
+  "execution_utc": "2026-11-28T13:42:03+00:00",
   "sources": {
     "prix": {
       "ok": true,
@@ -75,17 +75,17 @@
     },
     "h4": {
       "ok": true,
-      "lignes": 21704,
-      "derniere_date": "2026-11-28 00:00",
+      "lignes": 21706,
+      "derniere_date": "2026-11-28 08:00",
       "note": "(Coinbase, heures agrégées)",
       "nature": "historique",
-      "age_jours": 0.15,
+      "age_jours": 0.07,
       "fraicheur": "à jour"
     },
     "h1_kraken": {
       "ok": true,
-      "lignes": 1740,
-      "derniere_date": "2026-11-28 06:00",
+      "lignes": 1746,
+      "derniere_date": "2026-11-28 12:00",
       "note": "(Kraken Futures, contrat PF_XBTUSD)",
       "nature": "historique",
       "age_jours": 0.03,
