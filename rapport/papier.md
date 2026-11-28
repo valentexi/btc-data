@@ -1,8 +1,8 @@
-# Mode papier (28/11/2026 06:40 UTC)
+# Mode papier (28/11/2026 07:38 UTC)
 
-Suivi automatique, sans argent réel. Déclencheurs, stops et objectifs suivis heure par heure ; clôtures jugées sur les bougies de 4 heures ; entrée théorique à l'ouverture de la bougie qui suit le déclencheur. Résultats nets de frais et de glissement. Dernière bougie connue : 2026-11-28 05:00 UTC.
+Suivi automatique, sans argent réel. Déclencheurs, stops et objectifs suivis heure par heure ; clôtures jugées sur les bougies de 4 heures ; entrée théorique à l'ouverture de la bougie qui suit le déclencheur. Résultats nets de frais et de glissement. Dernière bougie connue : 2026-11-28 06:00 UTC.
 
-Bougies utilisées : les plans créés depuis le 2026-11-15 à 19:00 UTC sont rejoués sur le **contrat perpétuel Kraken PF_XBTUSD** (le prix auquel un ordre serait exécuté) ; les plans antérieurs restent sur le prix au comptant de Coinbase, comme à leur enregistrement. Dernière bougie du contrat Kraken : 2026-11-28 05:00 UTC.
+Bougies utilisées : les plans créés depuis le 2026-11-15 à 19:00 UTC sont rejoués sur le **contrat perpétuel Kraken PF_XBTUSD** (le prix auquel un ordre serait exécuté) ; les plans antérieurs restent sur le prix au comptant de Coinbase, comme à leur enregistrement. Dernière bougie du contrat Kraken : 2026-11-28 06:00 UTC.
 
 ## Plans de Claude
 - Enregistrés : 18. Entrés : 5 (clos 4, ouverts 1). En attente : 0. Expirés ou annulés sans entrée : 13. Abandonnés (condition non remplie) : 0.
@@ -76,7 +76,7 @@ Aucune modification détectée sur les 32 lignes enregistrées (`papier/registre
 ## Détail des plans de Claude
 | Plan | Créé (UTC) | Enregistré (UTC) | Sens | État | Entrée | Sortie | Motif | Résultat | En euros | Compté | Configuration | Bougies |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
-| P019 | 2026-11-26T06:39 | 2026-11-26 06:44 | short | ouvert | 2026-11-27 04:00 à 55 983 € (61 341 $) |  | en cours | +1,07 R | 2,66 € | oui | D-S | contrat Kraken |
+| P019 | 2026-11-26T06:39 | 2026-11-26 06:44 | short | ouvert | 2026-11-27 04:00 à 55 983 € (61 341 $) |  | en cours | +1,06 R | 2,65 € | oui | D-S | contrat Kraken |
 | P018 | 2026-11-25T17:23 | 2026-11-25 17:24 | short | clos | 2026-11-25 18:00 à 54 394 € (59 600 $) | 2026-11-26 00:00 | stop | -1,00 R | -2,50 € | oui | D-S | contrat Kraken |
 | P017 | 2026-11-24T10:16 | 2026-11-24 10:16 | short | expiré sans entrée |  |  |  | n.d. |  | – | D-S | contrat Kraken |
 | P016 | 2026-11-23T15:20 | 2026-11-23 15:21 | short | expiré sans entrée |  |  |  | n.d. |  | – | D-S | contrat Kraken |
